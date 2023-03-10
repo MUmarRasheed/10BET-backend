@@ -1,0 +1,17 @@
+[
+  "registerUser",
+  "login",
+  "register",
+  "getAllUsers",
+  "loadUserBalance",
+  "assignUserBalance",
+  "getUsers",
+  "changePassword",
+  "updateUser",
+  "addBetSizes",
+  "addModulePermissions",
+  "addModulePermissionsUser",
+  "searchUsers",
+  "getAllRecharges",
+  "getCurrentUser"
+]
