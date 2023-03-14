@@ -11,30 +11,26 @@ const saltrounds = config.saltRounds;
  * @roles [ 0 (company) 1 (superAdmin), 2 (admin), 3 (superMaster), 4 (master), 5 (better)]
  */
 const userSchema = new Schema({
-  userName: { type: String, index: true },
-  password: { type: String },
-  reference: { type: String },
-  phone: { type: String },
+  userName: { type: String, index: true, required: true, unique: true },
+  password: { type: String, required: true },
+  reference: { type: String,required: true },
+  phone: { type: String,required: true },
   token: { type: String, default: "", index: true },
   role: { type: String, default: 0, index: true },
   isActive: { type: Boolean, default: false },
   status: { type: Number, default: 0 },
   notes: { type: String },
-  userId: {
-    type: Number,
-    required: true,
-    index: true,
-    // unique: true,
-    default: 0,
-  },
+  userId: { type: Number, required: true, index: true, unique: true, default: 0 },
   passwordChanged: { type: Boolean, default: false },
-  balance: { type: Number, default: 0 },
+  balance: { type: Number, default: 0, required: true },
   createdBy: { type: String, default: "0" },
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: false },
-  companyId: { type: String },
-  parentId : { type: String },
+  adminId : { type: String, default: '' }, // only for supermaster 
+  parentId : { type: String, default: '' }, // only for supermaster 
+  masterId: { type: String, default: '' }, // 
+  superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },

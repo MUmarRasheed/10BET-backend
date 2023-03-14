@@ -31,7 +31,7 @@ let options = {
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(config.DBHost, options)
+  .connect(config.DBHostLive, options)
   .then(() => {
     console.log("Database connected");
   })

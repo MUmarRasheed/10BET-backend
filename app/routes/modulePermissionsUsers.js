@@ -20,7 +20,7 @@ function addModulePermissionsUser(req, res) {
       const permissionUser = new modulePermissionsUsers(req.body);
       permissionUser.userId = req.body.userId;
       permissionUser.module = modules.join(', '); // join modules with comma separator
-    permissionUser.allowedModules = modules.filter(module => allowedModules.includes(module)); // filter allowedModules array
+      permissionUser.allowedModules = modules.filter(module => allowedModules.includes(module)); // filter allowedModules array
       permissionUser.save((err, permission) => {
         if (err && err.code === 11000) {
             if (err.keyPattern.userId === 1)
@@ -29,7 +29,7 @@ function addModulePermissionsUser(req, res) {
         if (err) {
           return res.status(404).send({ message: "Error adding module permissions users" });
         }
-        return res.send({ message: "Permissions for user added successfully", permission });
+        return res.send({ success: true, message: "Permissions for user added successfully", permission });
       });
     });
   }

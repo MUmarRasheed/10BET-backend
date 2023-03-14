@@ -40,8 +40,9 @@ function getAllRecharges(req, res) {
         if (err)
           return res.status(404).send({ message: "RECHARGES_PAGINATION_FAILED" });
         return res.send({
+          success: true,
           message: "GETTING_ALL_RECHARGES_SUCCESS",
-          results,
+          results
         });
       }
     );

@@ -6,9 +6,9 @@ module.exports.validate = (method) => {
     case "registerUser": {
       return [
         body("userName", "userName is required")
-          .optional()
+          .exists()
           .isString()
-          .withMessage(" firstName must be string"),
+          .withMessage(" userName must be string"),
         body("reference", "reference is required")
           .exists()
           .isString()

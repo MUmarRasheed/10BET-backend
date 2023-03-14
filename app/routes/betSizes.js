@@ -64,6 +64,7 @@ function addBetSizes(req, res) {
             .send({ message: "Error adding/updating bet sizes" });
         }
         return res.send({
+          success: true,
           message: "Bet sizes added/updated successfully",
           betSizes
         });

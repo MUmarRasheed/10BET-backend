@@ -18,14 +18,30 @@ function registerUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
+
   User.findOne()
     .sort({ userId: -1 })
     .exec((err, data) => {
       if (err) return res.status(404).send({ message: "user not found", err });
       const user = new User(req.body);
       user.userId = data.userId + 1;
-      user.companyId = req.decoded.companyId
-      user.parentId = req.decoded.userId 
+      if(req.decoded.role == '1') user.superAdminId = req.decoded.userId
+      if(req.decoded.role == '2') {
+        user.parentId = req.decoded.userId
+        user.superAdminId = req.decoded.superAdminId
+      }
+      
+      if(req.decoded.role == '3'){
+        user.superAdminId = req.decoded.superAdminId
+        user.parentId = req.decoded.parentId
+        user.adminId = req.decoded.userId
+      } 
+      if(req.decoded.role == '4'){
+        user.adminId = req.decoded.adminId
+        user.superAdminId = req.decoded.superAdminId
+        user.parentId = req.decoded.parentId
+        user.masterId = req.decoded.userId
+      }
       if (req.body.isActive == true) {
         user.status = 1;
       } else {
@@ -77,13 +93,13 @@ function login(req, res) {
     { userName: req.body.userName, isActive: true, status: 1 },
     (err, user) => {
       if (err || !user)
-        return res.status(404).send({ message: "user not found or user is not active",err });
+        return res.status(404).send({ message: "user not found or user is not active" });
       // check if user password is matched or not.
       bcrypt.compare(req.body.password, user.password, function (err, result) {
         if (err) return res.status(404).send({ message: "incorrect password" });
         if (!result)
           return res.status(404).send({ message: "incorrect password" });
-        var token = getNonExpiringToken(user.userId, user.createdBy, user.role, user.companyId, user.parentId);
+        var token = getNonExpiringToken(user.userId, user.createdBy, user.role, user.parentId, user.superAdminId, user.adminId);
         user.token = token;
         var ipInfo = getIP(req);
         var userDetailsForLoginActivity = {
@@ -141,13 +157,14 @@ function saveLoginActivity(detailsForLoginActivity, _callback) {
   );
 }
 
-function getNonExpiringToken(userId, createdBy, role,companyId, parentId) {
+function getNonExpiringToken(userId, createdBy, role, parentId,superAdminId,adminId) {
   const payload = {
     userId: userId,
     createdBy: createdBy,
     role: role,
-    companyId: companyId,
-    parentId: parentId
+    parentId: parentId,
+    superAdminId: superAdminId,
+    adminId: adminId
   };
   var token = jwt.sign(payload, config.secret, {});
   return token;
@@ -235,6 +252,7 @@ function loadUserBalance(req, res) {
                       });
                     }
                     return res.send({
+                      success: true,
                       message: "Loaded user balance successfully",
                       data,
                     });
@@ -252,7 +270,7 @@ function loadUserBalance(req, res) {
 function getAllUsers(req, res) {
   // Initialize variables with default values
   let query = {};
-  if (req.decoded.role = "0") {
+  if (req.decoded.login.role == "0") {
     query = {};
   }
   let page = 1;
@@ -277,11 +295,11 @@ function getAllUsers(req, res) {
   if (req.query.page) {
     page = Number(req.query.page);
   }
-  const userId = req.decoded.userId; // As the user ID is stored in req.decoded.userId
 
-  if (req.decoded.createdBy) {
-    query.createdBy = userId;
-  }
+  if(req.decoded.login.role == '1') query.superAdminId = req.decoded.userId
+  if(req.decoded.login.role == '2') query.parentId = req.decoded.userId
+  if(req.decoded.login.role == '3') query.adminId = req.decoded.userId
+  if(req.decoded.login.role == '4') query.masterId = req.decoded.userId
   // if (req.decoded.parentId) {
   //   query.parentId = req.decoded.parentId;
   // }
@@ -296,6 +314,7 @@ function getAllUsers(req, res) {
       if (err)
         return res.status(404).send({ message: "USERS_PAGINATION_FAILED" });
       return res.send({
+        success: true,
         message: "GETTING_ALL_USERS_SUCCESS",
         results,
       });
@@ -319,7 +338,7 @@ function changePassword(req, res) {
         if (err) {
           return res.status(404).send({ message: "USER_NOT_FOUND" });
         }
-        return res.send({ message: "USER_PASSWORD_UPDATED", user });
+        return res.send({ success: true, message: "USER_PASSWORD_UPDATED", user });
       });
     });
   });
@@ -352,6 +371,7 @@ function updateUser(req, res) {
           if (err)
             return res.status(404).send({ message: "user not updated " });
           return res.send({
+            success: true,
             message: "user updated successfully",
           });
         }
@@ -391,6 +411,7 @@ function searchUsers(req, res) {
 	  (err, record) => {
 		if (err) return res.status(404).send({ message: "search users pagination failed" })
 		return res.send({
+      success: true,
 		  message: 'users record found',
 		  record
 	  	})
@@ -407,6 +428,7 @@ function getCurrentUser(req,res){
 	  (err, user) => {
 		if (err || !user) return res.status(404).send({ message: "user not found" })
 		return res.send({
+      success: true,
 		  message: 'users record found',
 		  user : user
 		})
