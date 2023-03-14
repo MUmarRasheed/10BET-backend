@@ -33,6 +33,6 @@ betSizesSchema.pre("save", function (next) {
 });
 
 const BetSizes = mongoose.model("betSize", betSizesSchema);
-BetSizes.createIndexes();
+// BetSizes.createIndexes();
 
 module.exports = BetSizes;

@@ -80,6 +80,6 @@ userSchema.plugin(Global.paginate);
 userSchema.plugin(Global.aggregatePaginate);
 
 const User = mongoose.model("User", userSchema);
-User.createIndexes();
+// User.createIndexes();
 
 module.exports = User;

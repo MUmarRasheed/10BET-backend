@@ -17,7 +17,6 @@ let LoginActivitySchema = new Schema({
 	userId: {type: Number, required: true, default: 0 },
 	balance: { type : Number },
     // deviceId: { type: String, default: '' },
-	token: { type: String, required: true },
 	role: { type: String, default: 0 },
 	ipAddress: { type: String },
     updatedAt: { type: Number },
