@@ -6,7 +6,7 @@ let config = require("config");
 let fs = require("fs");
 let cors = require("cors");
 var morgan = require("morgan");
-const apisMiddleware = require("./app/Middlewares/apisMiddleware");
+const apisMiddleware = require("./app/middlewares/apisMiddleware");
 const loginMiddleWare = require("./app/middlewares/loginMiddleware");
 const aclMiddleware = require("./app/middlewares/aclMiddleware");
 const accessMiddleware = require("./app/middlewares/accessMiddleware");
@@ -31,7 +31,7 @@ let options = {
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(config.DBHostLive, options)
+  .connect(config.DBHost, options)
   .then(() => {
     console.log("Database connected");
   })

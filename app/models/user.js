@@ -79,6 +79,8 @@ userSchema.pre("save", function (next) {
 userSchema.plugin(Global.paginate);
 userSchema.plugin(Global.aggregatePaginate);
 
+userSchema.index({ userName: 1, isActive: 1 });
+
 const User = mongoose.model("User", userSchema);
 // User.createIndexes();
 

@@ -408,12 +408,12 @@ function searchUsers(req, res) {
 	User.paginate(
 	  query,
 	  { page: page, sort: { [sortValue]: sort }, limit: limit },
-	  (err, record) => {
+	  (err, results) => {
 		if (err) return res.status(404).send({ message: "search users pagination failed" })
 		return res.send({
       success: true,
 		  message: 'users record found',
-		  record
+		  results
 	  	})
 	 })
   }
