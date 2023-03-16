@@ -66,7 +66,7 @@ function addBetSizes(req, res) {
         return res.send({
           success: true,
           message: "Bet sizes added/updated successfully",
-          betSizes
+          results: betSizes
         });
       }
     );

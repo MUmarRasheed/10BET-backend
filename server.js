@@ -55,7 +55,7 @@ var corsOptions = {
 };
 app.use(cors(corsOptions));
 app.get("/", (req, res) => {
-  res.send("<h2> This is the homepage of Bet99 </h2>");
+  res.send("<h2> This is the homepage of 1obet.com </h2>");
 });
 
 // Allowed Apis on this server
@@ -80,6 +80,7 @@ app.use("/api", require("./app/routes/betSizes").loginRouter);
 app.use("/api", require("./app/routes/recharges").loginRouter);
 app.use("/api", require("./app/routes/modulePermissionsUsers").loginRouter);
 app.use("/api", require("./app/routes/modulePermissions").loginRouter);
+app.use("/api", require("./app/routes/marketTypes").loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

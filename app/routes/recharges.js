@@ -42,7 +42,7 @@ function getAllRecharges(req, res) {
         return res.send({
           success: true,
           message: "GETTING_ALL_RECHARGES_SUCCESS",
-          results
+          results: results
         });
       }
     );

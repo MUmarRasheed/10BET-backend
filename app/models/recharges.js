@@ -13,7 +13,6 @@ let rechargeSchema = new Schema({
 	createdAt: { type: Number },
     rechargedBy : { type : String },
 	loadedAmount: { type: Number },
-	afterLoadAmount: {type: Number },
 	loadedBy: { type : String },
 	createdBy: { type: String }
 })

@@ -1,14 +1,14 @@
 /* eslint no-unused-vars: "off" */
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
-// let Global = require('../global/settings')
+let Global = require('../global/settings')
 /**
  * [marketTypesSchema description]
  * @status [ 0(non-active), 1 (active)]
  */
 let marketTypesSchema = new Schema({
   marketId: { type: Number, unique: true, index: true },
-  name: { type: Number },
+  name: { type: String, required: true },
   status: { type: Number, required: true },
   updatedAt: { type: Number },
   createdAt: { type: Number },
@@ -23,8 +23,10 @@ marketTypesSchema.pre("save", function (next) {
   }
   next();
 });
+marketTypesSchema.plugin(Global.paginate);
+marketTypesSchema.plugin(Global.aggregatePaginate);
 
 const MarketType = mongoose.model("marketType", marketTypesSchema);
-MarketType.createIndexes();
+// MarketType.createIndexes();
 
 module.exports = MarketType;

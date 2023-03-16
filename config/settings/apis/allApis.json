@@ -13,5 +13,10 @@
   "addModulePermissionsUser",
   "searchUsers",
   "getAllRecharges",
-  "getCurrentUser"
+  "getCurrentUser",
+  "getSingleUser",
+  "addMarketType",
+  "addSubMarketTypes",
+  "getAllMarketTypes",
+  "addAllowedMarketTypes"
 ]

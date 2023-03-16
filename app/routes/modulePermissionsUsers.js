@@ -29,7 +29,7 @@ function addModulePermissionsUser(req, res) {
         if (err) {
           return res.status(404).send({ message: "Error adding module permissions users" });
         }
-        return res.send({ success: true, message: "Permissions for user added successfully", permission });
+        return res.send({ success: true, message: "Permissions for user added successfully", results: permission });
       });
     });
   }

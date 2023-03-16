@@ -28,14 +28,24 @@ const userSchema = new Schema({
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: false },
   adminId : { type: String, default: '' }, // only for supermaster 
-  parentId : { type: String, default: '' }, // only for supermaster 
+  parentId : { type: String, default: '' }, // only for supermaster when admin add super master
   masterId: { type: String, default: '' }, // 
   superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },
-});
-
+  commission: {
+    type: String,
+    required: false,
+    validate: {
+      validator: function (value) {
+        const pattern = /^[0-9]+(\.[0-9]{1,2})?%$/;
+        return pattern.test(value);
+      },
+      message: 'Commission value must be in the format "X.XX%"',
+    },
+  }
+})
 // userSchema.plugin(Global.paginate)
 
 userSchema.methods.hashPass = function (next) {

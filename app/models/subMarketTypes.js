@@ -7,8 +7,8 @@ let Schema = mongoose.Schema;
  * @status [ 0(non-active), 1 (active)]
  */
 let subMarketTypesSchema = new Schema({
-  marketId: { type: Number, unique: true, index: true },
-  name: { type: Number },
+  marketId: { type: Number, required: true },
+  name: { type: String, required: true },
   status: { type: Number, required: true },
   updatedAt: { type: Number },
   createdAt: { type: Number },

@@ -32,7 +32,7 @@ function addModulePermissions(req, res) {
             return res.status(404).send({ message: "Error adding module permissions" ,err});
           }
           
-          return res.send({ success: true, message: "Permission module added successfully", permission,
+          return res.send({ success: true, message: "Permission module added successfully", results: permission,
           });
         })
     })

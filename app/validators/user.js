@@ -130,5 +130,13 @@ module.exports.validate = (method) => {
 			.withMessage('userName must be string '),
 		]
 	  }
+  case 'getSingleUser': {
+    return [
+      body('id', "id is required")
+      .exists()
+      .isString()
+      .withMessage('id must be string '),
+    ]
+    }
   }
 };

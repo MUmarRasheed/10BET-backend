@@ -79,7 +79,7 @@ function registerUser(req, res) {
             return res.status(404).send({ message: "recharge not saved", err });
           console.log("recharge saved successfully");
         });
-        return res.send({ message: "Register Success", success: true, user });
+        return res.send({ message: "Register Success", success: true, results: user });
       });
     });
 }
@@ -244,9 +244,8 @@ function loadUserBalance(req, res) {
                   recharge.amount += req.body.loadedAmount;
                   (recharge.loadedAmount = req.body.loadedAmount),
                     (recharge.loadedBy = req.decoded.role),
-                    (recharge.afterLoadAmount = recharge.amount);
-                  recharge.save((err, data) => {
-                    if (err || !data) {
+                  recharge.save((err, results) => {
+                    if (err || !results) {
                       return res.status(404).send({
                         message: "Failed to update recharge data",
                       });
@@ -254,7 +253,7 @@ function loadUserBalance(req, res) {
                     return res.send({
                       success: true,
                       message: "Loaded user balance successfully",
-                      data,
+                      results: results,
                     });
                   });
                 }
@@ -311,12 +310,15 @@ function getAllUsers(req, res) {
     query,
     { page: page, sort: { [sortValue]: sort }, limit: limit },
     (err, results) => {
+      if(results.total == 0){
+        return res.status(404).send({message:"No records found"})
+      }
       if (err)
         return res.status(404).send({ message: "USERS_PAGINATION_FAILED" });
       return res.send({
         success: true,
-        message: "GETTING_ALL_USERS_SUCCESS",
-        results,
+        message: "Users Record Found",
+        results: results,
       });
     }
   );
@@ -334,11 +336,11 @@ function changePassword(req, res) {
     user.passwordChanged = true;
     user.hashPass(function (err) {
       if (err) return res.status(404).send({ message: "NEW_PASS_HASH_FAIL" });
-      user.save((err, user) => {
+      user.save((err, results) => {
         if (err) {
           return res.status(404).send({ message: "USER_NOT_FOUND" });
         }
-        return res.send({ success: true, message: "USER_PASSWORD_UPDATED", user });
+        return res.send({ success: true, message: "USER_PASSWORD_UPDATED", results: results });
       });
     });
   });
@@ -373,6 +375,7 @@ function updateUser(req, res) {
           return res.send({
             success: true,
             message: "user updated successfully",
+            results : null
           });
         }
       );
@@ -430,10 +433,26 @@ function getCurrentUser(req,res){
 		return res.send({
       success: true,
 		  message: 'users record found',
-		  user : user
+		  results : user
 		})
 	})
 } 
+function getSingleUser(req,res){
+  const errors = validationResult(req)
+	if (errors.errors.length !== 0) {
+	  return res.status(400).send({ errors: errors.errors })
+	}
+  User.findOne(
+	  { _id: req.body.id },
+	  (err, result) => {
+		if (err || !result) return res.status(404).send({ message: "user not found" })
+		return res.send({
+      success: true,
+		  message: 'users record found',
+		  results : result
+		})
+	})
+}
 
 router.post("/login", userValidation.validate("login"), login);
 loginRouter.post(
@@ -464,5 +483,9 @@ loginRouter.post(
   searchUsers
 );
 loginRouter.get("/getCurrentUser",getCurrentUser);
+router.post("/getSingleUser",
+userValidation.validate("getSingleUser"),
+getSingleUser
+);
 
 module.exports = { router, loginRouter };
