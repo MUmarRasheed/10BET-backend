@@ -81,6 +81,7 @@ app.use("/api", require("./app/routes/recharges").loginRouter);
 app.use("/api", require("./app/routes/modulePermissionsUsers").loginRouter);
 app.use("/api", require("./app/routes/modulePermissions").loginRouter);
 app.use("/api", require("./app/routes/marketTypes").loginRouter);
+app.use("/api", require("./app/routes/betLocks").loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

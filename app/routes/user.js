@@ -25,22 +25,22 @@ function registerUser(req, res) {
       if (err) return res.status(404).send({ message: "user not found", err });
       const user = new User(req.body);
       user.userId = data.userId + 1;
-      if(req.decoded.role == '1') user.superAdminId = req.decoded.userId
-      if(req.decoded.role == '2') {
-        user.parentId = req.decoded.userId
-        user.superAdminId = req.decoded.superAdminId
+      if (req.decoded.role == "1") user.superAdminId = req.decoded.userId;
+      if (req.decoded.role == "2") {
+        user.parentId = req.decoded.userId;
+        user.superAdminId = req.decoded.superAdminId;
       }
-      
-      if(req.decoded.role == '3'){
-        user.superAdminId = req.decoded.superAdminId
-        user.parentId = req.decoded.parentId
-        user.adminId = req.decoded.userId
-      } 
-      if(req.decoded.role == '4'){
-        user.adminId = req.decoded.adminId
-        user.superAdminId = req.decoded.superAdminId
-        user.parentId = req.decoded.parentId
-        user.masterId = req.decoded.userId
+
+      if (req.decoded.role == "3") {
+        user.superAdminId = req.decoded.superAdminId;
+        user.parentId = req.decoded.parentId;
+        user.adminId = req.decoded.userId;
+      }
+      if (req.decoded.role == "4") {
+        user.adminId = req.decoded.adminId;
+        user.superAdminId = req.decoded.superAdminId;
+        user.parentId = req.decoded.parentId;
+        user.masterId = req.decoded.userId;
       }
       if (req.body.isActive == true) {
         user.status = 1;
@@ -79,7 +79,11 @@ function registerUser(req, res) {
             return res.status(404).send({ message: "recharge not saved", err });
           console.log("recharge saved successfully");
         });
-        return res.send({ message: "Register Success", success: true, results: user });
+        return res.send({
+          message: "Register Success",
+          success: true,
+          results: user
+        });
       });
     });
 }
@@ -99,7 +103,14 @@ function login(req, res) {
         if (err) return res.status(404).send({ message: "incorrect password" });
         if (!result)
           return res.status(404).send({ message: "incorrect password" });
-        var token = getNonExpiringToken(user.userId, user.createdBy, user.role, user.parentId, user.superAdminId, user.adminId);
+        var token = getNonExpiringToken(
+          user.userId,
+          user.createdBy,
+          user.role,
+          user.parentId,
+          user.superAdminId,
+          user.adminId
+        );
         user.token = token;
         var ipInfo = getIP(req);
         var userDetailsForLoginActivity = {
@@ -157,7 +168,14 @@ function saveLoginActivity(detailsForLoginActivity, _callback) {
   );
 }
 
-function getNonExpiringToken(userId, createdBy, role, parentId,superAdminId,adminId) {
+function getNonExpiringToken(
+  userId,
+  createdBy,
+  role,
+  parentId,
+  superAdminId,
+  adminId
+) {
   const payload = {
     userId: userId,
     createdBy: createdBy,
@@ -219,32 +237,32 @@ function loadUserBalance(req, res) {
 
           User.findOne(
             { role: req.body.role, userId: req.body.userId },
-            (err, user) => {
-              if (err || !user) {
+            (err, recipientUser) => {
+              if (err || !recipientUser) {
                 return res
                   .status(404)
                   .send({ message: "Recipient User not found" });
               }
               // Add the loaded amount in the recipient user's account
-              user.balance += req.body.loadedAmount;
-              user.save();
+              recipientUser.balance += req.body.loadedAmount;
+              recipientUser.save();
 
               // Find the recipient user in the recharge table
 
               Recharge.findOne(
                 { userId: req.body.userId, role: req.body.role },
-                (err, recharge) => {
-                  if (err || !recharge) {
+                (err, recipientRecharge) => {
+                  if (err || !recipientRecharge) {
                     return res.status(404).send({
                       message: "Recipient user recharge not found",
                     });
                   }
 
                   // Add the loaded amount to the recipient user's balance
-                  recharge.amount += req.body.loadedAmount;
-                  (recharge.loadedAmount = req.body.loadedAmount),
-                    (recharge.loadedBy = req.decoded.role),
-                  recharge.save((err, results) => {
+                  recipientRecharge.amount += req.body.loadedAmount;
+                  recipientRecharge.loadedAmount = req.body.loadedAmount;
+                  recipientRecharge.loadedBy = req.decoded.role;
+                  recipientRecharge.save((err, results) => {
                     if (err || !results) {
                       return res.status(404).send({
                         message: "Failed to update recharge data",
@@ -295,23 +313,28 @@ function getAllUsers(req, res) {
     page = Number(req.query.page);
   }
 
-  if(req.decoded.login.role == '1') query.superAdminId = req.decoded.userId
-  if(req.decoded.login.role == '2') query.parentId = req.decoded.userId
-  if(req.decoded.login.role == '3') query.adminId = req.decoded.userId
-  if(req.decoded.login.role == '4') query.masterId = req.decoded.userId
+  if (req.decoded.login.role === "1") {
+    query.superAdminId = req.decoded.userId;
+  } else if (req.decoded.login.role === "2") {
+    query.parentId = req.decoded.userId;
+  } else if (req.decoded.login.role === "3") {
+    query.adminId = req.decoded.userId;
+  } else if (req.decoded.login.role === "4") {
+    query.masterId = req.decoded.userId;
+  }
   // if (req.decoded.parentId) {
   //   query.parentId = req.decoded.parentId;
   // }
-  if(req.query.userId) {
-    query.userId = req.query.userId
+  if (req.query.userId) {
+    query.userId = req.query.userId;
   }
 
   User.paginate(
     query,
     { page: page, sort: { [sortValue]: sort }, limit: limit },
     (err, results) => {
-      if(results.total == 0){
-        return res.status(404).send({message:"No records found"})
+      if (results.total == 0) {
+        return res.status(404).send({ message: "No records found" });
       }
       if (err)
         return res.status(404).send({ message: "USERS_PAGINATION_FAILED" });
@@ -340,7 +363,11 @@ function changePassword(req, res) {
         if (err) {
           return res.status(404).send({ message: "USER_NOT_FOUND" });
         }
-        return res.send({ success: true, message: "USER_PASSWORD_UPDATED", results: results });
+        return res.send({
+          success: true,
+          message: "USER_PASSWORD_UPDATED",
+          results: results,
+        });
       });
     });
   });
@@ -375,7 +402,7 @@ function updateUser(req, res) {
           return res.send({
             success: true,
             message: "user updated successfully",
-            results : null
+            results: null,
           });
         }
       );
@@ -388,70 +415,73 @@ function searchUsers(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-	var page = 1
-	var sort = -1
-	var sortValue = 'createdAt'
-	var limit = config.pageSize
-	if (req.body.numRecords) {
-	  if (isNaN(req.body.numRecords))
-		return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' })
-	  if (req.body.numRecords < 0)
-		return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' })
-	  if (req.body.numRecords > 100)
-		return res.status(404).send({
-		  message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100',
-		})
-	  limit = Number(req.body.numRecords)
-	}
-	if (req.body.page) {
-	  page = req.body.page
-	}
-	let query = {}
-	query.userName = { $regex: req.body.userName, $options: 'i' }
-	User.paginate(
-	  query,
-	  { page: page, sort: { [sortValue]: sort }, limit: limit },
-	  (err, results) => {
-		if (err) return res.status(404).send({ message: "search users pagination failed" })
-		return res.send({
-      success: true,
-		  message: 'users record found',
-		  results
-	  	})
-	 })
+  var page = 1;
+  var sort = -1;
+  var sortValue = "createdAt";
+  var limit = config.pageSize;
+  if (req.body.numRecords) {
+    if (isNaN(req.body.numRecords))
+      return res.status(404).send({ message: "NUMBER_RECORDS_IS_NOT_PROPER" });
+    if (req.body.numRecords < 0)
+      return res.status(404).send({ message: "NUMBER_RECORDS_IS_NOT_PROPER" });
+    if (req.body.numRecords > 100)
+      return res.status(404).send({
+        message: "NUMBER_RECORDS_NEED_TO_LESS_THAN_100",
+      });
+    limit = Number(req.body.numRecords);
   }
+  if (req.body.page) {
+    page = req.body.page;
+  }
+  let query = {};
+  query.userName = { $regex: req.body.userName, $options: "i" };
+  User.paginate(
+    query,
+    { page: page, sort: { [sortValue]: sort }, limit: limit },
+    (err, results) => {
+      if (err)
+        return res
+          .status(404)
+          .send({ message: "search users pagination failed" });
+      return res.send({
+        success: true,
+        message: "users record found",
+        results,
+      });
+    }
+  );
+}
 
-function getCurrentUser(req,res){
-  const errors = validationResult(req)
-	if (errors.errors.length !== 0) {
-	  return res.status(400).send({ errors: errors.errors })
-	}
-  User.findOne(
-	  { userId: req.decoded.userId },
-	  (err, user) => {
-		if (err || !user) return res.status(404).send({ message: "user not found" })
-		return res.send({
+function getCurrentUser(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  User.findOne({ userId: req.decoded.userId }, (err, user) => {
+    if (err || !user)
+      return res.status(404).send({ message: "user not found" });
+    return res.send({
       success: true,
-		  message: 'users record found',
-		  results : user
-		})
-	})
-} 
-function getSingleUser(req,res){
-  const errors = validationResult(req)
-	if (errors.errors.length !== 0) {
-	  return res.status(400).send({ errors: errors.errors })
-	}
-  User.findOne(
-	  { _id: req.body.id },
-	  (err, result) => {
-		if (err || !result) return res.status(404).send({ message: "user not found" })
-		return res.send({
+      message: "users record found",
+      results: user,
+    });
+  });
+}
+
+function getSingleUser(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  User.findOne({ _id: req.body.id }, (err, result) => {
+    if (err || !result)
+      return res.status(404).send({ message: "user not found" });
+    return res.send({
       success: true,
-		  message: 'users record found',
-		  results : result
-		})
-	})
+      message: "users record found",
+      results: result,
+    });
+  });
 }
 
 router.post("/login", userValidation.validate("login"), login);
@@ -482,10 +512,12 @@ loginRouter.post(
   userValidation.validate("searchUsers"),
   searchUsers
 );
-loginRouter.get("/getCurrentUser",getCurrentUser);
-router.post("/getSingleUser",
-userValidation.validate("getSingleUser"),
-getSingleUser
+
+loginRouter.get("/getCurrentUser", getCurrentUser);
+router.post(
+  "/getSingleUser",
+  userValidation.validate("getSingleUser"),
+  getSingleUser
 );
 
 module.exports = { router, loginRouter };
