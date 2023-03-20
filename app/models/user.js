@@ -51,7 +51,7 @@ const userSchema = new Schema({
       message: 'Commission value must be in the format "X.XX%"',
     },
   },
-  id: { type: String, required: true, unique: true, index: true },
+  id: { type: String, required: false, unique: true, index: true },
 });
 // userSchema.plugin(Global.paginate)
 

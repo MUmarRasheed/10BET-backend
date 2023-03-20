@@ -496,17 +496,19 @@ function activeUser(req, res) {
   User.findOne({ _id: req.body.id }, (err, result) => {
     if (err || !result)
       return res.status(404).send({ message: "user not found" });
-    console.log("result", result);
     if (result.isActive === true) {
       return res.status(404).send({ message: "user is already active" });
     }
     result.isActive = true;
-    return res.send({
-      success: true,
-      message: "user activated successfully",
-      results: result,
-    });
-  });
+    result.save((err,user) => {
+      if (err || !user) return res.status(404).send({ message: "user not saved" });
+      return res.send({
+        success: true,
+        message: "user activated successfully",
+        results: user,
+      });
+      });
+    })
 }
 
 function deactiveUser(req, res) {
@@ -520,11 +522,14 @@ function deactiveUser(req, res) {
     if (user.isActive == false)
       return res.status(404).send({ message: "user is already deactivated" });
     user.isActive = false;
-    return res.send({
-      success: true,
-      message: "user deactivated successfully",
-      results: user,
-    });
+    user.save((err,user) => {
+      if (err || !user) return res.status(404).send({ message: "user not saved" });
+      return res.send({
+        success: true,
+        message: "user deactivated successfully",
+        results: user,
+      });
+    })
   });
 }
 
