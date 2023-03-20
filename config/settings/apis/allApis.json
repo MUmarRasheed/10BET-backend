@@ -19,5 +19,7 @@
   "addSubMarketTypes",
   "getAllMarketTypes",
   "addAllowedMarketTypes",
-  "addBetLock"
+  "addBetLock",
+  "activeUser",
+  "deactiveUser"
 ]

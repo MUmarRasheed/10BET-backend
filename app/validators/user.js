@@ -138,5 +138,21 @@ module.exports.validate = (method) => {
       .withMessage('id must be string '),
     ]
     }
+  case 'activeUser': {
+    return [
+      body('id', "id is required")
+      .exists()
+      .isString()
+      .withMessage('id must be string '),
+      ]
+    }
+  case 'deactiveUser': {
+    return [
+      body('id', "id is required")
+      .exists()
+      .isString()
+      .withMessage('id must be string '),
+      ]
+    }
   }
 };

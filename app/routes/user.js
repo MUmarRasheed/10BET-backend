@@ -25,6 +25,7 @@ function registerUser(req, res) {
       if (err) return res.status(404).send({ message: "user not found", err });
       const user = new User(req.body);
       user.userId = data.userId + 1;
+      user.id = user._id;
       if (req.decoded.role == "1") user.superAdminId = req.decoded.userId;
       if (req.decoded.role == "2") {
         user.parentId = req.decoded.userId;
@@ -322,13 +323,15 @@ function getAllUsers(req, res) {
   } else if (req.decoded.login.role === "4") {
     query.masterId = req.decoded.userId;
   }
-  // if (req.decoded.parentId) {
-  //   query.parentId = req.decoded.parentId;
-  // }
+  if (req.decoded.login.role === "5") {
+    query.userId = null;
+  }
   if (req.query.userId) {
     query.userId = req.query.userId;
   }
-
+  if (req.query.userName) {
+    query.userName = req.query.userName;
+  }
   User.paginate(
     query,
     { page: page, sort: { [sortValue]: sort }, limit: limit },
@@ -484,6 +487,65 @@ function getSingleUser(req, res) {
   });
 }
 
+function activeUser(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+
+  User.findOne({ _id: req.body.id }, (err, result) => {
+    if (err || !result)
+      return res.status(404).send({ message: "user not found" });
+    console.log("result", result);
+    if (result.isActive === true) {
+      return res.status(404).send({ message: "user is already active" });
+    }
+    result.isActive = true;
+    return res.send({
+      success: true,
+      message: "user activated successfully",
+      results: result,
+    });
+  });
+}
+
+function deactiveUser(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  User.findOne({ _id: req.body.id }, (err, user) => {
+    if (err || !user)
+      return res.status(404).send({ message: "user not found" });
+    if (user.isActive == false)
+      return res.status(404).send({ message: "user is already deactivated" });
+    user.isActive = false;
+    return res.send({
+      success: true,
+      message: "user deactivated successfully",
+      results: user,
+    });
+  });
+}
+
+// function settlePLAccount(req, res) {
+//   const errors = validationResult(req);
+//   if (errors.errors.length !== 0) {
+//     return res.status(400).send({ errors: errors.errors });
+//   }
+//   User.findOne({ _id: req.body.id }, (err, result) => {
+//     if (err || !result)
+//       return res.status(404).send({ message: "user not found" });
+//     if(result.isActive === false ) { return res.status(404).send({message:"user is already deactivated"})}
+//       result.isActive = false
+//     return res.send({
+//       success: true,
+//       message: "user deactivated successfully",
+//       results: result
+//     });
+//   });
+// }
+
 router.post("/login", userValidation.validate("login"), login);
 loginRouter.post(
   "/register",
@@ -518,6 +580,12 @@ router.post(
   "/getSingleUser",
   userValidation.validate("getSingleUser"),
   getSingleUser
+);
+router.post("/activeUser", userValidation.validate("activeUser"), activeUser);
+router.post(
+  "/deactiveUser",
+  userValidation.validate("deactiveUser"),
+  deactiveUser
 );
 
 module.exports = { router, loginRouter };

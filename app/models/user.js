@@ -20,16 +20,22 @@ const userSchema = new Schema({
   isActive: { type: Boolean, default: false },
   status: { type: Number, default: 0 },
   notes: { type: String },
-  userId: { type: Number, required: true, index: true, unique: true, default: 0 },
+  userId: {
+    type: Number,
+    required: true,
+    index: true,
+    unique: true,
+    default: 0
+  },
   passwordChanged: { type: Boolean, default: false },
   balance: { type: Number, default: 0, required: true },
   createdBy: { type: String, default: "0" },
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: false },
-  adminId : { type: String, default: '' }, // only for supermaster 
+  adminId : { type: String, default: '' }, // only for supermaster
   parentId : { type: String, default: '' }, // only for supermaster when admin add super master
-  masterId: { type: String, default: '' }, // 
+  masterId: { type: String, default: '' }, //
   superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
   updatedAt: { type: Number },
@@ -44,8 +50,9 @@ const userSchema = new Schema({
       },
       message: 'Commission value must be in the format "X.XX%"',
     },
-  }
-})
+  },
+  id: { type: String, required: true, unique: true, index: true },
+});
 // userSchema.plugin(Global.paginate)
 
 userSchema.methods.hashPass = function (next) {
