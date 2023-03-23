@@ -1,21 +1,21 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-let config = require("config");
-let fs = require("fs");
-let cors = require("cors");
-var morgan = require("morgan");
-const apisMiddleware = require("./app/middlewares/apisMiddleware");
-const loginMiddleWare = require("./app/middlewares/loginMiddleware");
-const aclMiddleware = require("./app/middlewares/aclMiddleware");
-const accessMiddleware = require("./app/middlewares/accessMiddleware");
-const checkRoleMiddleware = require("./app/middlewares/checkRoleMiddleware");
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+let config = require('config');
+let fs = require('fs');
+let cors = require('cors');
+var morgan = require('morgan');
+const apisMiddleware = require('./app/middlewares/apisMiddleware');
+const loginMiddleWare = require('./app/middlewares/loginMiddleware');
+const aclMiddleware = require('./app/middlewares/aclMiddleware');
+const accessMiddleware = require('./app/middlewares/accessMiddleware');
+const checkRoleMiddleware = require('./app/middlewares/checkRoleMiddleware');
 
-var rolesContent = fs.readFileSync("config/settings/roles/roles.json");
+var rolesContent = fs.readFileSync('config/settings/roles/roles.json');
 var roles = JSON.parse(rolesContent);
 
-var content = fs.readFileSync("config/settings/apis/general.json");
+var content = fs.readFileSync('config/settings/apis/general.json');
 var jsonContent = JSON.parse(content);
 
 var apisContent = fs.readFileSync(config.apisFileName);
@@ -25,15 +25,14 @@ var jsonApis = JSON.parse(apisContent);
 let options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  connectTimeoutMS: 30000 // 30 seconds
-
+  connectTimeoutMS: 30000, // 30 seconds
 };
 
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false);
 mongoose
   .connect(config.DBHost, options)
   .then(() => {
-    console.log("Database connected");
+    console.log('Database connected');
   })
   .catch((err) => {
     console.log(` Database did not connect because ${err}`);
@@ -41,7 +40,7 @@ mongoose
 
 // JSON
 app.use(express.json());
-app.use(morgan("combined"));
+app.use(morgan('combined'));
 
 // READ FORM DATA
 app.use(express.urlencoded({ extended: false }));
@@ -54,8 +53,8 @@ var corsOptions = {
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 app.use(cors(corsOptions));
-app.get("/", (req, res) => {
-  res.send("<h2> This is the homepage of 1obet.com </h2>");
+app.get('/', (req, res) => {
+  res.send('<h2> This is the homepage of 1obet.com </h2>');
 });
 
 // Allowed Apis on this server
@@ -64,24 +63,27 @@ app.use(function (req, res, next) {
 });
 
 //Without Authorization
-app.use("/api", require("./app/routes/user").router);
+app.use('/api', require('./app/routes/user').router);
 
 // Login middleware
 app.use(function (req, res, next) {
   loginMiddleWare(req, res, next);
 });
-app.use(function(req,res,next){
-  checkRoleMiddleware(req,res,next)
-})
+app.use(function (req, res, next) {
+  checkRoleMiddleware(req, res, next);
+});
 
 // APIS With Authorization
-app.use("/api", require("./app/routes/user").loginRouter);
-app.use("/api", require("./app/routes/betSizes").loginRouter);
-app.use("/api", require("./app/routes/recharges").loginRouter);
-app.use("/api", require("./app/routes/modulePermissionsUsers").loginRouter);
-app.use("/api", require("./app/routes/modulePermissions").loginRouter);
-app.use("/api", require("./app/routes/marketTypes").loginRouter);
-app.use("/api", require("./app/routes/betLocks").loginRouter);
+app.use('/api', require('./app/routes/user').loginRouter);
+app.use('/api', require('./app/routes/betSizes').loginRouter);
+app.use('/api', require('./app/routes/recharges').loginRouter);
+app.use('/api', require('./app/routes/modulePermissionsUsers').loginRouter);
+app.use('/api', require('./app/routes/modulePermissions').loginRouter);
+app.use('/api', require('./app/routes/marketTypes').loginRouter);
+app.use('/api', require('./app/routes/betLocks').loginRouter);
+app.use('/api', require('./app/routes/cashDeposit').loginRouter);
+app.use('/api', require('./app/routes/cashCredit').loginRouter);
+app.use('/api', require('./app/routes/ledgerReports').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

@@ -1,21 +1,21 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-var bcrypt = require("bcrypt");
-let config = require("config"); // we load the db location from the JSON files
-let Global = require("../global/settings");
+var bcrypt = require('bcrypt');
+let config = require('config'); // we load the db location from the JSON files
+let Global = require('../global/settings');
 
-mongoose.set("debug", true);
+mongoose.set('debug', true);
 const saltrounds = config.saltRounds;
 /**
  * [UserSchema description]
  * @roles [ 0 (company) 1 (superAdmin), 2 (admin), 3 (superMaster), 4 (master), 5 (better)]
  */
 const userSchema = new Schema({
-  userName: { type: String, index: true, required: true, unique: true },
+  userName: { type: String, index: true, required: true, unique: false },
   password: { type: String, required: true },
-  reference: { type: String,required: true },
-  phone: { type: String,required: true },
-  token: { type: String, default: "", index: true },
+  reference: { type: String, required: true },
+  phone: { type: String, required: true },
+  token: { type: String, default: '', index: true },
   role: { type: String, default: 0, index: true },
   isActive: { type: Boolean, default: false },
   status: { type: Number, default: 0 },
@@ -25,16 +25,16 @@ const userSchema = new Schema({
     required: true,
     index: true,
     unique: true,
-    default: 0
+    default: 0,
   },
   passwordChanged: { type: Boolean, default: false },
   balance: { type: Number, default: 0, required: true },
-  createdBy: { type: String, default: "0" },
+  createdBy: { type: String, default: '0' },
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: false },
-  adminId : { type: String, default: '' }, // only for supermaster
-  parentId : { type: String, default: '' }, // only for supermaster when admin add super master
+  adminId: { type: String, default: '' }, // only for supermaster
+  parentId: { type: String, default: '' }, // only for supermaster when admin add super master
   masterId: { type: String, default: '' }, //
   superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
@@ -52,6 +52,9 @@ const userSchema = new Schema({
     },
   },
   id: { type: String, required: false, unique: true, index: true },
+  isDeleted: { type: Boolean, required: false, default: false },
+  clientPL: { type: Number, required: false, default: 0 },
+  credit: { type: Number, required: false, default: 0 },
 });
 // userSchema.plugin(Global.paginate)
 
@@ -70,8 +73,8 @@ userSchema.methods.hashPass = function (next) {
 };
 
 // Sets the createdAt parameter equal to the current time
-userSchema.pre("save", function (next) {
-  if (!this.isModified("password")) {
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password')) {
     return next();
   } // Adding this statement solved the problem!!
   const user = this;
@@ -98,7 +101,7 @@ userSchema.plugin(Global.aggregatePaginate);
 
 userSchema.index({ userName: 1, isActive: 1 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 // User.createIndexes();
 
 module.exports = User;

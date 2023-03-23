@@ -21,5 +21,10 @@
   "addAllowedMarketTypes",
   "addBetLock",
   "activeUser",
-  "deactiveUser"
+  "deactiveUser",
+  "addCashDeposit",
+  "withDrawCashDeposit",
+  "addCredit",
+  "withdrawCredit",
+  "cashDepositLedger"
 ]
