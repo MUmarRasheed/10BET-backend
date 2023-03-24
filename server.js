@@ -83,7 +83,7 @@ app.use('/api', require('./app/routes/marketTypes').loginRouter);
 app.use('/api', require('./app/routes/betLocks').loginRouter);
 app.use('/api', require('./app/routes/cashDeposit').loginRouter);
 app.use('/api', require('./app/routes/cashCredit').loginRouter);
-app.use('/api', require('./app/routes/ledgerReports').loginRouter);
+app.use('/api', require('./app/routes/reports').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

@@ -26,5 +26,8 @@
   "withDrawCashDeposit",
   "addCredit",
   "withdrawCredit",
-  "cashDepositLedger"
+  "cashDepositLedger",
+  "cashCreditLedger",
+  "editAllowedMarketTypes",
+  "getFinalReport"
 ]

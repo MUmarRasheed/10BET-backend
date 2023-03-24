@@ -104,8 +104,8 @@ function login(req, res) {
   User.findOne(
     {
       userName: req.body.userName,
-      isActive: true,
-      status: 1,
+      // isActive: true,
+      // status: 1,
       //  isDeleted: false
     },
     (err, user) => {
@@ -113,6 +113,8 @@ function login(req, res) {
         return res
           .status(404)
           .send({ message: 'user not found or user is not active' });
+      if (user.isActive === false || user.status === 0)
+        return res.status(404).send({ message: 'Account Inactive' });
       // check if user password is matched or not.
       bcrypt.compare(req.body.password, user.password, function (err, result) {
         if (err) return res.status(404).send({ message: 'incorrect password' });
