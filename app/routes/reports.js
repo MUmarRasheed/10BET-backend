@@ -140,6 +140,7 @@ function cashCreditLedger(req, res) {
 
 // to do
 function getFinalReport(req, res) {
+  let query = {};
   let page = 1;
   var sortValue = 'createdAt';
   var limit = config.pageSize;
@@ -161,7 +162,24 @@ function getFinalReport(req, res) {
         .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
     limit = Number(req.body.numRecords);
   }
-  let query = {};
+  if (req.decoded.login.role === '1') {
+    query.superAdminId = req.decoded.userId;
+  } else if (req.decoded.login.role === '2') {
+    query.parentId = req.decoded.userId;
+  } else if (req.decoded.login.role === '3') {
+    query.adminId = req.decoded.userId;
+  } else if (req.decoded.login.role === '4') {
+    query.masterId = req.decoded.userId;
+  }
+  if (req.decoded.login.role === '5') {
+    query.userId = null;
+  }
+  if (req.query.userId) {
+    query.userId = req.query.userId;
+  }
+  if (req.query.userName) {
+    query.userName = req.query.userName;
+  }
 
   User.paginate(
     query,
@@ -169,7 +187,7 @@ function getFinalReport(req, res) {
       page: page,
       sort: { [sortValue]: sort },
       limit: limit,
-      select: '-_id userName clientPL createdAt',
+      select: '-_id amount createdAt',
     },
     (err, results) => {
       if (err)
