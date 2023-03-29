@@ -273,7 +273,7 @@ function login(req, res) {
     {
       userName: req.body.userName,
       status: 1,
-      isActive: false
+      isActive: true
       // isDeleted: false,
     },
     (err, user) => {
