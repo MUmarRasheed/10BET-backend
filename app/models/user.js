@@ -100,8 +100,13 @@ userSchema.plugin(Global.paginate);
 userSchema.plugin(Global.aggregatePaginate);
 
 userSchema.index({ userName: 1, isActive: 1 });
+userSchema.index({ userId: 1 });
+userSchema.index({ superAdminId: 1 });
+userSchema.index({ parentId: 1 });
+userSchema.index({ adminId: 1 });
+userSchema.index({ masterId: 1 });
+userSchema.index({ masterId: 1, createdAt: -1 });
 
 const User = mongoose.model('User', userSchema);
-// User.createIndexes();
 
 module.exports = User;

@@ -29,5 +29,6 @@
   "cashDepositLedger",
   "cashCreditLedger",
   "editAllowedMarketTypes",
-  "getFinalReport"
+  "getFinalReport",
+  "checkValidation"
 ]

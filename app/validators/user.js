@@ -1,5 +1,5 @@
-const { body } = require("express-validator");
-const messages = require("../messages/messages");
+const { body, check } = require("express-validator");
+const Users = require("../models/user");
 
 module.exports.validate = (method) => {
   switch (method) {
@@ -152,6 +152,19 @@ module.exports.validate = (method) => {
       .exists()
       .isString()
       .withMessage('id must be string '),
+      ]
+    }
+    case 'checkValidation': {
+      return [
+        check('userName').custom((userName) => {
+          return Users.findOne({userName}).then(user => {
+            if (user == null) {
+              return Promise.reject('user does not exist')
+            }else {
+              return Promise.reject('user already exists')
+            }
+          })
+        })
       ]
     }
   }

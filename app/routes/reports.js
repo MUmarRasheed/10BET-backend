@@ -138,64 +138,103 @@ function cashCreditLedger(req, res) {
   );
 }
 
-// to do
 function getFinalReport(req, res) {
   let query = {};
-  let page = 1;
-  var sortValue = 'createdAt';
-  var limit = config.pageSize;
-  var sort = -1;
-  if (req.body.page) {
-    page = req.body.page;
-  }
-  if (req.body.sort) {
-    sort = req.body.sort;
-  }
-  if (req.body.numRecords) {
-    if (isNaN(req.body.numRecords))
-      return res.status(404).send({ message: 'NUMBER_RECORD_IS_NOT_PROPER' });
-    if (req.body.numRecords < 0)
-      return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    if (req.body.numRecords > 100)
-      return res
-        .status(404)
-        .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
-    limit = Number(req.body.numRecords);
-  }
   if (req.decoded.login.role === '1') {
-    query.superAdminId = req.decoded.userId;
+    query.superAdminId = String(req.decoded.userId);
   } else if (req.decoded.login.role === '2') {
-    query.parentId = req.decoded.userId;
+    query.parentId = String(req.decoded.userId);
   } else if (req.decoded.login.role === '3') {
-    query.adminId = req.decoded.userId;
+    query.adminId = String(req.decoded.userId);
   } else if (req.decoded.login.role === '4') {
-    query.masterId = req.decoded.userId;
+    query.masterId = String(req.decoded.userId);
   }
   if (req.decoded.login.role === '5') {
     query.userId = null;
   }
-  if (req.query.userId) {
-    query.userId = req.query.userId;
-  }
-  if (req.query.userName) {
-    query.userName = req.query.userName;
-  }
 
-  User.paginate(
-    query,
-    {
-      page: page,
-      sort: { [sortValue]: sort },
-      limit: limit,
-      select: '-_id amount createdAt',
-    },
-    (err, results) => {
-      if (err)
+  User.aggregate(
+    [
+      {
+        $match: query,
+      },
+      {
+        $group: {
+          _id: '$userName',
+          clientPL: { $sum: '$clientPL' },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          positiveClients: {
+            $push: {
+              $cond: {
+                if: { $gte: ['$clientPL', 0] },
+                then: { userName: '$_id', clientPL: '$clientPL' },
+                else: null,
+              },
+            },
+          },
+          negativeClients: {
+            $push: {
+              $cond: {
+                if: { $lt: ['$clientPL', 0] },
+                then: { userName: '$_id', clientPL: '$clientPL' },
+                else: null,
+              },
+            },
+          },
+          totalPositiveClientPL: {
+            $sum: {
+              $cond: {
+                if: { $gte: ['$clientPL', 0] },
+                then: '$clientPL',
+                else: 0,
+              },
+            },
+          },
+          totalNegativeClientPL: {
+            $sum: {
+              $cond: {
+                if: { $lt: ['$clientPL', 0] },
+                then: '$clientPL',
+                else: 0,
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          positiveClients: {
+            $filter: {
+              input: '$positiveClients',
+              cond: { $ne: ['$$this', null] },
+            },
+          },
+          negativeClients: {
+            $filter: {
+              input: '$negativeClients',
+              cond: { $ne: ['$$this', null] },
+            },
+          },
+          totalPositiveClientPL: 1,
+          totalNegativeClientPL: 1,
+        },
+      },
+    ],
+
+    function (err, result) {
+      console.log('rerrr', err);
+      if (err) {
         return res.status(404).send({ message: 'final report not found' });
+      }
       return res.send({
         success: true,
         message: 'final report found',
-        results: results,
+        results: result[0],
       });
     }
   );
