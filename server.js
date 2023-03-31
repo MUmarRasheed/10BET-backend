@@ -6,6 +6,7 @@ let config = require('config');
 let fs = require('fs');
 let cors = require('cors');
 var morgan = require('morgan');
+const https = require('https');
 const apisMiddleware = require('./app/middlewares/apisMiddleware');
 const loginMiddleWare = require('./app/middlewares/loginMiddleware');
 const aclMiddleware = require('./app/middlewares/aclMiddleware');
@@ -37,7 +38,15 @@ mongoose
   .catch((err) => {
     console.log(` Database did not connect because ${err}`);
   });
-
+  
+  // readFileSync function must use __dirname get current directory
+  // require use ./ refer to current directory.
+  
+  const option = {
+    key: fs.readFileSync(__dirname + '/private.pem'),
+   cert: fs.readFileSync(__dirname + '/certificate.pem')
+ };
+console.log('dirname',__dirname);
 // JSON
 app.use(express.json());
 app.use(morgan('combined'));
@@ -93,7 +102,9 @@ app.use('/api', require('./app/routes/reports').loginRouter);
 // USING THE ROUTES
 
 // LISTEN HERE
-app.listen(config.PORT, (err) => {
+// Create HTTPs server.
+var server = https.createServer(option, app)
+server.listen(config.PORT, (err) => {
   if (err) throw new Error(err);
-  console.log(`Server is listening on port ${config.PORT}`);
-});
+  console.log(`Server is listening on port ${config.PORT}`)
+})
