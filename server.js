@@ -42,10 +42,10 @@ mongoose
   // readFileSync function must use __dirname get current directory
   // require use ./ refer to current directory.
   
-//   const option = {
-//     key: fs.readFileSync(__dirname + '/private.pem'),
-//    cert: fs.readFileSync(__dirname + '/certificate.pem')
-//  };
+  const option = {
+    key: fs.readFileSync(__dirname + '/private.pem'),
+   cert: fs.readFileSync(__dirname + '/certificate.pem')
+ };
 // console.log('dirname',__dirname);
 // JSON
 app.use(express.json());
@@ -103,8 +103,8 @@ app.use('/api', require('./app/routes/reports').loginRouter);
 
 // LISTEN HERE
 // Create HTTPs server.
-// var server = https.createServer(option, app)
-app.listen(config.PORT, (err) => {
+var server = https.createServer(option, app)
+server.listen(config.PORT, (err) => {
   if (err) throw new Error(err);
   console.log(`Server is listening on port ${config.PORT}`)
 })
