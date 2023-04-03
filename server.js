@@ -44,7 +44,9 @@ mongoose
   
   const option = {
     key: fs.readFileSync(__dirname + '/private.pem'),
-   cert: fs.readFileSync(__dirname + '/certificate.pem')
+   cert: fs.readFileSync(__dirname + '/certificate.pem'),
+   chain1: fs.readFileSync(__dirname + '/chain1.pem'),
+   fullchain1: fs.readFileSync(__dirname + '/fullchain1.pem')
  };
 // console.log('dirname',__dirname);
 // JSON
