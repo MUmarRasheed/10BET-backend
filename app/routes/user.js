@@ -273,7 +273,7 @@ function login(req, res) {
     {
       userName: req.body.userName,
       status: 1,
-      isActive: true
+      isActive: true,
       // isDeleted: false,
     },
     (err, user) => {
@@ -563,35 +563,63 @@ function updateUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  let updateData = {
-    isActive: req.body.isActive,
-    canSettlePL: req.body.canSettlePL,
-    bettingAllowed: req.body.bettingAllowed,
-    phone: req.body.phone,
-    reference: req.body.reference,
-    notes: req.body.notes,
-    updatedBy: req.decoded.userId,
-  };
+
   User.findOne({ _id: req.body.id }, (err, user) => {
-    if (err || !user) res.status(404).send({ message: 'user not found' });
-    bcrypt.hash(req.body.password, config.saltRounds, (err, hash) => {
-      if (err) return res.status(404).send({ message: 'NEW_PASS_HASH_FAIL' });
-      updateData.password = hash;
+    if (err || !user) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    let updateData = {
+      isActive: req.body.isActive,
+      canSettlePL: req.body.canSettlePL,
+      bettingAllowed: req.body.bettingAllowed,
+      phone: req.body.phone,
+      reference: req.body.reference,
+      notes: req.body.notes,
+      updatedBy: req.decoded.userId,
+      password: user.password,
+    };
+
+    if (req.body.password && req.body.password !== '') {
+      bcrypt.hash(req.body.password, config.saltRounds, (err, hash) => {
+        if (err) {
+          return res.status(404).send({ message: 'NEW_PASS_HASH_FAIL' });
+        }
+        updateData.password = hash;
+
+        User.updateOne(
+          { _id: req.body.id },
+          { $set: updateData },
+          { new: true },
+          (err, updatedUser) => {
+            if (err) {
+              return res.status(404).send({ message: 'User not updated' });
+            }
+            return res.send({
+              success: true,
+              message: 'User updated successfully',
+              results: null,
+            });
+          }
+        );
+      });
+    } else {
       User.updateOne(
         { _id: req.body.id },
         { $set: updateData },
         { new: true },
         (err, updatedUser) => {
-          if (err)
-            return res.status(404).send({ message: 'user not updated ' });
+          if (err) {
+            return res.status(404).send({ message: 'User not updated' });
+          }
           return res.send({
             success: true,
-            message: 'user updated successfully',
+            message: 'User updated successfully',
             results: null,
           });
         }
       );
-    });
+    }
   });
 }
 
@@ -658,7 +686,7 @@ function getSingleUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  User.findOne({ _id: req.body.id }, (err, result) => {
+  User.findOne({ _id: req.body.id }, { password: 0 }, (err, result) => {
     if (err || !result)
       return res.status(404).send({ message: 'user not found' });
     return res.send({
@@ -734,10 +762,10 @@ function deactiveUser(req, res) {
 //     });
 //   });
 // }
-  function checkValidation(req,res){
-    const errors = validationResult(req)
-    if (errors.errors.length !== 0) {
-      return res.status(400).send({ errors: errors.errors })
+function checkValidation(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
   }
 }
 router.post('/login', userValidation.validate('login'), login);
@@ -785,5 +813,5 @@ router.post(
   '/checkValidation',
   userValidation.validate('checkValidation'),
   checkValidation
-)
+);
 module.exports = { router, loginRouter };

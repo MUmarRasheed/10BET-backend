@@ -90,7 +90,7 @@ module.exports.validate = (method) => {
     case "updateUser": {
       return [
         body("password", "password is required")
-          .exists()
+          .optional()
           .isString()
           .withMessage(" password must be string")
           .notEmpty()
