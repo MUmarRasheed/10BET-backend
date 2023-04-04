@@ -38,16 +38,16 @@ mongoose
   .catch((err) => {
     console.log(` Database did not connect because ${err}`);
   });
-  
-  // readFileSync function must use __dirname get current directory
-  // require use ./ refer to current directory.
-  
-  const option = {
-    key: fs.readFileSync(__dirname + '/private.pem'),
-   cert: fs.readFileSync(__dirname + '/certificate.pem'),
-   chain1: fs.readFileSync(__dirname + '/chain1.pem'),
-   fullchain1: fs.readFileSync(__dirname + '/fullchain1.pem')
- };
+
+// readFileSync function must use __dirname get current directory
+// require use ./ refer to current directory.
+
+const option = {
+  key: fs.readFileSync(__dirname + '/private.pem'),
+  cert: fs.readFileSync(__dirname + '/certificate.pem'),
+  chain1: fs.readFileSync(__dirname + '/chain1.pem'),
+  fullchain1: fs.readFileSync(__dirname + '/fullchain1.pem'),
+};
 // console.log('dirname',__dirname);
 // JSON
 app.use(express.json());
@@ -95,6 +95,7 @@ app.use('/api', require('./app/routes/betLocks').loginRouter);
 app.use('/api', require('./app/routes/cashDeposit').loginRouter);
 app.use('/api', require('./app/routes/cashCredit').loginRouter);
 app.use('/api', require('./app/routes/reports').loginRouter);
+app.use('/api', require('./app/routes/theme').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {
@@ -105,8 +106,8 @@ app.use('/api', require('./app/routes/reports').loginRouter);
 
 // LISTEN HERE
 // Create HTTPs server.
-var server = https.createServer(option, app)
+var server = https.createServer(option, app);
 server.listen(config.PORT, (err) => {
   if (err) throw new Error(err);
-  console.log(`Server is listening on port ${config.PORT}`)
-})
+  console.log(`Server is listening on port ${config.PORT}`);
+});

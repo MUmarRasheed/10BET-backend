@@ -7,6 +7,8 @@ let config = require('config');
 const User = require('../models/user');
 const Recharge = require('../models/recharges');
 const LoginActivity = require('../models/loginActivity');
+const Theme = require('../models/theme');
+
 var getIP = require('ipware')().get_ip;
 
 const router = express.Router();
@@ -226,7 +228,7 @@ function registerUser(req, res) {
       } else {
         user.status = 0;
       }
-      if (req.body.role == '3') {
+      if (req.body.role == '3' || req.body.role == '4') {
         if (!req.body.downLineShare)
           return res.status(404).send({ message: 'downLineShare is required' });
       }
@@ -296,34 +298,43 @@ function login(req, res) {
         );
         user.token = token;
         var ipInfo = getIP(req);
-        var userDetailsForLoginActivity = {
-          userName: user.userName,
-          userId: user.userId,
-          balance: user.balance,
-          status: user.status,
-          phone: user.phone,
-          role: user.role,
-          token: user.token,
-          isActive: user.isActive,
-          createdBy: user.createdBy,
-          ipAddress: ipInfo.clientIp,
-          createdAt: new Date().getTime(),
-          updatedAt: new Date().getTime(),
-        };
-        // console.log("userDetailsForLoginActivity", userDetailsForLoginActivity);
-        saveLoginActivity(userDetailsForLoginActivity, (err, data) => {
-          if (err)
-            return res
-              .status(404)
-              .send({ message: 'login activity not saved' });
-          return res.send({
-            success: true,
-            message: 'User Login Successfully',
+
+        // Retrieve the user's default theme from the database
+        Theme.find({}, (err, theme) => {
+          if (err || !theme) {
+            return res.status(404).send({ message: 'theme not found' });
+          }
+
+          var userDetailsForLoginActivity = {
             userName: user.userName,
-            token: user.token,
-            role: user.role,
             userId: user.userId,
             balance: user.balance,
+            status: user.status,
+            phone: user.phone,
+            role: user.role,
+            token: user.token,
+            isActive: user.isActive,
+            createdBy: user.createdBy,
+            ipAddress: ipInfo.clientIp,
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime(),
+          };
+          // console.log("userDetailsForLoginActivity", userDetailsForLoginActivity);
+          saveLoginActivity(userDetailsForLoginActivity, (err, data) => {
+            if (err)
+              return res
+                .status(404)
+                .send({ message: 'login activity not saved' });
+            return res.send({
+              success: true,
+              message: 'User Login Successfully',
+              userName: user.userName,
+              token: user.token,
+              role: user.role,
+              userId: user.userId,
+              balance: user.balance,
+              defaultTheme: theme[0].defaultThemeName,
+            });
           });
         });
       });
@@ -514,6 +525,7 @@ function getAllUsers(req, res) {
   if (req.query.userName) {
     query.userName = req.query.userName;
   }
+  query.isDeleted = false;
   User.paginate(
     query,
     { page: page, sort: { [sortValue]: sort }, limit: limit },

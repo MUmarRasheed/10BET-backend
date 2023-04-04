@@ -30,5 +30,6 @@
   "cashCreditLedger",
   "editAllowedMarketTypes",
   "getFinalReport",
-  "checkValidation"
+  "checkValidation",
+  "updateDefaultTheme"
 ]

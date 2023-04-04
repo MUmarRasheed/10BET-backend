@@ -9,16 +9,17 @@ const saltrounds = config.saltRounds;
 /**
  * [UserSchema description]
  * @roles [ 0 (company) 1 (superAdmin), 2 (admin), 3 (superMaster), 4 (master), 5 (better)]
+ *  @status [ 0 (in-active) 1 (active)s]
  */
 const userSchema = new Schema({
   userName: { type: String, index: true, required: true, unique: false },
   password: { type: String, required: true },
-  reference: { type: String, required: true },
-  phone: { type: String, required: true },
+  reference: { type: String, required: false },
+  phone: { type: String, required: false },
   token: { type: String, default: '', index: true },
   role: { type: String, default: 0, index: true },
-  isActive: { type: Boolean, default: false },
-  status: { type: Number, default: 0 },
+  isActive: { type: Boolean, default: true },
+  status: { type: Number, default: 1 },
   notes: { type: String },
   userId: {
     type: Number,
