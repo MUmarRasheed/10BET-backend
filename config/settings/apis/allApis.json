@@ -31,5 +31,7 @@
   "editAllowedMarketTypes",
   "getFinalReport",
   "checkValidation",
-  "updateDefaultTheme"
+  "updateDefaultTheme",
+  "getAllCashDeposits",
+  "getAllCredits"
 ]

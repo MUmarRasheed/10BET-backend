@@ -228,7 +228,7 @@ function registerUser(req, res) {
       } else {
         user.status = 0;
       }
-      if (req.body.role == '3' || req.body.role == '4') {
+      if (req.body.role == '3' || req.body.role == '4' || req.body.role == '2' || req.body.role == '1') {
         if (!req.body.downLineShare)
           return res.status(404).send({ message: 'downLineShare is required' });
       }

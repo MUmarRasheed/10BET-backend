@@ -1,4 +1,4 @@
-const { body } = require('express-validator');
+const { body ,query} = require('express-validator');
 
 module.exports.validate = (method) => {
   switch (method) {
@@ -40,6 +40,14 @@ module.exports.validate = (method) => {
           .optional()
           .isString()
           .withMessage('description must be string'),
+      ];
+    }
+    case 'getAllCashDeposits': {
+      return [
+        query('userId', 'userId is required')
+          .exists()
+          .isInt()
+          .withMessage('userId must be number'),
       ];
     }
   }

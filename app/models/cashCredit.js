@@ -14,6 +14,8 @@ let creditSchema = new Schema({
   createdBy: { type: String },
   updatedAt: { type: Number },
   createdAt: { type: Number },
+  availableBalance: { type: Number, default : 0 },
+  creditLimit: { type: Number, default: 0 }
 });
 
 creditSchema.plugin(Global.aggregatePaginate);

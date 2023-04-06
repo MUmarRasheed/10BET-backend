@@ -205,11 +205,11 @@ async function withdrawCredit(req, res) {
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
-
+    
     if (userToUpdate.credit < req.body.amount) {
       return res
         .status(400)
-        .send({ message: 'Insufficient credit balance to withdraw' });
+        .send({ message: 'user credit is less than requested credit to withdraw' });
     }
 
     // Update the maxWithdraw field in cashdeposit collection
@@ -245,6 +245,18 @@ async function withdrawCredit(req, res) {
   }
 }
 
+function getAllCredits(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+
+  Credit.findOne({ userId: req.query.userId }, { credit: 1, availableBalance: 1 }).sort({ createdAt: -1 }).exec((err, results) => {
+    if (err ||!results) return res.status(404).send({message:"Credit Record Not Found"});
+    else return res.send({ message: 'Credit Record Found', results });
+  });
+}
+
 loginRouter.post(
   '/addCredit',
   cashValidator.validate('withDrawCashDeposit'),
@@ -255,5 +267,9 @@ loginRouter.post(
   cashValidator.validate('withDrawCashDeposit'),
   withdrawCredit
 );
-
+loginRouter.get(
+  '/getAllCredits',
+  cashValidator.validate('getAllCashDeposits'),
+  getAllCredits
+);
 module.exports = { loginRouter };
