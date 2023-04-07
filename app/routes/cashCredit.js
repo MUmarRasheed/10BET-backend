@@ -66,7 +66,170 @@ const loginRouter = express.Router();
 //   }
 // }
 
+//working code
+// async function addCredit(req, res) {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).send({ errors: errors.errors });
+//   }
+
+//   try {
+//     const currentUser = await User.findOne({ userId: req.decoded.userId });
+//     if (!currentUser) {
+//       return res.status(404).send({ message: 'user not found' });
+//     }
+
+//     const userToUpdate = await User.findOne({
+//       userId: req.body.userId,
+//       role: req.body.role,
+//     });
+//     if (!userToUpdate) {
+//       return res.status(404).send({ message: 'user not found' });
+//     }
+
+//     // Update the cashWithdraw field in cashdeposit collection
+//     const cashDeposit = await CashDeposit.findOne({
+//       userId: userToUpdate.userId,
+//     }).sort({ createdAt: -1 });
+//     if (cashDeposit) {
+//       cashDeposit.maxWithdraw += req.body.amount;
+//       await cashDeposit.save();
+//     }
+
+//     userToUpdate.credit += req.body.amount;
+//     userToUpdate.save();
+
+//     let cash = await Credit.findOne({ userId: userToUpdate.userId });
+//     if (!cash) {
+//       cash = new Credit({
+//         userId: userToUpdate.userId,
+//         description: req.body.description ? req.body.description : '(Cash)',
+//         createdBy: currentUser.role,
+//         amount: req.body.amount,
+//         credit: req.body.amount,
+//         balance: req.body.amount,
+//         maxWithdraw: userToUpdate.clientPL + req.body.amount,
+//       });
+//     } else {
+//       const cashCreditWithdraw = await Credit.findOne().sort({ createdAt: -1 });
+//       cash = new Credit({
+//         userId: userToUpdate.userId,
+//         description: req.body.description ? req.body.description : '(Cash)',
+//         createdBy: currentUser.role,
+//         amount: req.body.amount,
+//         credit: cashCreditWithdraw.credit + req.body.amount,
+//         balance: cashCreditWithdraw.balance + req.body.amount,
+//         maxWithdraw: cashCreditWithdraw.maxWithdraw + req.body.amount,
+//       });
+//     }
+
+//     const cashCredit = await cash.save();
+//     return res.send({
+//       success: true,
+//       message: 'Credit added successfully',
+//       results: cashCredit,
+//     });
+//   } catch (err) {
+//     return res.status(404).send({ message: 'server error', err });
+//   }
+// }
+
 async function addCredit(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+
+  try {
+    const currentUser = await User.findOne({ userId: req.decoded.userId });
+    if (!currentUser) {
+      return res.status(404).send({ message: 'user not found' });
+    }
+
+    const userToUpdate = await User.findOne({
+      userId: req.body.userId,
+      role: req.body.role,
+    });
+    if (!userToUpdate) {
+      return res.status(404).send({ message: 'user not found' });
+    }
+
+    if (currentUser.creditLimit < req.body.amount) {
+      return res.status(400).send({ message: 'Insufficient credit limit' });
+    }
+
+    currentUser.creditLimit -= req.body.amount;
+    await currentUser.save();
+
+    userToUpdate.credit += req.body.amount;
+    userToUpdate.creditLimit += req.body.amount;
+    await userToUpdate.save();
+
+    // Update the cashWithdraw field in cashdeposit collection
+    const cashDeposit = await CashDeposit.findOne({
+      userId: userToUpdate.userId,
+    }).sort({ createdAt: -1 });
+    if (cashDeposit) {
+      cashDeposit.maxWithdraw += req.body.amount;
+      await cashDeposit.save();
+    }
+
+    let cash = await Credit.findOne({ userId: userToUpdate.userId });
+    if (!cash) {
+      cash = new Credit({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        credit: req.body.amount,
+        balance: req.body.amount,
+        maxWithdraw: userToUpdate.clientPL + req.body.amount,
+        creditLimit: userToUpdate.creditLimit,
+      });
+    } else {
+      const cashCredit = await Credit.findOne({
+        userId: userToUpdate.userId,
+      }).sort({ createdAt: -1 });
+      cash = new Credit({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        credit: cashCredit.credit + req.body.amount,
+        balance: cashCredit.balance + req.body.amount,
+        maxWithdraw: cashCredit.maxWithdraw + req.body.amount,
+        creditLimit: userToUpdate.creditLimit,
+      });
+    }
+
+    // Update credit limit for both users
+    const userToUpdateCredit = await Credit.findOne({
+      userId: userToUpdate.userId,
+    });
+    if (userToUpdateCredit) {
+      userToUpdateCredit.creditLimit += req.body.amount;
+      await userToUpdateCredit.save();
+    }
+
+    const currentUserCredit = await Credit.findOne({
+      userId: currentUser.userId,
+    });
+    if (currentUserCredit) {
+      currentUserCredit.creditLimit -= req.body.amount;
+      await currentUserCredit.save();
+    }
+    const cashCredit = await cash.save();
+    return res.send({
+      success: true,
+      message: 'Credit added successfully',
+      results: cashCredit,
+    });
+  } catch (err) {
+    return res.status(404).send({ message: 'server error', err });
+  }
+}
+
+async function addcCredit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -205,11 +368,11 @@ async function withdrawCredit(req, res) {
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
-    
+
     if (userToUpdate.credit < req.body.amount) {
-      return res
-        .status(400)
-        .send({ message: 'user credit is less than requested credit to withdraw' });
+      return res.status(400).send({
+        message: 'user credit is less than requested credit to withdraw',
+      });
     }
 
     // Update the maxWithdraw field in cashdeposit collection
@@ -251,10 +414,16 @@ function getAllCredits(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  Credit.findOne({ userId: req.query.userId }, { credit: 1, availableBalance: 1 }).sort({ createdAt: -1 }).exec((err, results) => {
-    if (err ||!results) return res.status(404).send({message:"Credit Record Not Found"});
-    else return res.send({ message: 'Credit Record Found', results });
-  });
+  Credit.findOne(
+    { userId: req.query.userId },
+    { credit: 1, availableBalance: 1 }
+  )
+    .sort({ createdAt: -1 })
+    .exec((err, results) => {
+      if (err || !results)
+        return res.status(404).send({ message: 'Credit Record Not Found' });
+      else return res.send({ message: 'Credit Record Found', results });
+    });
 }
 
 loginRouter.post(

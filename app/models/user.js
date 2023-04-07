@@ -56,6 +56,7 @@ const userSchema = new Schema({
   isDeleted: { type: Boolean, required: false, default: false },
   clientPL: { type: Number, required: false, default: 0 },
   credit: { type: Number, required: false, default: 0 },
+  creditLimit: { type: Number, default: 0 },
 });
 // userSchema.plugin(Global.paginate)
 

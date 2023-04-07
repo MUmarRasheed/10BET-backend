@@ -25,8 +25,7 @@ async function addCashDeposit(req, res) {
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
-    userToUpdate.clientPL += req.body.amount;
-    userToUpdate.save();
+
     let cash = await Cash.findOne({ userId: userToUpdate.userId });
 
     if (!cash) {
@@ -38,21 +37,31 @@ async function addCashDeposit(req, res) {
         balance: req.body.amount,
         maxWithdraw: req.body.amount,
       });
+      await cash.save();
     } else {
-      cash = new Cash({
+      let lastDeposit = await Cash.findOne({
+        userId: userToUpdate.userId,
+      }).sort({
+        createdAt: -1,
+      });
+      console.log('lat', lastDeposit);
+      const newBalance = lastDeposit.balance + req.body.amount;
+      console.log('newBalance', newBalance);
+      const newCash = new Cash({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: currentUser.role,
         amount: req.body.amount,
-        balance: cash.balance + req.body.amount,
-        maxWithdraw: cash.amount + req.body.amount,
+        balance: newBalance,
+        maxWithdraw: newBalance,
       });
+      await newCash.save();
     }
-    const cashDeposit = await cash.save();
+
     return res.send({
       success: true,
       message: 'Cash deposit added successfully',
-      results: cashDeposit,
+      results: cash,
     });
   } catch (err) {
     return res.status(404).send({ message: 'server error', err });
@@ -118,11 +127,18 @@ function getAllCashDeposits(req, res) {
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-  Cash.findOne({ userId: req.query.userId }, { credit: 1, balance: 1, maxWithdraw: 1 })
-  .sort({ createdAt: -1 }).exec((err, results) => {
-    if (err) return res.status(404).send({ message:'cash deposit record not found'});
-    else return res.send({ message: 'Cash Deposit Record Found', results });
-  });
+  Cash.findOne(
+    { userId: req.query.userId },
+    { credit: 1, balance: 1, maxWithdraw: 1, userId: 1 }
+  )
+    .sort({ createdAt: -1 })
+    .exec((err, results) => {
+      if (err || !results)
+        return res
+          .status(404)
+          .send({ message: 'cash deposit record not found' });
+      else return res.send({ message: 'Cash Deposit Record Found', results });
+    });
 }
 
 loginRouter.post(
@@ -135,6 +151,10 @@ loginRouter.post(
   cashValidator.validate('withDrawCashDeposit'),
   withDrawCashDeposit
 );
-loginRouter.get('/getAllCashDeposits', cashValidator.validate('getAllCashDeposits'),getAllCashDeposits)
+loginRouter.get(
+  '/getAllCashDeposits',
+  cashValidator.validate('getAllCashDeposits'),
+  getAllCashDeposits
+);
 
 module.exports = { loginRouter };
