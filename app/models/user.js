@@ -57,6 +57,7 @@ const userSchema = new Schema({
   clientPL: { type: Number, required: false, default: 0 },
   credit: { type: Number, required: false, default: 0 },
   creditLimit: { type: Number, default: 0 },
+  availableBalance: { type: Number, default: 0 },
 });
 // userSchema.plugin(Global.paginate)
 

@@ -29,7 +29,7 @@ module.exports.validate = (method) => {
           .optional()
           .isString()
           .withMessage(' phone must be string')
-          .isLength({ min: 11, max: 14 })
+          // .isLength({ min: 11, max: 14 })
           .withMessage(' phone min 11, max 14'),
         body('password', 'password is required')
           .exists()
