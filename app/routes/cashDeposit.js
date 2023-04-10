@@ -7,6 +7,7 @@ const cashValidator = require('../validators/cashDeposit');
 const loginRouter = express.Router();
 
 async function addCashDeposit(req, res) {
+  console.log('role', req.decoded.role);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -34,10 +35,12 @@ async function addCashDeposit(req, res) {
     }).sort({
       createdAt: -1,
     });
-    if (req.decode.role == '0') {
+    if (req.decoded.role == '0') {
       if (
-        (req.body.role == '1' || req.body.role == '2' || req.body.role == '4',
-        req.body.role == '5')
+        req.body.role == '1' ||
+        req.body.role == '2' ||
+        req.body.role == '3' ||
+        req.body.role == '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
       } else if (req.body.role == '5') {
@@ -46,7 +49,7 @@ async function addCashDeposit(req, res) {
         userToUpdate.clientPL += req.body.amount;
       }
     }
-    if (req.decode.role == '1') {
+    if (req.decoded.role == '1') {
       if (
         req.body.role == '2' ||
         req.body.role == '3' ||
@@ -203,19 +206,21 @@ async function withDrawCashDeposit(req, res) {
     }).sort({
       createdAt: -1,
     });
-    if (req.decode.role == '0') {
+    if (req.decoded.role == '0') {
       if (
-        (req.body.role == '1' || req.body.role == '2' || req.body.role == '4',
-        req.body.role == '5')
+        req.body.role == '1' ||
+        req.body.role == '2' ||
+        req.body.role == '3' ||
+        req.body.role == '4'
       ) {
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.clientPL -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
         userToUpdate.clientPL -= req.body.amount;
       }
     }
-    if (req.decode.role == '1') {
+    if (req.decoded.role == '1') {
       if (
         req.body.role == '2' ||
         req.body.role == '3' ||
