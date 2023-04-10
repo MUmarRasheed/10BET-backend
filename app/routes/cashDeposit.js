@@ -11,7 +11,6 @@ async function addCashDeposit(req, res) {
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-  console.log('req.decoded/role', req.decoded.role);
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
     if (!currentUser) {
@@ -35,7 +34,31 @@ async function addCashDeposit(req, res) {
     }).sort({
       createdAt: -1,
     });
-
+    if (req.decode.role == '0') {
+      if (
+        (req.body.role == '1' || req.body.role == '2' || req.body.role == '4',
+        req.body.role == '5')
+      ) {
+        userToUpdate.clientPL += req.body.amount;
+      } else if (req.body.role == '5') {
+        userToUpdate.balance += req.body.amount;
+        userToUpdate.availableBalance += req.body.amount;
+        userToUpdate.clientPL += req.body.amount;
+      }
+    }
+    if (req.decode.role == '1') {
+      if (
+        req.body.role == '2' ||
+        req.body.role == '3' ||
+        req.body.role == '4'
+      ) {
+        userToUpdate.clientPL += req.body.amount;
+      } else if (req.body.role == '5') {
+        userToUpdate.balance += req.body.amount;
+        userToUpdate.availableBalance += req.body.amount;
+        userToUpdate.clientPL += req.body.amount;
+      }
+    }
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL += req.body.amount;
@@ -180,7 +203,31 @@ async function withDrawCashDeposit(req, res) {
     }).sort({
       createdAt: -1,
     });
-
+    if (req.decode.role == '0') {
+      if (
+        (req.body.role == '1' || req.body.role == '2' || req.body.role == '4',
+        req.body.role == '5')
+      ) {
+        userToUpdate.clientPL += req.body.amount;
+      } else if (req.body.role == '5') {
+        userToUpdate.balance -= req.body.amount;
+        userToUpdate.availableBalance -= req.body.amount;
+        userToUpdate.clientPL -= req.body.amount;
+      }
+    }
+    if (req.decode.role == '1') {
+      if (
+        req.body.role == '2' ||
+        req.body.role == '3' ||
+        req.body.role == '4'
+      ) {
+        userToUpdate.clientPL -= req.body.amount;
+      } else if (req.body.role == '5') {
+        userToUpdate.balance -= req.body.amount;
+        userToUpdate.availableBalance -= req.body.amount;
+        userToUpdate.clientPL -= req.body.amount;
+      }
+    }
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;

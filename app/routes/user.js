@@ -15,174 +15,6 @@ const router = express.Router();
 const loginRouter = express.Router();
 const app = express();
 
-// function registerUser(req, res) {
-//   const errors = validationResult(req);
-//   if (errors.errors.length !== 0) {
-//     return res.status(400).send({ errors: errors.errors });
-//   }
-
-//   User.findOne()
-//     .sort({ userId: -1 })
-//     .exec((err, data) => {
-//       if (err) return res.status(404).send({ message: 'user not found', err });
-
-//       // Check if username already exists
-//       User.findOne(
-//         { userName: req.body.userName },
-//         async (err, existingUser) => {
-//           if (err) {
-//             return res
-//               .status(404)
-//               .send({ message: 'error checking username', err });
-//           }
-//           if (existingUser) {
-//             // Username already exists, create new user with isDeleted property set to true
-//             const newUser = new User({ ...req.body, isDeleted: true });
-//             newUser.userId = data.userId + 1;
-//             newUser.id = newUser._id;
-//             if (req.decoded.role == '1')
-//               newUser.superAdminId = req.decoded.userId;
-//             if (req.decoded.role == '2') {
-//               newUser.parentId = req.decoded.userId;
-//               newUser.superAdminId = req.decoded.superAdminId;
-//             }
-//             if (req.decoded.role == '3') {
-//               newUser.superAdminId = req.decoded.superAdminId;
-//               newUser.parentId = req.decoded.parentId;
-//               newUser.adminId = req.decoded.userId;
-//             }
-//             if (req.decoded.role == '4') {
-//               newUser.adminId = req.decoded.adminId;
-//               newUser.superAdminId = req.decoded.superAdminId;
-//               newUser.parentId = req.decoded.parentId;
-//               newUser.masterId = req.decoded.userId;
-//             }
-//             if (req.body.isActive == true) {
-//               newUser.status = 1;
-//             } else {
-//               newUser.status = 0;
-//             }
-//             if (req.body.role == '3') {
-//               if (!req.body.downLineShare)
-//                 return res
-//                   .status(404)
-//                   .send({ message: 'downLineShare is required' });
-//             }
-//             newUser.downLineShare = req.body.downLineShare;
-//             var token = getNonExpiringToken(
-//               newUser.userId,
-//               req.decoded.userId,
-//               req.body.role
-//             );
-//             newUser.token = token;
-//             newUser.createdBy = req.decoded.userId;
-//             newUser.save((err, user) => {
-//               if (err)
-//                 return res
-//                   .status(404)
-//                   .send({ message: 'user not registered', err });
-//               // Add balance to recharge collection
-//               const recharge = new Recharge({
-//                 userId: user.userId,
-//                 dateCreated: Date.now(),
-//                 amount: req.body.balance,
-//                 createdBy: req.decoded.userId,
-//                 rechargedBy: req.decoded.role,
-//                 role: req.body.role,
-//               });
-//               recharge.save((err, success) => {
-//                 if (err)
-//                   return res
-//                     .status(404)
-//                     .send({ message: 'recharge not saved', err });
-//                 console.log('recharge saved successfully');
-//               });
-//               return res.send({
-//                 message: 'Register Success',
-//                 success: true,
-//                 results: user,
-//               });
-//             });
-//           } else {
-//             // Username doesn't exist, create new user
-//             const user = new User(req.body);
-//             user.userId = data.userId + 1;
-//             user.id = user._id;
-//             if (req.decoded.role == '1') user.superAdminId = req.decoded.userId;
-//             if (req.decoded.role == '2') {
-//               user.parentId = req.decoded.userId;
-//               user.superAdminId = req.decoded.superAdminId;
-//             }
-
-//             if (req.decoded.role == '3') {
-//               user.superAdminId = req.decoded.superAdminId;
-//               user.parentId = req.decoded.parentId;
-//               user.adminId = req.decoded.userId;
-//             }
-//             if (req.decoded.role == '4') {
-//               user.adminId = req.decoded.adminId;
-//               user.superAdminId = req.decoded.superAdminId;
-//               user.parentId = req.decoded.parentId;
-//               user.masterId = req.decoded.userId;
-//             }
-//             if (req.body.isActive == true) {
-//               user.status = 1;
-//             } else {
-//               user.status = 0;
-//             }
-//             if (req.body.role == '3') {
-//               if (!req.body.downLineShare)
-//                 return res
-//                   .status(404)
-//                   .send({ message: 'downLineShare is required' });
-//             }
-//             user.downLineShare = req.body.downLineShare;
-//             var token = getNonExpiringToken(
-//               user.userId,
-//               req.decoded.userId,
-//               req.body.role
-//             );
-//             user.token = token;
-//             user.createdBy = req.decoded.userId;
-//             user.save((err, user) => {
-//               if (err && err.code === 11000) {
-//                 if (err.keyPattern.userName === 1)
-//                   return res
-//                     .status(404)
-//                     .send({ message: 'user already present' });
-//               }
-//               if (err)
-//                 return res
-//                   .status(404)
-//                   .send({ message: 'user not registered', err });
-//               // Add balance to recharge collection
-//               const recharge = new Recharge({
-//                 userId: user.userId,
-//                 dateCreated: Date.now(),
-//                 amount: req.body.balance,
-//                 createdBy: req.decoded.userId,
-//                 rechargedBy: req.decoded.role,
-//                 role: req.body.role,
-//               });
-//               recharge.save((err, success) => {
-//                 if (err)
-//                   return res
-//                     .status(404)
-//                     .send({ message: 'recharge not saved', err });
-//                 console.log('recharge saved successfully');
-//               });
-//               return res.send({
-//                 message: 'Register Success',
-//                 success: true,
-//                 results: user,
-//               });
-//             });
-//           }
-//         }
-//       );
-//     });
-// }
-
 function registerUser(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
@@ -228,7 +60,12 @@ function registerUser(req, res) {
       } else {
         user.status = 0;
       }
-      if (req.body.role == '3' || req.body.role == '4' || req.body.role == '2' || req.body.role == '1') {
+      if (
+        req.body.role == '3' ||
+        req.body.role == '4' ||
+        req.body.role == '2' ||
+        req.body.role == '1'
+      ) {
         if (!req.body.downLineShare)
           return res.status(404).send({ message: 'downLineShare is required' });
       }
