@@ -33,5 +33,6 @@
   "checkValidation",
   "updateDefaultTheme",
   "getAllCashDeposits",
-  "getAllCredits"
+  "getAllCredits",
+  "getClientList"
 ]

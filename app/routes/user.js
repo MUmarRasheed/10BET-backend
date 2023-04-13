@@ -343,7 +343,9 @@ function getAllUsers(req, res) {
   if (req.query.page) {
     page = Number(req.query.page);
   }
-
+  if (req.decoded.login.role == '0') {
+    query = {};
+  }
   if (req.decoded.login.role === '1') {
     query.superAdminId = req.decoded.userId;
   } else if (req.decoded.login.role === '2') {

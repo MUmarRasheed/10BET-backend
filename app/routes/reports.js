@@ -18,7 +18,7 @@ function cashDepositLedger(req, res) {
   let page = 1;
   var sortValue = 'createdAt';
   var limit = config.pageSize;
-  var sort = -1;
+  var sort = 1;
   if (req.body.page) {
     page = req.body.page;
   }
@@ -30,32 +30,32 @@ function cashDepositLedger(req, res) {
       return res.status(404).send({ message: 'NUMBER_RECORD_IS_NOT_PROPER' });
     if (req.body.numRecords < 0)
       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    if (req.body.numRecords > 100)
+    if (req.body.numRecords > 1000)
       return res
         .status(404)
-        .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
+        .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_1000' });
     limit = Number(req.body.numRecords);
   }
 
   let match = {};
-  if (req.body.endTime && req.body.startTime) {
+  if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
-      $gte: req.body.startTime / 1000,
-      $lte: req.body.endTime / 1000,
+      $gte: req.body.startDate,
+      $lte: req.body.endDate,
     };
-  } else if (req.body.endTime) {
-    match.createdAt = { $lte: req.body.endTime / 1000 };
-  } else if (req.body.startTime) {
-    match.createdAt = { $gte: req.body.startTime / 1000 };
+  } else if (req.body.endDate) {
+    match.createdAt = { $lte: req.body.endDate };
+  } else if (req.body.startDate) {
+    match.createdAt = { $gte: req.body.startDate };
   }
-
+  match.userId = req.body.userId;
   CashDeposit.paginate(
     match,
     {
       page: page,
       sort: { [sortValue]: sort },
       limit: limit,
-      select: '-_id description amount balance createdAt',
+      select: '-_id userId description amount balance createdAt',
     },
 
     (err, results) => {
@@ -95,23 +95,23 @@ function cashCreditLedger(req, res) {
       return res.status(404).send({ message: 'NUMBER_RECORD_IS_NOT_PROPER' });
     if (req.body.numRecords < 0)
       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    if (req.body.numRecords > 100)
+    if (req.body.numRecords > 1000)
       return res
         .status(404)
-        .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
+        .send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_1000' });
     limit = Number(req.body.numRecords);
   }
 
   let match = {};
   if (req.body.endTime && req.body.startTime) {
     match.createdAt = {
-      $gte: req.body.startTime / 1000,
-      $lte: req.body.endTime / 1000,
+      $gte: req.body.startTime,
+      $lte: req.body.endTime,
     };
   } else if (req.body.endTime) {
-    match.createdAt = { $lte: req.body.endTime / 1000 };
+    match.createdAt = { $lte: req.body.endTime };
   } else if (req.body.startTime) {
-    match.createdAt = { $gte: req.body.startTime / 1000 };
+    match.createdAt = { $gte: req.body.startTime };
   }
   Credit.paginate(
     match,
@@ -240,6 +240,72 @@ function getFinalReport(req, res) {
   );
 }
 
+//to do
+function getClientList(req, res) {
+  // Initialize variables with default values
+  console.log('req.deocode', req.decoded.userId);
+  let query = req.decoded.userId;
+  query.isDeleted = false;
+  let countQuery = {};
+  if (req.decoded.login.role == '0') {
+    query.userId = {};
+  }
+  if (req.decoded.login.role === '1') {
+    query = req.query.userId;
+    countQuery.superAdminId = req.query.userId;
+  } else if (req.decoded.login.role === '2') {
+    query = req.query.userId;
+    countQuery.parentId = req.query.userId;
+  } else if (req.decoded.login.role === '3') {
+    query = req.query.userId;
+    countQuery.adminId = req.query.userId;
+  } else if (req.decoded.login.role === '4') {
+    query = req.query.userId;
+    countQuery.masterId = req.query.userId;
+  }
+  if (req.decoded.login.role === '5') {
+    query.userId = null;
+    countQuery.userId = null;
+  }
+  console.log('query', query);
+  console.log('countQuery', countQuery);
+
+  // Retrieve the desired fields from the User collection
+  User.findOne({ userId: query })
+    .select('creditRecieved creditRemaining clientPL plDownline plUpline')
+    .exec((err, results) => {
+      console.log('user', results);
+      if (err) {
+        return res.status(404).send({ message: 'RETRIEVAL_FAILED' });
+      }
+      if (!results) {
+        return res.status(404).send({ message: 'No records found' });
+      }
+
+      // Find the total user count for the logged-in user
+      User.countDocuments(countQuery, (err, count) => {
+        if (err) {
+          return res.status(404).send({ message: 'COUNT_FAILED' });
+        }
+
+        // Combine the User fields and user count into a single response object
+        const response = {
+          creditRecieved: results.creditRecieved,
+          creditRemaining: results.creditRemaining,
+          cash: results.clientPL,
+          plDownline: results.plDownline,
+          balanceUpline: results.plUpline,
+          users: count,
+        };
+        return res.send({
+          success: true,
+          message: 'client record found',
+          results: response,
+        });
+      });
+    });
+}
+
 loginRouter.post(
   '/cashDepositLedger',
   reportValidator.validate('cashDepositLedger'),
@@ -251,4 +317,5 @@ loginRouter.post(
   cashCreditLedger
 );
 loginRouter.get('/getFinalReport', getFinalReport);
+loginRouter.get('/getCLientList', getClientList);
 module.exports = { loginRouter };

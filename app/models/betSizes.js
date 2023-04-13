@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: "off" */
-let mongoose = require("mongoose");
+let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
-mongoose.set("debug", true);
+mongoose.set('debug', true);
 // let Global = require('../global/settings')
 
 let betSizesSchema = new Schema({
@@ -17,12 +17,15 @@ let betSizesSchema = new Schema({
   tPin: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },
+  kabbadi: { type: Number },
+  snooker: { type: Number },
+  iceHockey: { type: Number },
 });
 
 // betSizesSchema.plugin(Global.aggregatePaginate)
 // betSizesSchema.plugin(Global.paginate)
 
-betSizesSchema.pre("save", function (next) {
+betSizesSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -32,7 +35,7 @@ betSizesSchema.pre("save", function (next) {
   next();
 });
 
-const BetSizes = mongoose.model("betSize", betSizesSchema);
+const BetSizes = mongoose.model('betSize', betSizesSchema);
 // BetSizes.createIndexes();
 
 module.exports = BetSizes;

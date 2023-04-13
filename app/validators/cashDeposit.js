@@ -1,4 +1,4 @@
-const { body ,query} = require('express-validator');
+const { body, query } = require('express-validator');
 
 module.exports.validate = (method) => {
   switch (method) {

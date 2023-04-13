@@ -7,7 +7,6 @@ const cashValidator = require('../validators/cashDeposit');
 const loginRouter = express.Router();
 
 async function addCashDeposit(req, res) {
-  console.log('role', req.decoded.role);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -127,6 +126,9 @@ async function withDrawCashDeposit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
+  }
+  if (typeof req.body.amount === 'string') {
+    return res.send({ message: 'amount must be integer' });
   }
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
