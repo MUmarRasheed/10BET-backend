@@ -42,6 +42,7 @@ async function addCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
+        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -55,6 +56,7 @@ async function addCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
+        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -64,6 +66,7 @@ async function addCashDeposit(req, res) {
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL += req.body.amount;
+        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -72,6 +75,7 @@ async function addCashDeposit(req, res) {
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
         userToUpdate.clientPL += req.body.amount;
+        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -163,6 +167,7 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.balance -= req.body.balance;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -176,6 +181,7 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.balance -= req.body.balance;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -185,6 +191,7 @@ async function withDrawCashDeposit(req, res) {
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.balance -= req.body.balance;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -193,12 +200,14 @@ async function withDrawCashDeposit(req, res) {
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.balance -= req.body.balance;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
         userToUpdate.clientPL -= req.body.amount;
       }
     } else if (req.decoded.role == '4') {
+      userToUpdate.balance -= req.body.amount;
       if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -254,7 +263,7 @@ function getAllCashDeposits(req, res) {
     { userId: req.query.userId },
     { credit: 1, balance: 1, maxWithdraw: 1, userId: 1 }
   )
-    .sort({ createdAt: -1 })
+    .sort({ _id: -1 })
     .exec((err, results) => {
       if (err || !results)
         return res

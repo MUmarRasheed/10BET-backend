@@ -156,11 +156,10 @@ module.exports.validate = (method) => {
     }
     case 'checkValidation': {
       return [
+        check('userName').notEmpty().withMessage('userName is required'),
         check('userName').custom((userName) => {
           return Users.findOne({ userName }).then((user) => {
-            if (user == null) {
-              return Promise.reject('user does not exist');
-            } else {
+            if (user) {
               return Promise.reject('user already exists');
             }
           });

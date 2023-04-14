@@ -96,6 +96,7 @@ app.use('/api', require('./app/routes/cashDeposit').loginRouter);
 app.use('/api', require('./app/routes/cashCredit').loginRouter);
 app.use('/api', require('./app/routes/reports').loginRouter);
 app.use('/api', require('./app/routes/theme').loginRouter);
+app.use('/api', require('./app/routes/betFairGames').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

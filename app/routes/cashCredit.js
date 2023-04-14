@@ -350,13 +350,21 @@ function getAllCredits(req, res) {
 
     Credit.findOne(
       { userId: req.query.userId },
-      { credit: 1, availableBalance: 1, creditLimit: success.creditLimit }
+      //creditlimit should be of the user that is login
+      { credit: 1, availableBalance: 1, creditLimit: -1 }
     )
-      .sort({ createdAt: -1 })
+      .sort({ _id: -1 })
       .exec((err, results) => {
         if (err || !results)
           return res.status(404).send({ message: 'Credit Record Not Found' });
-        else return res.send({ message: 'Credit Record Found', results });
+        else
+          return res.send({
+            message: 'Credit Record Found',
+            results: {
+              ...results._doc,
+              creditLimit: success.creditLimit,
+            },
+          });
       });
   });
 }

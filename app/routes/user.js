@@ -15,6 +15,7 @@ const router = express.Router();
 const loginRouter = express.Router();
 const app = express();
 
+//to do add condition on downline share
 function registerUser(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {

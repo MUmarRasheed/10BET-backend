@@ -73,6 +73,7 @@ function cashDepositLedger(req, res) {
     }
   );
 }
+
 function cashCreditLedger(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
@@ -307,6 +308,84 @@ function getClientList(req, res) {
     });
 }
 
+function GetAllCashCreditLedger(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({
+      errors: errors.errors,
+    });
+  }
+
+  let match = {};
+  if (req.body.endTime && req.body.startTime) {
+    match.createdAt = {
+      $gte: req.body.startTime,
+      $lte: req.body.endTime,
+    };
+  } else if (req.body.endTime) {
+    match.createdAt = { $lte: req.body.endTime };
+  } else if (req.body.startTime) {
+    match.createdAt = { $gte: req.body.startTime };
+  }
+  match.userId = req.body.userId;
+  Credit.find(
+    match,
+    {
+      select: '-_id description amount balance createdAt',
+    },
+
+    (err, results) => {
+      if (err || !results)
+        return res
+          .status(404)
+          .send({ message: 'CASH_CREDIT_LEDGER_NOT_FOUND' });
+      return res.json({
+        message: 'ALL Credit Ledger Report found',
+        results,
+      });
+    }
+  );
+}
+
+function GetAllCashDepositLedger(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({
+      errors: errors.errors,
+    });
+  }
+
+  let match = {};
+  if (req.body.endTime && req.body.startTime) {
+    match.createdAt = {
+      $gte: req.body.startTime,
+      $lte: req.body.endTime,
+    };
+  } else if (req.body.endTime) {
+    match.createdAt = { $lte: req.body.endTime };
+  } else if (req.body.startTime) {
+    match.createdAt = { $gte: req.body.startTime };
+  }
+  match.userId = req.body.userId;
+  CashDeposit.find(
+    match,
+    {
+      select: '-_id description amount balance createdAt',
+    },
+
+    (err, results) => {
+      if (err || !results)
+        return res
+          .status(404)
+          .send({ message: 'CASH_DEPOSIT_LEDGER_NOT_FOUND' });
+      return res.json({
+        message: 'ALL Cash Desposit Ledger Report found',
+        results,
+      });
+    }
+  );
+}
+
 loginRouter.post(
   '/cashDepositLedger',
   reportValidator.validate('cashDepositLedger'),
@@ -318,5 +397,8 @@ loginRouter.post(
   cashCreditLedger
 );
 loginRouter.get('/getFinalReport', getFinalReport);
+loginRouter.get('/GetAllCashCreditLedger', GetAllCashCreditLedger);
+loginRouter.get('/GetAllCashDepositLedger', GetAllCashDepositLedger);
+
 loginRouter.get('/getCLientList', getClientList);
 module.exports = { loginRouter };
