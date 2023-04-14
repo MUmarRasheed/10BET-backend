@@ -113,6 +113,7 @@ function cashCreditLedger(req, res) {
   } else if (req.body.startTime) {
     match.createdAt = { $gte: req.body.startTime };
   }
+  match.userId = req.body.userId;
   Credit.paginate(
     match,
     {
