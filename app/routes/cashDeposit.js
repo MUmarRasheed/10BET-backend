@@ -132,7 +132,7 @@ async function withDrawCashDeposit(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   if (typeof req.body.amount === 'string') {
-    return res.send({ message: 'amount must be integer' });
+    return res.status(404).send({ message: 'amount must be integer' });
   }
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
