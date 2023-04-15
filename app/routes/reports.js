@@ -397,8 +397,8 @@ loginRouter.post(
   cashCreditLedger
 );
 loginRouter.get('/getFinalReport', getFinalReport);
-loginRouter.get('/GetAllCashCreditLedger', GetAllCashCreditLedger);
-loginRouter.get('/GetAllCashDepositLedger', GetAllCashDepositLedger);
+loginRouter.post('/GetAllCashCreditLedger', GetAllCashCreditLedger);
+loginRouter.post('/GetAllCashDepositLedger', GetAllCashDepositLedger);
 
 loginRouter.get('/getCLientList', getClientList);
 module.exports = { loginRouter };
