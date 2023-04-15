@@ -259,7 +259,7 @@ function getAllCashDeposits(req, res) {
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-  Cash.findOne(
+  Cash.find(
     { userId: req.query.userId },
     { credit: 1, balance: 1, maxWithdraw: 1, userId: 1 }
   )
