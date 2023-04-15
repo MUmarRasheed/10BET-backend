@@ -244,8 +244,7 @@ async function withdrawCredit(req, res) {
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
-
-    if (userToUpdate.credit < req.body.amount) {
+    if (currentUser.credit < req.body.amount) {
       return res.status(400).send({
         message: 'user credit is less than requested credit to withdraw',
       });
@@ -325,8 +324,7 @@ async function withdrawCredit(req, res) {
       createdBy: currentUser.role,
       amount: -req.body.amount,
       balance: cashCreditWithdraw.balance - req.body.amount,
-      availableBalance:
-        cashCreditWithdraw.availableBalance - req.body.availableBalance,
+      availableBalance: cashCreditWithdraw.availableBalance - req.body.amount,
       //   maxWithdraw: cashCreditWithdraw.maxWithdraw + req.body.amount,
     });
     await creditWithdraw.save();
@@ -351,7 +349,7 @@ function getAllCredits(req, res) {
     Credit.findOne(
       { userId: req.query.userId },
       //creditlimit should be of the user that is login
-      { credit: 1, availableBalance: 1, creditLimit: -1 }
+      { credit: 1, availableBalance: 1 }
     )
       .sort({ _id: -1 })
       .exec((err, results) => {

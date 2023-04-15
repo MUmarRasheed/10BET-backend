@@ -245,27 +245,24 @@ function getFinalReport(req, res) {
 //to do
 function getClientList(req, res) {
   // Initialize variables with default values
-  console.log('req.deocode', req.decoded.userId);
-  let query = req.decoded.userId;
-  query.isDeleted = false;
+  let query = { isDeleted: false };
   let countQuery = {};
   if (req.decoded.login.role == '0') {
-    query.userId = {};
+    query.userId = req.decoded.userId;
   }
   if (req.decoded.login.role === '1') {
-    query = req.query.userId;
+    query.superAdminId = req.query.userId;
     countQuery.superAdminId = req.query.userId;
   } else if (req.decoded.login.role === '2') {
-    query = req.query.userId;
+    query.userId = Number(req.query.userId);
     countQuery.parentId = req.query.userId;
   } else if (req.decoded.login.role === '3') {
-    query = req.query.userId;
+    query.adminId = req.query.userId;
     countQuery.adminId = req.query.userId;
   } else if (req.decoded.login.role === '4') {
-    query = req.query.userId;
+    query.masterId = req.query.userId;
     countQuery.masterId = req.query.userId;
-  }
-  if (req.decoded.login.role === '5') {
+  } else if (req.decoded.login.role === '5') {
     query.userId = null;
     countQuery.userId = null;
   }
@@ -273,8 +270,8 @@ function getClientList(req, res) {
   console.log('countQuery', countQuery);
 
   // Retrieve the desired fields from the User collection
-  User.findOne({ userId: query })
-    .select('creditRecieved creditRemaining clientPL plDownline plUpline')
+  User.findOne(query)
+    .select('credit creditRemaining clientPL plDownline plUpline')
     .exec((err, results) => {
       console.log('user', results);
       if (err) {
@@ -292,11 +289,11 @@ function getClientList(req, res) {
 
         // Combine the User fields and user count into a single response object
         const response = {
-          creditRecieved: results.creditRecieved,
-          creditRemaining: results.creditRemaining,
+          creditRecieved: results.credit,
+          creditRemaining: results.credit - results.clientPL,
           cash: results.clientPL,
-          plDownline: results.plDownline,
-          balanceUpline: results.plUpline,
+          plDownline: results.clientPL,
+          balanceUpline: results.clientPL,
           users: count,
         };
         return res.send({

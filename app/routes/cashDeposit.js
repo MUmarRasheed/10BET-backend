@@ -147,7 +147,13 @@ async function withDrawCashDeposit(req, res) {
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
-
+    if (
+      typeof userToUpdate.balance !== 'number' ||
+      isNaN(userToUpdate.balance)
+    ) {
+      console.log('Invalid balance value:', userToUpdate.balance);
+      return res.status(400).send({ message: 'Invalid balance value' });
+    }
     // Check if the requested withdrawal amount is greater than the maxWithdraw amount
     if (req.body.amount > userToUpdate.clientPL) {
       return res
@@ -167,7 +173,7 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.balance;
+        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -181,7 +187,7 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.balance;
+        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -191,7 +197,7 @@ async function withDrawCashDeposit(req, res) {
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.balance;
+        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -200,7 +206,7 @@ async function withDrawCashDeposit(req, res) {
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.balance;
+        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
