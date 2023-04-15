@@ -40,9 +40,9 @@ function addBetSizes(req, res) {
     casino: 50000,
     greyHound: 50000,
     bookMaker: 2000000,
-    iceHockey: 250000,
+    iceHockey: 5000000,
     snooker: 5000000,
-    kabbadi: 200000,
+    kabbadi: 5000000,
   };
 
   const betTypes = Object.keys(betSizesData);
