@@ -330,9 +330,7 @@ function GetAllCashCreditLedger(req, res) {
   match.userId = req.body.userId;
   Credit.find(
     match,
-    {
-      select: '-_id description amount balance createdAt',
-    },
+    { description: 1, amount: 1, balance: 1, createdAt: 1, _id: 0 },
 
     (err, results) => {
       if (err || !results)
@@ -369,9 +367,7 @@ function GetAllCashDepositLedger(req, res) {
   match.userId = req.body.userId;
   CashDeposit.find(
     match,
-    {
-      select: '-_id description amount balance createdAt',
-    },
+    { description: 1, amount: 1, balance: 1, createdAt: 1, _id: 0 },
 
     (err, results) => {
       if (err || !results)
