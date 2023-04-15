@@ -32,7 +32,7 @@ async function addCashDeposit(req, res) {
     let lastDeposit = await Cash.findOne({
       userId: userToUpdate.userId,
     }).sort({
-      createdAt: -1,
+      _id: -1,
     });
     if (req.decoded.role == '0') {
       if (
@@ -157,7 +157,7 @@ async function withDrawCashDeposit(req, res) {
     let lastWithdraw = await Cash.findOne({
       userId: userToUpdate.userId,
     }).sort({
-      createdAt: -1,
+      _id: -1,
     });
     if (req.decoded.role == '0') {
       if (
@@ -259,7 +259,7 @@ function getAllCashDeposits(req, res) {
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-  Cash.find(
+  Cash.findOne(
     { userId: req.query.userId },
     { credit: 1, balance: 1, maxWithdraw: 1, userId: 1 }
   )

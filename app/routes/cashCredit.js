@@ -95,7 +95,7 @@ async function addCredit(req, res) {
     // Update the cashWithdraw field in cashdeposit collection
     const cashDeposit = await CashDeposit.findOne({
       userId: userToUpdate.userId,
-    }).sort({ createdAt: -1 });
+    }).sort({ _id: -1 });
     if (cashDeposit) {
       cashDeposit.maxWithdraw += req.body.amount;
       await cashDeposit.save();
@@ -117,7 +117,7 @@ async function addCredit(req, res) {
     } else {
       const cashCredit = await Credit.findOne({
         userId: userToUpdate.userId,
-      }).sort({ createdAt: -1 });
+      }).sort({ _id: -1 });
       cash = new Credit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
@@ -254,7 +254,7 @@ async function withdrawCredit(req, res) {
     // Update the maxWithdraw field in cashdeposit collection
     const cashDeposit = await CashDeposit.findOne({
       userId: userToUpdate.userId,
-    }).sort({ createdAt: -1 });
+    }).sort({ _id: -1 });
     if (cashDeposit) {
       cashDeposit.maxWithdraw -= req.body.amount;
       await cashDeposit.save();
@@ -316,7 +316,7 @@ async function withdrawCredit(req, res) {
     }
     await userToUpdate.save();
 
-    const cashCreditWithdraw = await Credit.findOne().sort({ createdAt: -1 });
+    const cashCreditWithdraw = await Credit.findOne().sort({ _id: -1 });
     const cash = cashCreditWithdraw.credit - req.body.amount;
     const creditWithdraw = new Credit({
       credit: cash,
