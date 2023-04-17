@@ -50,10 +50,19 @@ function cashDepositLedger(req, res) {
   }
 
   if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
     match.$or = [
-      { description: { $regex: req.body.searchValue, $options: 'i' } },
-      { amount: req.body.searchValue },
-      { balance: req.body.searchValue },
+      { description: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$amount' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$balance' }, regex: searchRegex },
+        },
+      },
     ];
   }
 
@@ -67,7 +76,7 @@ function cashDepositLedger(req, res) {
     },
 
     (err, results) => {
-      if (results.total == 0) {
+      if (!results || !results.total || results.total == 0) {
         return res.status(404).send({ message: 'No records found' });
       }
       if (err)
@@ -123,13 +132,21 @@ function cashCreditLedger(req, res) {
     match.createdAt = { $gte: req.body.startDate };
   }
   if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
     match.$or = [
-      { description: { $regex: req.body.searchValue, $options: 'i' } },
-      { amount: req.body.searchValue },
-      { balance: req.body.searchValue },
+      { description: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$amount' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$balance' }, regex: searchRegex },
+        },
+      },
     ];
   }
-
   match.userId = req.body.userId;
   Credit.paginate(
     match,
@@ -141,7 +158,7 @@ function cashCreditLedger(req, res) {
     },
 
     (err, results) => {
-      if (results.total == 0) {
+      if (!results || !results.total || results.total == 0) {
         return res.status(404).send({ message: 'No records found' });
       }
       if (err)
@@ -342,10 +359,19 @@ function GetAllCashCreditLedger(req, res) {
   }
   match.userId = req.body.userId;
   if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
     match.$or = [
-      { description: { $regex: req.body.searchValue, $options: 'i' } },
-      { amount: req.body.searchValue },
-      { balance: req.body.searchValue },
+      { description: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$amount' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$balance' }, regex: searchRegex },
+        },
+      },
     ];
   }
 
@@ -384,10 +410,19 @@ function GetAllCashDepositLedger(req, res) {
     match.createdAt = { $gte: req.body.startDate };
   }
   if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
     match.$or = [
-      { description: { $regex: req.body.searchValue, $options: 'i' } },
-      { amount: req.body.searchValue },
-      { balance: req.body.searchValue },
+      { description: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$amount' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$balance' }, regex: searchRegex },
+        },
+      },
     ];
   }
 
