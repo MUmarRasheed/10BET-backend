@@ -37,7 +37,7 @@ function cashDepositLedger(req, res) {
     limit = Number(req.body.numRecords);
   }
 
-  let match = {};
+  let match = { userId: req.body.userId };
   if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
       $gte: req.body.startDate,
@@ -48,7 +48,15 @@ function cashDepositLedger(req, res) {
   } else if (req.body.startDate) {
     match.createdAt = { $gte: req.body.startDate };
   }
-  match.userId = req.body.userId;
+
+  if (req.body.searchValue) {
+    match.$or = [
+      { description: { $regex: req.body.searchValue, $options: 'i' } },
+      { amount: req.body.searchValue },
+      { balance: req.body.searchValue },
+    ];
+  }
+
   CashDeposit.paginate(
     match,
     {
@@ -104,16 +112,24 @@ function cashCreditLedger(req, res) {
   }
 
   let match = {};
-  if (req.body.endTime && req.body.startTime) {
+  if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
-      $gte: req.body.startTime,
-      $lte: req.body.endTime,
+      $gte: req.body.startDate,
+      $lte: req.body.endDate,
     };
-  } else if (req.body.endTime) {
-    match.createdAt = { $lte: req.body.endTime };
-  } else if (req.body.startTime) {
-    match.createdAt = { $gte: req.body.startTime };
+  } else if (req.body.endDate) {
+    match.createdAt = { $lte: req.body.endDate };
+  } else if (req.body.startDate) {
+    match.createdAt = { $gte: req.body.startDate };
   }
+  if (req.body.searchValue) {
+    match.$or = [
+      { description: { $regex: req.body.searchValue, $options: 'i' } },
+      { amount: req.body.searchValue },
+      { balance: req.body.searchValue },
+    ];
+  }
+
   match.userId = req.body.userId;
   Credit.paginate(
     match,
@@ -325,6 +341,14 @@ function GetAllCashCreditLedger(req, res) {
     match.createdAt = { $gte: req.body.startDate };
   }
   match.userId = req.body.userId;
+  if (req.body.searchValue) {
+    match.$or = [
+      { description: { $regex: req.body.searchValue, $options: 'i' } },
+      { amount: req.body.searchValue },
+      { balance: req.body.searchValue },
+    ];
+  }
+
   Credit.find(
     match,
     { description: 1, amount: 1, balance: 1, createdAt: 1, _id: 0 },
@@ -359,6 +383,14 @@ function GetAllCashDepositLedger(req, res) {
   } else if (req.body.startDate) {
     match.createdAt = { $gte: req.body.startDate };
   }
+  if (req.body.searchValue) {
+    match.$or = [
+      { description: { $regex: req.body.searchValue, $options: 'i' } },
+      { amount: req.body.searchValue },
+      { balance: req.body.searchValue },
+    ];
+  }
+
   match.userId = req.body.userId;
   CashDeposit.find(
     match,

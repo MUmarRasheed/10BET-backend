@@ -12,7 +12,7 @@ const saltrounds = config.saltRounds;
  *  @status [ 0 (in-active) 1 (active)s]
  */
 const userSchema = new Schema({
-  userName: { type: String, index: true, required: true, unique: false },
+  userName: { type: String, required: true, unique: false },
   password: { type: String, required: true },
   reference: { type: String, required: false },
   phone: { type: String, required: false },
@@ -103,7 +103,7 @@ userSchema.pre('save', function (next) {
 userSchema.plugin(Global.paginate);
 userSchema.plugin(Global.aggregatePaginate);
 
-userSchema.index({ userName: 1, isActive: 1 });
+userSchema.index({ userId: 1, isActive: 1 });
 userSchema.index({ userId: 1 });
 userSchema.index({ superAdminId: 1 });
 userSchema.index({ parentId: 1 });

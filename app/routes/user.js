@@ -21,7 +21,16 @@ function registerUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-
+  if (
+    req.body.role == '3' ||
+    req.body.role == '4' ||
+    req.body.role == '2' ||
+    req.body.role == '1'
+  ) {
+    if (!req.body.downLineShare) {
+      return res.status(404).send({ message: 'downLineShare is required' });
+    }
+  }
   User.findOne()
     .sort({ userId: -1 })
     .exec(async (err, data) => {
@@ -31,14 +40,23 @@ function registerUser(req, res) {
       const usersWithSameName = await User.find({
         userName: req.body.userName,
       });
-
+      // Check if the downline share is greater than the parent's downline share
+      const parentUser = await User.findOne({ userId: req.decoded.userId });
+      if (parentUser.downLineShare < req.body.downLineShare) {
+        return res.status(400).send({
+          message:
+            "downLineShare cannot be greater than parent user's downLineShare",
+        });
+      }
       // Update their isDeleted field to true using updateMany()
       await User.updateMany(
         { userName: req.body.userName },
         { isDeleted: true }
       );
+
       user.userId = data.userId + 1;
       user.id = user._id;
+
       if (req.decoded.role == '1') user.superAdminId = req.decoded.userId;
       if (req.decoded.role == '2') {
         user.parentId = req.decoded.userId;
@@ -61,15 +79,7 @@ function registerUser(req, res) {
       } else {
         user.status = 0;
       }
-      if (
-        req.body.role == '3' ||
-        req.body.role == '4' ||
-        req.body.role == '2' ||
-        req.body.role == '1'
-      ) {
-        if (!req.body.downLineShare)
-          return res.status(404).send({ message: 'downLineShare is required' });
-      }
+
       user.downLineShare = req.body.downLineShare;
       var token = getNonExpiringToken(
         user.userId,
