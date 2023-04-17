@@ -314,15 +314,15 @@ function GetAllCashCreditLedger(req, res) {
   }
 
   let match = {};
-  if (req.body.endTime && req.body.startTime) {
+  if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
-      $gte: req.body.startTime,
-      $lte: req.body.endTime,
+      $gte: req.body.startDate,
+      $lte: req.body.endDate,
     };
-  } else if (req.body.endTime) {
-    match.createdAt = { $lte: req.body.endTime };
-  } else if (req.body.startTime) {
-    match.createdAt = { $gte: req.body.startTime };
+  } else if (req.body.endDate) {
+    match.createdAt = { $lte: req.body.endDate };
+  } else if (req.body.startDate) {
+    match.createdAt = { $gte: req.body.startDate };
   }
   match.userId = req.body.userId;
   Credit.find(
@@ -331,9 +331,7 @@ function GetAllCashCreditLedger(req, res) {
 
     (err, results) => {
       if (err || !results)
-        return res
-          .status(404)
-          .send({ message: 'CASH_CREDIT_LEDGER_NOT_FOUND' });
+        return res.status(404).send({ message: 'No Record found' });
       return res.json({
         message: 'ALL Credit Ledger Report found',
         results,
@@ -351,15 +349,15 @@ function GetAllCashDepositLedger(req, res) {
   }
 
   let match = {};
-  if (req.body.endTime && req.body.startTime) {
+  if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
-      $gte: req.body.startTime,
-      $lte: req.body.endTime,
+      $gte: req.body.endDate,
+      $lte: req.body.endDate,
     };
-  } else if (req.body.endTime) {
-    match.createdAt = { $lte: req.body.endTime };
-  } else if (req.body.startTime) {
-    match.createdAt = { $gte: req.body.startTime };
+  } else if (req.body.endDate) {
+    match.createdAt = { $lte: req.body.endDate };
+  } else if (req.body.startDate) {
+    match.createdAt = { $gte: req.body.startDate };
   }
   match.userId = req.body.userId;
   CashDeposit.find(
@@ -368,9 +366,7 @@ function GetAllCashDepositLedger(req, res) {
 
     (err, results) => {
       if (err || !results)
-        return res
-          .status(404)
-          .send({ message: 'CASH_DEPOSIT_LEDGER_NOT_FOUND' });
+        return res.status(404).send({ message: 'No Record found' });
       return res.json({
         message: 'ALL Cash Desposit Ledger Report found',
         results,
