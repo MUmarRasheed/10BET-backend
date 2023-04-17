@@ -351,7 +351,7 @@ function GetAllCashDepositLedger(req, res) {
   let match = {};
   if (req.body.endDate && req.body.startDate) {
     match.createdAt = {
-      $gte: req.body.endDate,
+      $gte: req.body.startDate,
       $lte: req.body.endDate,
     };
   } else if (req.body.endDate) {
