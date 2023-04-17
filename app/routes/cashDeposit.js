@@ -267,7 +267,7 @@ function getAllCashDeposits(req, res) {
   }
   Cash.findOne(
     { userId: req.query.userId },
-    { credit: 1, availableBalance: 1, maxWithdraw: 1, userId: 1 }
+    { credit: 1, balance: 1, maxWithdraw: 1, userId: 1 }
   )
     .sort({ _id: -1 })
     .exec((err, results) => {
