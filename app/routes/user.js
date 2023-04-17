@@ -124,13 +124,13 @@ function login(req, res) {
       userName: req.body.userName,
       status: 1,
       isActive: true,
-      // isDeleted: false,
+      isDeleted: false,
     },
     (err, user) => {
       if (err || !user)
         return res.status(404).send({ message: 'user not found' });
-      // if (user.isActive === false || user.status === 0)
-      //   return res.status(404).send({ message: 'Account Inactive' });
+      if (user.isActive === false || user.status === 0)
+        return res.status(404).send({ message: 'Account Inactive' });
       // check if user password is matched or not.
       bcrypt.compare(req.body.password, user.password, function (err, result) {
         if (err) return res.status(404).send({ message: 'incorrect password' });
