@@ -38,5 +38,6 @@
   "addBetFairGame",
   "GetAllBetFairGames",
   "GetAllCashDepositLedger",
-  "GetAllCashCreditLedger"
+  "GetAllCashCreditLedger",
+  "getAllSportsHighlight"
 ]
