@@ -129,10 +129,10 @@ async function addAllowedMarketTypes(req, res) {
     }
     // Loop through each market type and find its related submarket types
     for (const marketType of marketTypes) {
-      // Set the status of the market type to true
-      marketType.status = 1;
+      // Update the status of the market type
+      marketType.status = req.body.status[marketType.marketId.toString()];
       await marketType.save();
-      // If specific submarkets are specified in the request body, update their status to true
+      // If specific submarkets are specified in the request body, update their status
       if (req.body.subMarketTypes) {
         const subMarketNames =
           req.body.subMarketTypes[marketType.marketId.toString()];
@@ -155,31 +155,24 @@ async function addAllowedMarketTypes(req, res) {
               }': ${missingSubMarketTypes.join(', ')}`,
             });
           }
-          // Update the status of the found submarket types to true
+          // Update the status of the found submarket types
           await SubMarketType.updateMany(
             {
               marketId: marketType.marketId,
               name: { $in: subMarketNames },
-              status: { $ne: 1 }, // only update submarkets whose status is not already set to 1
             },
-            { status: 1 }
+            { status: req.body.status[marketType.marketId.toString()] }
           );
         }
       }
-      // Otherwise, set the status of all submarket types related to this market type to true
+      // Otherwise, update the status of all submarket types related to this market type
       else {
         await SubMarketType.updateMany(
-          { marketId: marketType.marketId, status: { $ne: 1 } },
-          { status: 1 }
+          { marketId: marketType.marketId },
+          { status: req.body.status[marketType.marketId.toString()] }
         );
       }
     }
-    // // Check if all market types were already updated, and return a message if they were
-    // if (marketTypes.every((marketType) => marketType.status === 1)) {
-    //   return res.status(404).send({
-    //     message: 'All submarkets are already updated',
-    //   });
-    // }
     return res.send({
       success: true,
       message: 'Allowed market types updated successfully',

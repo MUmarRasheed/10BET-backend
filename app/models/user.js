@@ -110,6 +110,7 @@ userSchema.index({ parentId: 1 });
 userSchema.index({ adminId: 1 });
 userSchema.index({ masterId: 1 });
 userSchema.index({ masterId: 1, createdAt: -1 });
+userSchema.index({ bettingAllowed: 1 });
 
 const User = mongoose.model('User', userSchema);
 
