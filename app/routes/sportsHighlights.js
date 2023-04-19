@@ -7,30 +7,43 @@ const SportsHighlight = require('../models/sportsHighlights'); // import SportsH
 // Define the API endpoint
 async function getAllSportsHighlight(req, res) {
   try {
-    // Find all sports highlights
-    const sportsHighlights = await SportsHighlight.find();
+    const { searchValue } = req.query;
+    const match = {};
 
-    // Group sports highlights by sport type
-    const sportsHighlightsBySport = {};
-    sportsHighlights.forEach((highlight) => {
-      if (sportsHighlightsBySport[highlight.sport]) {
-        sportsHighlightsBySport[highlight.sport].push(highlight);
-      } else {
-        sportsHighlightsBySport[highlight.sport] = [highlight];
-      }
+    if (searchValue) {
+      const searchRegex = new RegExp(searchValue, 'i');
+      match.$or = [
+        { 'highlights.match': searchRegex },
+        { 'highlights.amount': parseInt(searchValue) },
+      ];
+    }
+
+    const pipeline = [
+      { $match: match },
+      { $unwind: '$highlights' },
+      { $match: match }, // added a new match stage to match the search value
+      { $group: { _id: '$sport', highlights: { $push: '$highlights' } } },
+      { $replaceRoot: { newRoot: { _id: '$_id', highlights: '$highlights' } } },
+    ];
+
+    const sportsHighlights = await SportsHighlight.aggregate(pipeline);
+
+    const results = {};
+    sportsHighlights.forEach((sport) => {
+      results[sport._id] = sport.highlights;
     });
 
-    // Send the response
     return res.send({
       success: true,
       message: 'GETTING_ALL_SPORTSHIGHLIGHT_DATA_SUCCESS',
-      results: sportsHighlightsBySport,
+      results: results,
     });
   } catch (err) {
     console.log(err);
-    if (err) {
-      return res.status(404).send({ message: 'Internal server error' });
-    }
+    return res.status(404).send({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 }
 
