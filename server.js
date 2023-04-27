@@ -21,6 +21,10 @@ var jsonContent = JSON.parse(content);
 
 var apisContent = fs.readFileSync(config.apisFileName);
 var jsonApis = JSON.parse(apisContent);
+const cronJob = require('./cronJob/cronJob');
+
+// Run the cron job
+cronJob();
 
 // CONNECT THE DATABASE
 let options = {

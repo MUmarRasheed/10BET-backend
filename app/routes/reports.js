@@ -304,7 +304,7 @@ function getClientList(req, res) {
 
   // Retrieve the desired fields from the User collection
   User.findOne(query)
-    .select('credit creditRemaining clientPL plDownline plUpline')
+    // .select('credit creditRemaining clientPL plDownline plUpline')
     .exec((err, results) => {
       console.log('user', results);
       if (err) {
@@ -325,7 +325,7 @@ function getClientList(req, res) {
           creditRecieved: results.credit,
           creditRemaining: results.credit - results.clientPL,
           cash: results.clientPL,
-          plDownline: results.clientPL,
+          plDownline: results.balance,
           balanceUpline: results.clientPL,
           users: count,
         };
