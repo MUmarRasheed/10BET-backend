@@ -125,10 +125,12 @@ async function addBetLock(req, res) {
       return res.status(400).send({ errors: errors.errors });
     }
 
-    const selectedUsers = req.body.selectedUsers || [];
-    const allUsers = req.body.allUsers || false;
+    const selectedUsers = req.body.selectedUsers;
+    const allUsers = req.body.allUsers;
+    const bettingAllowed = req.body.bettingAllowed; // added this line
 
     let query = {};
+    query.isDeleted = false;
     if (req.decoded.login.role === '1') {
       query.superAdminId = req.decoded.userId;
     } else if (req.decoded.login.role === '2') {
@@ -142,17 +144,8 @@ async function addBetLock(req, res) {
     let foundUsers = [];
     if (allUsers) {
       foundUsers = await User.find(query).select('_id userId userName');
-      const userIds = foundUsers.map((user) => user.userId);
-      const existingBetlock = await BetLock.findOne({
-        'users.userId': { $in: userIds },
-      });
-      if (existingBetlock) {
-        return res.status(404).send({
-          message: `Betlock already exists for all users`,
-        });
-      }
-      // update the isBettingAllowed field to false for all users
-      await User.updateMany(query, { $set: { bettingAllowed: false } });
+      // update the bettingAllowed field for all users
+      await User.updateMany(query, { $set: { bettingAllowed } });
     } else if (selectedUsers.length > 0) {
       foundUsers = await User.find({
         userId: { $in: selectedUsers },
@@ -161,37 +154,21 @@ async function addBetLock(req, res) {
       if (foundUsers.length !== selectedUsers.length) {
         return res.status(404).send({ message: 'One or more users not found' });
       }
-      const userIds = foundUsers.map((user) => user.userId);
-      const existingBetlock = await BetLock.findOne({
-        'users.userId': { $in: userIds },
-      });
-      if (existingBetlock) {
-        const existingUserIds = existingBetlock.users.map(
-          (user) => user.userId
-        );
-        const conflictingUserIds = userIds.filter((userId) =>
-          existingUserIds.includes(userId)
-        );
-        return res.status(404).send({
-          message: `Betlock already exists for user(s) with UserId(s) ${conflictingUserIds.join(
-            ', '
-          )}`,
-        });
-      }
-      // update the isBettingAllowed field to false for selected users
+      // update the bettingAllowed field for selected users
       await User.updateMany(
         { userId: { $in: selectedUsers }, ...query },
-        { $set: { bettingAllowed: false } }
+        { $set: { bettingAllowed } }
       );
     }
 
     const betlock = new BetLock({
       users: foundUsers.map((user) => ({
         user: user._id,
-        selected: true,
+        selected: bettingAllowed,
         userName: user.userName,
         userId: user.userId,
       })),
+      betLockStatus: bettingAllowed, // Set betLockStatus based on bettingAllowed
     });
 
     await betlock.save();
@@ -201,6 +178,7 @@ async function addBetLock(req, res) {
       results: betlock,
     });
   } catch (err) {
+    console.error(err);
     res.status(404).send({ message: 'betlock not saved' });
   }
 }
