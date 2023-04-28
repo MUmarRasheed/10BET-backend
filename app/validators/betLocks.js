@@ -5,17 +5,31 @@ module.exports.validate = (method) => {
   switch (method) {
     case 'addBetLock': {
       return [
-        body('selectedUsers')
+        body('selectedUsers', 'Please provide an array of selected user IDs')
           .optional()
           .isArray()
-          .withMessage('Please provide an array of selected user IDs.'),
+          .custom((selectedUsers) => {
+            if (selectedUsers) {
+              selectedUsers.forEach((user) => {
+                if (!user.userId) {
+                  throw new Error('Please provide a valid user ID.');
+                }
+                if (
+                  user.bettingAllowed !== undefined &&
+                  typeof user.bettingAllowed !== 'boolean'
+                ) {
+                  throw new Error('Invalid value for bettingAllowed.');
+                }
+              });
+            }
+            return true;
+          }),
         body('allUsers')
           .optional()
           .isBoolean()
           .withMessage('Invalid value for allUsers.'),
-        body('bettingAllowed')
-          .exists()
-          .withMessage('bettingAllowed is required')
+        body('bettingAllowed', 'bettingAllowed is required')
+          .optional()
           .isBoolean()
           .withMessage('Invalid value for bettingAllowed'),
       ];

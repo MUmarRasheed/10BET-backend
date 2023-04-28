@@ -143,28 +143,39 @@ async function addBetLock(req, res) {
 
     let foundUsers = [];
     if (allUsers) {
-      foundUsers = await User.find(query).select('_id userId userName');
+      foundUsers = await User.find(query).select(
+        '_id userId userName bettingAllowed'
+      );
       // update the bettingAllowed field for all users
       await User.updateMany(query, { $set: { bettingAllowed } });
     } else if (selectedUsers.length > 0) {
+      const bulkUpdateOperations = selectedUsers.map((user) => ({
+        updateOne: {
+          filter: {
+            userId: user.userId,
+            ...query,
+          },
+          update: {
+            $set: { bettingAllowed: user.bettingAllowed },
+          },
+        },
+      }));
+      const result = await User.bulkWrite(bulkUpdateOperations, {
+        ordered: false,
+      });
       foundUsers = await User.find({
-        userId: { $in: selectedUsers },
+        userId: { $in: selectedUsers.map((user) => user.userId) },
         ...query,
-      }).select('_id userId userName');
+      }).select('_id userId userName bettingAllowed');
       if (foundUsers.length !== selectedUsers.length) {
         return res.status(404).send({ message: 'One or more users not found' });
       }
-      // update the bettingAllowed field for selected users
-      await User.updateMany(
-        { userId: { $in: selectedUsers }, ...query },
-        { $set: { bettingAllowed } }
-      );
     }
 
     const betlock = new BetLock({
       users: foundUsers.map((user) => ({
         user: user._id,
-        selected: bettingAllowed,
+        selected: user.bettingAllowed,
         userName: user.userName,
         userId: user.userId,
       })),
