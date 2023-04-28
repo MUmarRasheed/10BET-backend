@@ -24,7 +24,7 @@ var jsonApis = JSON.parse(apisContent);
 const cronJob = require('./cronJob/cronJob');
 
 // Run the cron job
-// cronJob();
+cronJob();
 
 // CONNECT THE DATABASE
 let options = {
