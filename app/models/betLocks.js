@@ -12,7 +12,9 @@ const betLockSchema = new mongoose.Schema({
       selected: { type: Boolean, required: true, default: false },
       userName: { type: String, required: false },
       userId: { type: Number, required: true },
-    }
+      marketId: { type: Number, required: true },
+      marketName: { type: String, required: false },
+    },
   ],
   createdAt: { type: Number },
   updatedAt: { type: Number },

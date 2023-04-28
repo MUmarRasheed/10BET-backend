@@ -32,6 +32,10 @@ module.exports.validate = (method) => {
           .optional()
           .isBoolean()
           .withMessage('Invalid value for bettingAllowed'),
+        body('marketId', 'marketId is required')
+          .exists()
+          .isInt()
+          .withMessage('marketId must be number'),
       ];
     }
   }
