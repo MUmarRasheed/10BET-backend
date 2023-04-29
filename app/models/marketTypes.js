@@ -12,6 +12,9 @@ let marketTypesSchema = new Schema({
   status: { type: Number, required: true },
   updatedAt: { type: Number },
   createdAt: { type: Number },
+  lightIcon: { type: String },
+  darkIcon: { type: String },
+  route: { type: String },
 });
 
 marketTypesSchema.pre('save', function (next) {

@@ -36,7 +36,13 @@ function registerUser(req, res) {
     .sort({ userId: -1 })
     .exec(async (err, data) => {
       if (err) return res.status(404).send({ message: 'user not found', err });
+
       const user = new User(req.body);
+      // Check if the user's role is 5, and if so, set downLineShare to null
+      // Ignore downLineShare field if role is 5
+      if (req.body.role === '5') {
+        req.body.downLineShare = undefined;
+      }
       // Find all users with the same username as the one provided in the request body
       const usersWithSameName = await User.find({
         userName: req.body.userName,
@@ -401,6 +407,73 @@ function getAllUsers(req, res) {
     }
   );
 }
+// function getAllUsers(req, res) {
+//   // Initialize variables with default values
+//   let query = {};
+//   if (req.decoded.login.role == '0') {
+//     query = {};
+//   }
+//   let page = 1;
+//   let sort = -1;
+//   let sortValue = 'createdAt';
+//   var limit = config.pageSize;
+//   if (req.query.numRecords) {
+//     if (isNaN(req.query.numRecords))
+//       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+//     if (req.query.numRecords < 0)
+//       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+//     if (req.query.numRecords > 100)
+//       return res.status(404).send({
+//         message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100',
+//       });
+//     limit = Number(req.query.numRecords);
+//   }
+//   if (req.query.sortValue) sortValue = req.query.sortValue;
+//   if (req.query.sort) {
+//     sort = Number(req.query.sort);
+//   }
+//   if (req.query.page) {
+//     page = Number(req.query.page);
+//   }
+//   if (req.decoded.login.role == '0') {
+//     query = {};
+//   }
+//   if (req.decoded.login.role === '1') {
+//     query.superAdminId = req.decoded.userId;
+//   } else if (req.decoded.login.role === '2') {
+//     query.parentId = req.decoded.userId;
+//   } else if (req.decoded.login.role === '3') {
+//     query.adminId = req.decoded.userId;
+//   } else if (req.decoded.login.role === '4') {
+//     query.masterId = req.decoded.userId;
+//   }
+//   if (req.decoded.login.role === '5') {
+//     query.userId = null;
+//   }
+//   if (req.query.userId) {
+//     query.userId = req.query.userId;
+//   }
+//   if (req.query.userName) {
+//     query.userName = req.query.userName;
+//   }
+//   query.isDeleted = false;
+//   User.paginate(
+//     query,
+//     { page: page, sort: { [sortValue]: sort }, limit: limit },
+//     (err, results) => {
+//       if (results.total == 0) {
+//         return res.status(404).send({ message: 'No records found' });
+//       }
+//       if (err)
+//         return res.status(404).send({ message: 'USERS_PAGINATION_FAILED' });
+//       return res.send({
+//         success: true,
+//         message: 'Users Record Found',
+//         results: results,
+//       });
+//     }
+//   );
+// }
 
 function changePassword(req, res) {
   const errors = validationResult(req);
