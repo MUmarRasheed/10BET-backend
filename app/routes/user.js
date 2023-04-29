@@ -17,6 +17,7 @@ const app = express();
 
 //to do add condition on downline share
 function registerUser(req, res) {
+  //to do bettor share line not be saved
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
@@ -354,10 +355,21 @@ function getAllUsers(req, res) {
   if (req.query.page) {
     page = Number(req.query.page);
   }
-  if (req.decoded.login.role == '0') {
+
+  if (req.query.userId) {
+    const userId = parseInt(req.query.userId);
+    query = {
+      $or: [
+        { superAdminId: userId },
+        { adminId: userId },
+        { parentId: userId },
+        { masterId: userId },
+      ],
+      isDeleted: false,
+    };
+  } else if (req.decoded.login.role == '0') {
     query = {};
-  }
-  if (req.decoded.login.role === '1') {
+  } else if (req.decoded.login.role === '1') {
     query.superAdminId = req.decoded.userId;
   } else if (req.decoded.login.role === '2') {
     query.parentId = req.decoded.userId;
@@ -365,12 +377,8 @@ function getAllUsers(req, res) {
     query.adminId = req.decoded.userId;
   } else if (req.decoded.login.role === '4') {
     query.masterId = req.decoded.userId;
-  }
-  if (req.decoded.login.role === '5') {
+  } else if (req.decoded.login.role === '5') {
     query.userId = null;
-  }
-  if (req.query.userId) {
-    query.userId = req.query.userId;
   }
   if (req.query.userName) {
     query.userName = req.query.userName;
@@ -528,6 +536,7 @@ function searchUsers(req, res) {
 }
 
 function getCurrentUser(req, res) {
+  //to do show status of marketplaces for that specific user
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
