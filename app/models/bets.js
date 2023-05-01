@@ -13,6 +13,8 @@ const betSchema = new mongoose.Schema({
   team: { type: String },
   matchId: { type: String },
   status: { type: String },
+  winningAmount: { type: Number },
+  loosingAmount: { type: Number },
 });
 
 betSchema.pre('save', function (next) {

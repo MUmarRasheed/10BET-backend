@@ -102,6 +102,7 @@ app.use('/api', require('./app/routes/reports').loginRouter);
 app.use('/api', require('./app/routes/theme').loginRouter);
 app.use('/api', require('./app/routes/betFairGames').loginRouter);
 app.use('/api', require('./app/routes/sportsHighlights').loginRouter);
+app.use('/api', require('./app/routes/bets').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {

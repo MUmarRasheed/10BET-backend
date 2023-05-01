@@ -39,5 +39,6 @@
   "GetAllBetFairGames",
   "GetAllCashDepositLedger",
   "GetAllCashCreditLedger",
-  "getAllSportsHighlight"
+  "getAllSportsHighlight",
+  "placeBet"
 ]
