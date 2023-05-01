@@ -52,6 +52,7 @@ async function addBetLock(req, res) {
       const result = await User.bulkWrite(bulkUpdateOperations, {
         ordered: false,
       });
+
       foundUsers = await User.find({
         userId: { $in: selectedUsers.map((user) => user.userId) },
         ...query,
@@ -60,28 +61,23 @@ async function addBetLock(req, res) {
         return res.status(404).send({ message: 'One or more users not found' });
       }
     }
+    // const betlock = new BetLock({
+    //   users: foundUsers.map((user) => ({
+    //     user: user._id,
+    //     selected: user.bettingAllowed,
+    //     userName: user.userName,
+    //     userId: user.userId,
+    //     marketId: market.marketId,
+    //     marketName: market.name,
+    //   })),
+    //   betLockStatus: bettingAllowed,
+    // });
 
-    const market = await MarketType.findOne({ marketId });
-    if (!market) {
-      return res.status(404).send({ message: 'market not found' });
-    }
-    const betlock = new BetLock({
-      users: foundUsers.map((user) => ({
-        user: user._id,
-        selected: user.bettingAllowed,
-        userName: user.userName,
-        userId: user.userId,
-        marketId: market.marketId,
-        marketName: market.name,
-      })),
-      betLockStatus: bettingAllowed,
-    });
-
-    await betlock.save();
+    // await betlock.save();
     return res.send({
       success: true,
       message: 'Betlock created successfully',
-      results: betlock,
+      results: null,
     });
   } catch (err) {
     console.error(err);

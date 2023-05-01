@@ -9,12 +9,13 @@ const betSchema = new mongoose.Schema({
   returnAmount: { type: Number, required: true },
   createdAt: { type: Number },
   updatedAt: { type: Number },
-  status: { type: String },
+  status: { type: String, default: 'pending' },
   team: { type: String },
   matchId: { type: String },
   status: { type: String },
   winningAmount: { type: Number },
   loosingAmount: { type: Number },
+  subMarketId: { type: String },
 });
 
 betSchema.pre('save', function (next) {

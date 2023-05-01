@@ -6,6 +6,8 @@ const { validationResult } = require('express-validator');
 let config = require('config');
 const MarketType = require('../models/marketTypes');
 const SubMarketType = require('../models/subMarketTypes');
+const User = require('../models/user');
+const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
 const loginRouter = express.Router();
@@ -15,32 +17,22 @@ function addMarketType(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  MarketType.findOne()
-    .sort({ marketId: -1 })
-    .exec((err, data) => {
-      if (err)
-        return res.status(404).send({ message: 'market type not found', err });
-      const marketType = new MarketType(req.body);
-      marketType.marketId = data ? data.marketId + 1 : 0;
-      marketType.save((err, marketType) => {
-        if (err && err.code === 11000) {
-          if (err.keyPattern.name === 1)
-            return res
-              .status(404)
-              .send({ message: 'market type already present' });
-        }
-        if (err || !marketType) {
-          return res
-            .status(404)
-            .send({ message: 'market type not added', err });
-        }
-        return res.send({
-          success: true,
-          message: 'Market type added successfully',
-          results: marketType,
-        });
-      });
+  const marketType = new MarketType(req.body);
+  marketType.marketId = uuidv4();
+  marketType.save((err, marketType) => {
+    if (err && err.code === 11000) {
+      if (err.keyPattern.name === 1)
+        return res.status(404).send({ message: 'market type already present' });
+    }
+    if (err || !marketType) {
+      return res.status(404).send({ message: 'market type not added', err });
+    }
+    return res.send({
+      success: true,
+      message: 'Market type added successfully',
+      results: marketType,
     });
+  });
 }
 
 function addSubMarketTypes(req, res) {
@@ -53,6 +45,7 @@ function addSubMarketTypes(req, res) {
       return res.status(404).send({ message: 'market type not found', err });
     const subMarketType = new SubMarketType(req.body);
     subMarketType.marketId = data.marketId;
+    subMarketType.subMarketId = uuidv4(); // Generate a unique UUID
     subMarketType.save((err, marketType) => {
       if (err && err.code === 11000) {
         if (err.keyPattern.name === 1)
@@ -111,6 +104,7 @@ async function addAllowedMarketTypes(req, res) {
 
   try {
     // Find all market types that are specified in the request body
+    let userId = req.decoded.userId;
     const marketIds = req.body.marketId;
     const marketTypes = await MarketType.find({
       marketId: { $in: marketIds },
@@ -128,11 +122,15 @@ async function addAllowedMarketTypes(req, res) {
       });
     }
     // Loop through each market type and find its related submarket types
+    let blockedMarketPlace = [];
+    let blockedSubMarkets = [];
+
     for (const marketType of marketTypes) {
       // Update the status of the market type
       marketType.status = req.body.status[marketType.marketId.toString()];
       await marketType.save();
       // If specific submarkets are specified in the request body, update their status
+      console.log('marketType', marketType);
       if (req.body.subMarketTypes) {
         const subMarketNames =
           req.body.subMarketTypes[marketType.marketId.toString()];
@@ -156,6 +154,10 @@ async function addAllowedMarketTypes(req, res) {
             });
           }
           // Update the status of the found submarket types
+          const subMarketIds = subMarketTypes.map(
+            (subMarketType) => subMarketType.subMarketId
+          );
+          console.log('submarketId', subMarketIds);
           await SubMarketType.updateMany(
             {
               marketId: marketType.marketId,
@@ -163,6 +165,15 @@ async function addAllowedMarketTypes(req, res) {
             },
             { status: req.body.status[marketType.marketId.toString()] }
           );
+
+          // Add blocked submarketIds to blockedSubMarkets array
+          blockedSubMarkets = blockedSubMarkets.concat(
+            subMarketIds.filter(
+              (subMarketId) =>
+                req.body.status[marketType.marketId.toString()] === 0
+            )
+          );
+          console.log('blockedSubMarkets', blockedSubMarkets);
         }
       }
       // Otherwise, update the status of all submarket types related to this market type
@@ -172,7 +183,24 @@ async function addAllowedMarketTypes(req, res) {
           { status: req.body.status[marketType.marketId.toString()] }
         );
       }
+
+      // Add blocked market places to blockedMarketPlaces array
+      if (req.body.status[marketType.marketId.toString()] === 0) {
+        blockedMarketPlace.push(marketType.marketId.toString());
+      }
     }
+    console.log('blockedMarketPlaces', blockedMarketPlace);
+    // Update blockedMarketPlaces and blockedSubMarkets arrays in user collection
+    const user = await User.findOneAndUpdate(
+      { userId: userId },
+
+      {
+        blockedSubMarkets: blockedSubMarkets,
+        blockedMarketPlaces: blockedMarketPlace,
+      },
+      { new: true, upsert: false }
+    );
+    await user.save();
     return res.send({
       success: true,
       message: 'Allowed market types updated successfully',
@@ -183,7 +211,6 @@ async function addAllowedMarketTypes(req, res) {
     return res.status(404).send({ message: 'Server error' });
   }
 }
-
 // async function editAllowedMarketTypes(req, res) {
 //   const errors = validationResult(req);
 //   if (errors.errors.length !== 0) {

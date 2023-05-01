@@ -34,8 +34,8 @@ module.exports.validate = (method) => {
           .withMessage('Invalid value for bettingAllowed'),
         body('marketId', 'marketId is required')
           .exists()
-          .isInt()
-          .withMessage('marketId must be number'),
+          .isString()
+          .withMessage('marketId must be string'),
       ];
     }
   }

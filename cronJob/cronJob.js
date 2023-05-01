@@ -2,33 +2,40 @@ const cron = require('node-cron');
 const axios = require('axios');
 const Bets = require('../app/models/bets');
 const CricketMatch = require('../app/models/cricketMatches');
-
+const User = require('../app/models/user');
 let runningJob;
-// Run the cron job every 5 seconds
+
 const cronJob = () => {
   runningJob = cron.schedule('*/5 * * * * *', async () => {
-    // Check match status and update bets accordingly
-    const endedMatches = await getEndedMatches();
-    for (const match of endedMatches) {
-      const matchId = match.id;
-      const bets = await Bets.find({ sportsId: 1, matchId });
-      console.log('bets', bets);
-      for (const bet of bets) {
-        console.log('in here');
-        if (bet.team === match.winningTeam) {
-          // Update bet status to 'win'
-          await Bets.findByIdAndUpdate(bet._id, { status: 'win' });
-          console.log(`Bet ${bet._id} won!`);
-        } else {
-          // Update bet status to 'lose'
-          await Bets.findByIdAndUpdate(bet._id, { status: 'lose' });
-          console.log(`Bet ${bet._id} lost.`);
+    try {
+      const endedMatches = await getEndedMatches();
+      console.log('endedMatches', endedMatches);
+
+      for (const match of endedMatches) {
+        const matchId = match.id;
+        const sportsId = match.sportsId;
+        const bets = await getAllBets({ sportsId: sportsId, matchId });
+        console.log('bets', bets);
+
+        for (const bet of bets) {
+          console.log('in here');
+          if (bet.team === match.winningTeam) {
+            await Bets.findByIdAndUpdate(bet._id, { status: 'win' });
+            console.log(`Bet ${bet._id} won!`);
+            // handleWinningBet(bet);
+          } else {
+            await Bets.findByIdAndUpdate(bet._id, { status: 'lost' });
+            console.log(`Bet ${bet._id} lost.`);
+          }
         }
       }
-    }
-    if (endedMatches.length === 1) {
-      console.log('No more ended matches, stopping cron job');
-      runningJob.stop();
+
+      if (endedMatches.length >= 1) {
+        console.log('Stopping cron job');
+        runningJob.stop();
+      }
+    } catch (err) {
+      console.error(err);
     }
   });
 };
@@ -50,8 +57,6 @@ async function getEndedMatches() {
       sportsId,
       matchEnded: true,
     });
-    console.log('endedmatches', endedMatches);
-    // Stop the cron job if there are no more ended matches
     return endedMatches;
   } catch (err) {
     console.error(err);
@@ -61,17 +66,27 @@ async function getEndedMatches() {
 
 function handleWinningBet(bet) {
   console.log(`Bet ${bet._id} won!`);
-  // TODO: Handle winning bet logic
+  const userId = bet.userId;
+  const amountWon = bet.amount * bet.odds;
+  User.findByIdAndUpdate(
+    userId,
+    { $inc: { balance: amountWon } },
+    (err, user) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log(`User ${userId} won ${amountWon}!`);
+      }
+    }
+  );
 }
 
 function handleLosingBet(bet) {
   console.log(`Bet ${bet._id} lost.`);
-  // TODO: Handle losing bet logic
 }
 
 function handlePendingBet(bet) {
   console.log(`Bet ${bet._id} is pending.`);
-  // TODO: Handle pending bet logic
 }
 
 module.exports = cronJob;
