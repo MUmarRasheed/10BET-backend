@@ -15,6 +15,7 @@ let marketTypesSchema = new Schema({
   lightIcon: { type: String },
   darkIcon: { type: String },
   route: { type: String },
+  link: { type: String },
 });
 
 marketTypesSchema.pre('save', function (next) {

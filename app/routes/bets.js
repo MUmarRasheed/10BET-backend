@@ -16,54 +16,31 @@ async function placeBet(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  //to do want to check blocked marketplaces and submarketplaces from the user
+  const { sportsId, selectedTeam, betAmount, betRate, matchId, subMarketId } =
+    req.body;
   const userId = req.decoded.userId;
-  let filter = {};
-  filter.isDeleted = false;
   console.log('req.decod.parentId', req.decoded.parentId);
   console.log('req.decod.adminId', req.decoded.adminId);
   console.log('req.decod.master', req.decoded.masterId);
   console.log('req.decod.superAdmi', req.decoded.superAdminId);
-  if (req.decoded.role == '1') {
-    filter = {
-      $or: [{ superAdminId: req.decoded.superAdminId }],
-    };
-  } else if (req.decoded.role == '2') {
-    filter = {
-      $or: [{ superAdminId: req.decoded.superAdminId }],
-    };
-  } else if (req.decoded.role == '3') {
-    filter = {
-      $or: [
-        { superAdminId: req.decoded.superAdminId },
-        { parentId: req.decoded.parentId },
-      ],
-    };
-  } else if (req.decoded.role == '4' || req.decoded.role == '5') {
-    filter = {
-      $or: [
-        { superAdminId: req.decoded.superAdminId },
-        { adminId: req.decoded.adminId },
-        { parentId: req.decoded.parentId },
-      ],
-    };
-  }
-  const users = await User.find(filter);
-  if (users.blockedMarketPlaces !== null || users.blockedSubMakrets !== null) {
-    return res.status(404).send({ message: 'Market Locked by the dealer' });
-  }
-  filterForMain = {
-    userId: parseInt(req.decoded.superAdminId),
-    userId: parseInt(req.decoded.adminId),
-    userId: parseInt(req.decoded.parentId),
+  const filterForMain = {
+    $or: [
+      { userId: req.decoded.superAdminId },
+      { userId: req.decoded.adminId },
+      { userId: req.decoded.parentId },
+      { userId: req.decoded.masterId },
+      { userId: 0 },
+    ],
     isDeleted: false,
   };
   let parentUser = await User.find(filterForMain);
-  if (
-    parentUser.blockedMarketPlaces !== null ||
-    parentUser.blockedSubMakrets !== null
-  ) {
+  if (parentUser[0].blockedMarketPlaces.includes(sportsId)) {
     return res.status(404).send({ message: 'Market Locked by the dealer' });
+  }
+  if (parentUser[0].blockedSubMarkets.includes(subMarketId)) {
+    return res
+      .status(404)
+      .send({ message: 'Betting not allowed in this market' });
   }
   if (
     req.decoded.login.role == '0' ||
@@ -74,20 +51,25 @@ async function placeBet(req, res) {
   ) {
     return res.status(404).send({ message: 'only bettor can do betting' });
   }
-  const { sportsId, selectedTeam, betAmount, betRate, matchId, subMarketId } =
-    req.body;
+
   try {
     const user = await User.findOne({ userId }).exec();
     if (!user) {
       return res.status(404).send({ message: 'User not found' });
     }
+    // Check if the user is allowed to place a bet in the specified market and submarket
+    if (user[0].blockedMarketPlaces.includes(sportsId)) {
+      return res.status(400).send({ message: 'Market Locked by the dealer' });
+    }
+    if (user[0].blockedSubMarkets.includes(subMarketId)) {
+      return res
+        .status(404)
+        .send({ message: 'Betting not allowed in this market' });
+    }
     if (user.bettingAllowed === false) {
       return res
         .status(404)
         .send({ message: 'Bet is not allowed for your account' });
-    }
-    if (user.blockedMarketPlaces !== null || user.blockedSubMakrets !== null) {
-      return res.status(400).send({ message: 'Market Locked by the dealer' });
     }
 
     const match = await CricketMatch.findOne({
