@@ -18,6 +18,53 @@ async function placeBet(req, res) {
   }
   //to do want to check blocked marketplaces and submarketplaces from the user
   const userId = req.decoded.userId;
+  let filter = {};
+  filter.isDeleted = false;
+  console.log('req.decod.parentId', req.decoded.parentId);
+  console.log('req.decod.adminId', req.decoded.adminId);
+  console.log('req.decod.master', req.decoded.masterId);
+  console.log('req.decod.superAdmi', req.decoded.superAdminId);
+  if (req.decoded.role == '1') {
+    filter = {
+      $or: [{ superAdminId: req.decoded.superAdminId }],
+    };
+  } else if (req.decoded.role == '2') {
+    filter = {
+      $or: [{ superAdminId: req.decoded.superAdminId }],
+    };
+  } else if (req.decoded.role == '3') {
+    filter = {
+      $or: [
+        { superAdminId: req.decoded.superAdminId },
+        { parentId: req.decoded.parentId },
+      ],
+    };
+  } else if (req.decoded.role == '4' || req.decoded.role == '5') {
+    filter = {
+      $or: [
+        { superAdminId: req.decoded.superAdminId },
+        { adminId: req.decoded.adminId },
+        { parentId: req.decoded.parentId },
+      ],
+    };
+  }
+  const users = await User.find(filter);
+  if (users.blockedMarketPlaces !== null || users.blockedSubMakrets !== null) {
+    return res.status(404).send({ message: 'Market Locked by the dealer' });
+  }
+  filterForMain = {
+    userId: parseInt(req.decoded.superAdminId),
+    userId: parseInt(req.decoded.adminId),
+    userId: parseInt(req.decoded.parentId),
+    isDeleted: false,
+  };
+  let parentUser = await User.find(filterForMain);
+  if (
+    parentUser.blockedMarketPlaces !== null ||
+    parentUser.blockedSubMakrets !== null
+  ) {
+    return res.status(404).send({ message: 'Market Locked by the dealer' });
+  }
   if (
     req.decoded.login.role == '0' ||
     req.decoded.login.role == '1' ||
@@ -25,7 +72,7 @@ async function placeBet(req, res) {
     req.decoded.login.role == '3' ||
     req.decoded.login.role == '4'
   ) {
-    return res.send({ message: 'only bettor can do betting' });
+    return res.status(404).send({ message: 'only bettor can do betting' });
   }
   const { sportsId, selectedTeam, betAmount, betRate, matchId, subMarketId } =
     req.body;
@@ -34,38 +81,13 @@ async function placeBet(req, res) {
     if (!user) {
       return res.status(404).send({ message: 'User not found' });
     }
-    console.log('userrrr', user);
     if (user.bettingAllowed === false) {
       return res
-        .status(400)
+        .status(404)
         .send({ message: 'Bet is not allowed for your account' });
     }
-    // if (user.blockedMarketPlaces !== null) {
-    //   return res.status(400).send({ message: 'Market Locked by the dealer' });
-    // }
-    const market = await Markets.findOne({
-      marketId: req.body.sportsId,
-    }).exec();
-    if (!market) {
-      return res.status(404).send({ message: 'Market not found' });
-    }
-    console.log('market', market);
-    if (market.status == 0) {
-      return res
-        .status(400)
-        .send({ message: 'Betting is disabled by the dealer' });
-    }
-    const subMarketTypes = await SubMarketType.findOne({
-      subMarketId: subMarketId,
-    }).exec();
-    if (!subMarketTypes) {
-      return res.status(404).send({ message: 'Market not found' });
-    }
-    console.log('submarket', subMarketTypes);
-    if (subMarketTypes.status == 0) {
-      return res
-        .status(400)
-        .send({ message: 'Betting is disabled by the dealer' });
+    if (user.blockedMarketPlaces !== null || user.blockedSubMakrets !== null) {
+      return res.status(400).send({ message: 'Market Locked by the dealer' });
     }
 
     const match = await CricketMatch.findOne({
@@ -81,7 +103,7 @@ async function placeBet(req, res) {
     }
 
     // Check if the match has ended
-    if (match.matchEndced) {
+    if (match.matchEnded) {
       console.log(`Match has already ended for sports ID ${sportsId}`);
       return res
         .status(404)
@@ -89,22 +111,6 @@ async function placeBet(req, res) {
     }
 
     const teams = [match.teams[0], match.teams[1]];
-    // const userBetRate = BetRateList.getBetRateList(
-    //   sportsId,
-    //   teams,
-    //   selectedTeam
-    // );
-
-    // // Check if the user's bet rate is available
-    // if (!userBetRate.includes(betRate)) {
-    //   console.log(
-    //     `Bet rate not available for user ID ${userId} and sports ID ${sportsId}`
-    //   );
-    //   return res.status(404).send({
-    //     message: `Bet rate not available for user ID ${userId} and sports ID ${sportsId}`,
-    //   });
-    // }
-
     // Calculate the return amount
     const returnAmount = betAmount * betRate;
     const winningAmount = betAmount * betRate;
@@ -131,9 +137,9 @@ async function placeBet(req, res) {
     );
     bet.save((err, result) => {
       if (err) {
-        return res.status(400).send({ message: 'Error placing bet' });
+        return res.status(404).send({ message: 'Error placing bet' });
       }
-      return res.status(201).send({
+      return res.send({
         success: true,
         message: 'Bet placed successfully',
         results: result,

@@ -336,9 +336,9 @@ function loadUserBalance(req, res) {
 function getAllUsers(req, res) {
   // Initialize variables with default values
   let query = {};
-  if (req.decoded.login.role == '0') {
-    query = {};
-  }
+  // if (req.decoded.login.role == '0') {
+  //   query = {};
+  // }
   let page = 1;
   let sort = -1;
   let sortValue = 'createdAt';

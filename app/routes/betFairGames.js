@@ -18,7 +18,7 @@ function addBetFairGame(req, res) {
 }
 
 function GetAllBetFairGames(req, res) {
-  BetFairGames.find({ userId: req.decoded.userId }, (err, success) => {
+  BetFairGames.find({}, (err, success) => {
     if (err || !success)
       return res.status(404).send({ message: 'BetFair Games Not Found' });
     else
