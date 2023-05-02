@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 const loginRouter = express.Router();
 
-function addMarketType(req, res) {
+function addddMarketType(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
@@ -35,7 +35,7 @@ function addMarketType(req, res) {
   });
 }
 
-function addSubMarketTypes(req, res) {
+function addSdubMarketTypes(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
@@ -459,6 +459,69 @@ async function addAllowedMarketTypes(req, res) {
     console.error(error);
     return res.status(404).send({ message: 'Server error' });
   }
+}
+function addMarketType(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  MarketType.findOne()
+    .sort({ marketId: -1 })
+    .exec((err, data) => {
+      if (err)
+        return res.status(404).send({ message: 'market type not found', err });
+      const marketType = new MarketType(req.body);
+      marketType.marketId = data ? data.marketId + 1 : 0;
+      marketType.save((err, marketType) => {
+        if (err && err.code === 11000) {
+          if (err.keyPattern.name === 1)
+            return res
+              .status(404)
+              .send({ message: 'market type already present' });
+        }
+        if (err || !marketType) {
+          return res
+            .status(404)
+            .send({ message: 'market type not added', err });
+        }
+        return res.send({
+          success: true,
+          message: 'Market type added successfully',
+          results: marketType,
+        });
+      });
+    });
+}
+
+function addSubMarketTypes(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  MarketType.findOne({ marketId: req.body.marketId }, (err, data) => {
+    if (err)
+      return res.status(404).send({ message: 'market type not found', err });
+    const subMarketType = new SubMarketType(req.body);
+    subMarketType.marketId = data.marketId;
+    subMarketType.save((err, marketType) => {
+      if (err && err.code === 11000) {
+        if (err.keyPattern.name === 1)
+          return res
+            .status(404)
+            .send({ message: 'sub market type already present' });
+      }
+      if (err || !marketType) {
+        return res
+          .status(404)
+          .send({ message: 'sub market type not added', err });
+      }
+      return res.send({
+        success: true,
+        message: 'Sub Market type added successfully',
+        results: marketType,
+      });
+    });
+  });
 }
 
 loginRouter.get('/getAllMarketTypes', getAllMarketTypes);
