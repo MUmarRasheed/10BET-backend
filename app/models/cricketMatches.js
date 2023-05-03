@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const cricketMatchSchema = new mongoose.Schema({
-  sportsId: { type: Number },
+  sportsId: { type: String },
   id: { type: String, required: true, index: true },
   name: { type: String, required: true },
   matchType: { type: String, required: true },

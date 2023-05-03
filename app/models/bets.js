@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const BetSizes = require('./betSizes');
 
 const betSchema = new mongoose.Schema({
-  sportsId: { type: Number, required: true },
+  sportsId: { type: String, required: true },
   userId: { type: Number, required: true },
   betAmount: { type: Number, required: true },
   betRate: { type: Number, required: true }, // bet rate chosen by user

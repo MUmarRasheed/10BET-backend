@@ -58,10 +58,10 @@ async function placeBet(req, res) {
       return res.status(404).send({ message: 'User not found' });
     }
     // Check if the user is allowed to place a bet in the specified market and submarket
-    if (user[0].blockedMarketPlaces.includes(sportsId)) {
+    if (user.blockedMarketPlaces.includes(sportsId)) {
       return res.status(400).send({ message: 'Market Locked by the dealer' });
     }
-    if (user[0].blockedSubMarkets.includes(subMarketId)) {
+    if (user.blockedSubMarkets.includes(subMarketId)) {
       return res
         .status(404)
         .send({ message: 'Betting not allowed in this market' });
@@ -85,7 +85,7 @@ async function placeBet(req, res) {
     }
 
     // Check if the match has ended
-    if (match.matchEnded) {
+    if (match.matdchEnded) {
       console.log(`Match has already ended for sports ID ${sportsId}`);
       return res
         .status(404)
@@ -119,6 +119,7 @@ async function placeBet(req, res) {
     );
     bet.save((err, result) => {
       if (err) {
+        console.log('err', err);
         return res.status(404).send({ message: 'Error placing bet' });
       }
       return res.send({
@@ -128,7 +129,7 @@ async function placeBet(req, res) {
       });
     });
   } catch (error) {
-    console.error(error);
+    console.error('error', error);
     return res.status(404).send({ message: 'Server error' });
   }
 }

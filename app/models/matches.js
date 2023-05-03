@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-mongoose.set("debug", true);
+const mongoose = require('mongoose');
+mongoose.set('debug', true);
 
-let Global = require("../global/settings");
+let Global = require('../global/settings');
 const matchSchema = new mongoose.Schema({
   sportsId: {
     type: Number,
@@ -38,7 +38,7 @@ const matchSchema = new mongoose.Schema({
     type: Number,
   },
 });
-matchSchema.pre("save", function (next) {
+matchSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -51,4 +51,4 @@ matchSchema.pre("save", function (next) {
 matchSchema.plugin(Global.paginate);
 matchSchema.plugin(Global.aggregatePaginate);
 
-module.exports = mongoose.model("match", matchSchema);
+module.exports = mongoose.model('match', matchSchema);
