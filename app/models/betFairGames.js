@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const betFairGamesSchema = new mongoose.Schema({
   type: { type: Number, required: true },
   title: { type: String, required: true },
+  imgUrl: { type: String, required: true },
   createdAt: { type: Number },
   updatedAt: { type: Number },
 });
