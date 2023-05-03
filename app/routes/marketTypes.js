@@ -528,5 +528,5 @@ loginRouter.get('/getAllMarketTypes', getAllMarketTypes);
 loginRouter.post('/addMarketType', addMarketType);
 loginRouter.post('/addSubMarketTypes', addSubMarketTypes);
 loginRouter.post('/addAllowedMarketTypes', addAllowedMarketTypes);
-loginRouter.post('/editAllowedMarketTypes', editAllowedMarketTypes);
+// loginRouter.post('/editAllowedMarketTypes', editAllowedMarketTypes);
 module.exports = { router, loginRouter };
