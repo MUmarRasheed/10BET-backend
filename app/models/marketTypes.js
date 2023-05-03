@@ -7,7 +7,7 @@ const Global = require('../global/settings');
  * @status [ 0(non-active), 1 (active)]
  */
 let marketTypesSchema = new Schema({
-  marketId: { type: Number },
+  marketId: { type: String },
   name: { type: String, required: true },
   status: { type: Number, required: true },
   updatedAt: { type: Number },
