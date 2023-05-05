@@ -182,9 +182,9 @@ async function addBetLock(req, res) {
               $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
             },
           };
-
-          await User.updateOne({ userId: user.userId, ...query }, updateQuery);
         }
+
+        await User.updateOne({ userId: user.userId, ...query }, updateQuery);
       }
     } else if (selectedUsers && selectedUsers.length > 0) {
       foundUsers = await User.find({
