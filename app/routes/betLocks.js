@@ -127,7 +127,7 @@ async function addBetLock(req, res) {
     if (!errors.isEmpty()) {
       return res.status(400).send({ errors: errors.errors });
     }
-
+    console.log('req.body', req.body);
     const { selectedUsers, allUsers, marketId, subMarketId, betLockStatus } =
       req.body;
     const query = { isDeleted: false };
@@ -153,32 +153,36 @@ async function addBetLock(req, res) {
             (subMarket) => subMarket.name === 'Match Odds'
           );
           if (matchOddsSubMarket) {
-            (updateQuery.$set = { betLockStatus: true, matchOddsStatus: true }),
-              (updateQuery.$addToSet = {
-                blockedMarketPlaces: marketId,
-                blockedSubMarkets: {
-                  $each:
-                    subMarketId?.map(({ subMarketId }) => subMarketId) || [],
-                },
-              });
+            updateQuery.$set = { matchOddsStatus: true };
+          } else {
+            updateQuery.$set = { betLockStatus: true };
           }
+          // if (matchOddsSubMarket && betLockStatus === true) {
+          //   updateQuery.$set = { betLockStatus: true, matchOddsStatus: true };
+          // }
+          updateQuery.$addToSet = {
+            blockedMarketPlaces: marketId,
+            blockedSubMarkets: {
+              $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
+            },
+          };
         } else if (betLockStatus === false) {
           const matchOddsSubMarket = subMarketId.find(
             (subMarket) => subMarket.name === 'Match Odds'
           );
           if (matchOddsSubMarket) {
-            (updateQuery.$set = {
-              betLockStatus: false,
-              matchOddsStatus: false,
-            }),
-              (updateQuery.$pull = {
-                blockedMarketPlaces: marketId,
-
-                blockedSubMarkets: {
-                  $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
-                },
-              });
+            updateQuery.$set = { matchOddsStatus: false };
+          } else {
+            updateQuery.$set = { betLockStatus: false };
           }
+          updateQuery.$pull = {
+            blockedMarketPlaces: marketId,
+
+            blockedSubMarkets: {
+              $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
+            },
+          };
+
           await User.updateOne({ userId: user.userId, ...query }, updateQuery);
         }
       }
@@ -197,23 +201,40 @@ async function addBetLock(req, res) {
         ({ userId, betLockStatus }) => {
           const updateQuery = {};
           if (betLockStatus === true) {
-            (updateQuery.$set = { betLockStatus: true }),
-              (updateQuery.$addToSet = {
-                blockedMarketPlaces: marketId,
+            const matchOddsSubMarket = subMarketId.find(
+              (subMarket) => subMarket.name === 'Match Odds'
+            );
+            if (matchOddsSubMarket) {
+              updateQuery.$set = { matchOddsStatus: true };
+            } else {
+              updateQuery.$set = { betLockStatus: true };
+            }
 
-                blockedSubMarkets: {
-                  $each:
-                    subMarketId?.map(({ subMarketId }) => subMarketId) || [],
-                },
-              });
+            // (updateQuery.$set = { betLockStatus: true }),
+            updateQuery.$addToSet = {
+              blockedMarketPlaces: marketId,
+
+              blockedSubMarkets: {
+                $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
+              },
+            };
           } else if (betLockStatus === false) {
-            (updateQuery.$set = { betLockStatus: false }),
-              (updateQuery.$pull = {
-                blockedMarketPlaces: marketId,
-                blockedSubMarkets: {
-                  $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
-                },
-              });
+            const matchOddsSubMarket = subMarketId.find(
+              (subMarket) => subMarket.name === 'Match Odds'
+            );
+            if (matchOddsSubMarket) {
+              updateQuery.$set = { matchOddsStatus: false };
+            } else {
+              updateQuery.$set = { betLockStatus: false };
+            }
+
+            // (updateQuery.$set = { betLockStatus: false }),
+            updateQuery.$pull = {
+              blockedMarketPlaces: marketId,
+              blockedSubMarkets: {
+                $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
+              },
+            };
           }
 
           return {

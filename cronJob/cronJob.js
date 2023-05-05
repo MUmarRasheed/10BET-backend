@@ -52,9 +52,11 @@ async function getAllBets(req, res) {
 
 async function getEndedMatches() {
   try {
-    sportsId = 1;
+    sportsId = '38d3bc03-8a59-4551-85cf-a35298f75124';
+    id = '64458338-704e-4d0f-b4fa-6af920ab467d';
     const endedMatches = await CricketMatch.find({
       sportsId,
+      id,
       matchEnded: true,
     });
     return endedMatches;
@@ -67,7 +69,7 @@ async function getEndedMatches() {
 function handleWinningBet(bet) {
   console.log(`Bet ${bet._id} won!`);
   const userId = bet.userId;
-  const amountWon = bet.amount * bet.odds;
+  const amountWon = bet.winngingAmount;
   User.findByIdAndUpdate(
     userId,
     { $inc: { balance: amountWon } },
