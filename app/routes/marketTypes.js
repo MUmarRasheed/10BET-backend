@@ -87,20 +87,6 @@ function getAllMarketTypes(req, res) {
           as: 'subMarketTypes',
         },
       },
-      {
-        $match: {
-          $or: [
-            {
-              marketId: { $nin: blockedMarkets },
-            },
-            {
-              'subMarketTypes.subMarketId': {
-                $nin: blockedSubMarkets,
-              },
-            },
-          ],
-        },
-      },
     ];
 
     MarketType.aggregate(query, (err, results) => {
@@ -109,14 +95,16 @@ function getAllMarketTypes(req, res) {
           .status(404)
           .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
       }
-      // exclude blockedSubMarkets and blockedMarkets arrays from the response
+
+      // set the status to 0 for blocked markets and submarkets, 1 otherwise
       const marketTypes = results.map((result) => {
+        console.log('result', result);
+
         const {
           _id,
           marketId,
           marketName,
           name,
-          status,
           lightIcon,
           darkIcon,
           createdAt,
@@ -125,90 +113,48 @@ function getAllMarketTypes(req, res) {
           link,
           subMarketTypes,
         } = result;
-        const filteredSubMarketTypes = subMarketTypes.filter(
-          (subMarketType) => {
-            return !blockedSubMarkets.includes(subMarketType.subMarketId);
-          }
-        );
+        let status = 1; // default status is 1
+
+        // Check if the market type is blocked
+        if (blockedMarkets.includes(marketId)) {
+          status = 0;
+        }
+
+        const subMarketStatuses = subMarketTypes.map((subMarketType) => {
+          const isBlockedSubMarket = blockedSubMarkets.includes(
+            subMarketType.subMarketId
+          );
+          return {
+            _id: subMarketType._id,
+            subMarketId: subMarketType.subMarketId,
+            name: subMarketType.name,
+            marketId: subMarketType.marketId,
+            status: isBlockedSubMarket || status === 0 ? 0 : 1,
+            createdAt: subMarketType.createdAt,
+          };
+        });
         return {
           _id,
           marketId,
           marketName,
           name,
-          status,
           lightIcon,
           darkIcon,
           createdAt,
           __v,
           updatedAt,
           link,
-          subMarketTypes: filteredSubMarketTypes,
+          subMarketTypes: subMarketStatuses,
+          status,
         };
       });
+
       return res.send({
         message: 'MARKET_TYPES_FETCHED_SUCCESSFULLY',
         marketTypes,
       });
     });
   });
-}
-
-//old code
-function getAllMarketTypces(req, res) {
-  //to do if company is added two markets for its all users then
-  // when that user login they can see only list of two markets
-
-  MarketType.aggregate(
-    [
-      {
-        $lookup: {
-          from: 'submarkettypes',
-          localField: 'marketId',
-          foreignField: 'marketId',
-          as: 'subMarketTypes',
-        },
-      },
-    ],
-    (err, results) => {
-      if (err)
-        return res
-          .status(404)
-          .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
-      return res.send({
-        success: true,
-        message: 'MARKET_TYPES_RECORD_FOUND',
-        results: results,
-      });
-    }
-  );
-}
-function getAllMarketTypes(req, res) {
-  //to do if company is added two markets for its all users then
-  // when that user login they can see only list of two markets
-
-  MarketType.aggregate(
-    [
-      {
-        $lookup: {
-          from: 'submarkettypes',
-          localField: 'marketId',
-          foreignField: 'marketId',
-          as: 'subMarketTypes',
-        },
-      },
-    ],
-    (err, results) => {
-      if (err)
-        return res
-          .status(404)
-          .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
-      return res.send({
-        success: true,
-        message: 'MARKET_TYPES_RECORD_FOUND',
-        results: results,
-      });
-    }
-  );
 }
 
 //old code
