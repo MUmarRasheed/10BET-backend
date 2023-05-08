@@ -136,6 +136,7 @@ function getAllMarketTypes(req, res) {
         return {
           _id,
           marketId,
+          status,
           marketName,
           name,
           lightIcon,
@@ -145,18 +146,47 @@ function getAllMarketTypes(req, res) {
           updatedAt,
           link,
           subMarketTypes: subMarketStatuses,
-          status,
         };
       });
 
       return res.send({
+        success: true,
         message: 'MARKET_TYPES_FETCHED_SUCCESSFULLY',
-        marketTypes,
+        results: marketTypes,
       });
     });
   });
 }
 
+// //old code
+// function getAllMarketTypes(req, res) {
+//   //to do if company is added two markets for its all users then
+//   // when that user login they can see only list of two markets
+
+//   MarketType.aggregate(
+//     [
+//       {
+//         $lookup: {
+//           from: 'submarkettypes',
+//           localField: 'marketId',
+//           foreignField: 'marketId',
+//           as: 'subMarketTypes',
+//         },
+//       },
+//     ],
+//     (err, results) => {
+//       if (err)
+//         return res
+//           .status(404)
+//           .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
+//       return res.send({
+//         success: true,
+//         message: 'MARKET_TYPES_RECORD_FOUND',
+//         results: results,
+//       });
+//     }
+//   );
+// }
 //old code
 // async function addAllowedMarketTypes(req, res) {
 //   const errors = validationResult(req);
