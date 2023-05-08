@@ -15,10 +15,10 @@ module.exports.validate = (method) => {
                   throw new Error('Please provide a valid user ID.');
                 }
                 if (
-                  user.bettingAllowed !== undefined &&
-                  typeof user.bettingAllowed !== 'boolean'
+                  user.betLockStatus !== undefined &&
+                  typeof user.betLockStatus !== 'boolean'
                 ) {
-                  throw new Error('Invalid value for bettingAllowed.');
+                  throw new Error('betLockStatus must be Boolean');
                 }
               });
             }
@@ -28,10 +28,10 @@ module.exports.validate = (method) => {
           .optional()
           .isBoolean()
           .withMessage('Invalid value for allUsers.'),
-        body('bettingAllowed', 'bettingAllowed is required')
+        body('betLockStatus', 'betLockStatus is required')
           .optional()
           .isBoolean()
-          .withMessage('Invalid value for bettingAllowed'),
+          .withMessage('Invalid value for betLockStatus'),
         body('marketId', 'marketId is required')
           .exists()
           .isString()

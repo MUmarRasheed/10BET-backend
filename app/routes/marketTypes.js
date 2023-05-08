@@ -68,6 +68,93 @@ function addSubMarketTypes(req, res) {
 }
 
 function getAllMarketTypes(req, res) {
+  User.findOne({ userId: req.decoded.userId }, (err, user) => {
+    if (err || !user) {
+      return res.status(404).send({ message: 'USER_NOT_FOUND' });
+    }
+    const blockedMarkets = user.blockedMarketPlaces;
+    const blockedSubMarkets = user.blockedSubMarkets;
+    console.log('blockedMarkets', blockedMarkets);
+    console.log('blockedSubMarkets', blockedSubMarkets);
+
+    // Build the dynamic query based on the blocked markets and submarkets
+    const query = [
+      {
+        $lookup: {
+          from: 'submarkettypes',
+          localField: 'marketId',
+          foreignField: 'marketId',
+          as: 'subMarketTypes',
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              marketId: { $nin: blockedMarkets },
+            },
+            {
+              'subMarketTypes.subMarketId': {
+                $nin: blockedSubMarkets,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    MarketType.aggregate(query, (err, results) => {
+      if (err) {
+        return res
+          .status(404)
+          .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
+      }
+      // exclude blockedSubMarkets and blockedMarkets arrays from the response
+      const marketTypes = results.map((result) => {
+        const {
+          _id,
+          marketId,
+          marketName,
+          name,
+          status,
+          lightIcon,
+          darkIcon,
+          createdAt,
+          __v,
+          updatedAt,
+          link,
+          subMarketTypes,
+        } = result;
+        const filteredSubMarketTypes = subMarketTypes.filter(
+          (subMarketType) => {
+            return !blockedSubMarkets.includes(subMarketType.subMarketId);
+          }
+        );
+        return {
+          _id,
+          marketId,
+          marketName,
+          name,
+          status,
+          lightIcon,
+          darkIcon,
+          createdAt,
+          __v,
+          updatedAt,
+          link,
+          subMarketTypes: filteredSubMarketTypes,
+        };
+      });
+      return res.send({
+        message: 'MARKET_TYPES_FETCHED_SUCCESSFULLY',
+        marketTypes,
+      });
+    });
+  });
+}
+
+//old code
+function getAllMarketTypces(req, res) {
   //to do if company is added two markets for its all users then
   // when that user login they can see only list of two markets
 
@@ -95,6 +182,164 @@ function getAllMarketTypes(req, res) {
     }
   );
 }
+function getAllMarketTypes(req, res) {
+  //to do if company is added two markets for its all users then
+  // when that user login they can see only list of two markets
+
+  MarketType.aggregate(
+    [
+      {
+        $lookup: {
+          from: 'submarkettypes',
+          localField: 'marketId',
+          foreignField: 'marketId',
+          as: 'subMarketTypes',
+        },
+      },
+    ],
+    (err, results) => {
+      if (err)
+        return res
+          .status(404)
+          .send({ message: 'MARKET_TYPES_PAGINATION_FAILED' });
+      return res.send({
+        success: true,
+        message: 'MARKET_TYPES_RECORD_FOUND',
+        results: results,
+      });
+    }
+  );
+}
+
+//old code
+// async function addAllowedMarketTypes(req, res) {
+//   const errors = validationResult(req);
+//   if (errors.errors.length !== 0) {
+//     return res.status(400).send({ errors: errors.errors });
+//   }
+//   console.log('request.body', req.body);
+//   console.log('req.body.subMarketTypes', req.body.subMarketTypes);
+//   try {
+//     // Find all market types that are specified in the request body
+//     const userId = req.decoded.userId;
+//     const marketIds = req.body.marketId;
+//     const marketTypes = await MarketType.find({
+//       marketId: { $in: marketIds },
+//     });
+
+//     // Check if all requested market types exist in the database
+//     const existingMarketIds = marketTypes.map(
+//       (marketType) => marketType.marketId
+//     );
+//     const missingMarketIds = marketIds.filter(
+//       (marketId) => !existingMarketIds.includes(marketId)
+//     );
+//     if (missingMarketIds.length > 0) {
+//       return res.status(404).send({
+//         message: `Market types not found: ${missingMarketIds.join(', ')}`,
+//       });
+//     }
+
+//     // Loop through each market type and find its related submarket types
+//     const blockedMarketPlaces = [];
+//     const blockedSubMarkets = [];
+
+//     for (const marketType of marketTypes) {
+//       const marketIdString = marketType.marketId.toString();
+
+//       // Update the status of the market type
+//       marketType.status = req.body.status[marketIdString];
+//       await marketType.save();
+
+//       // If specific submarkets are specified in the request body, update their status
+//       const subMarketTypePayload =
+//         req.body.subMarketTypes && req.body.subMarketTypes[marketIdString];
+
+//       if (subMarketTypePayload) {
+//         const subMarketTypes = await SubMarketType.find({
+//           marketId: marketType.marketId,
+//           subMarketId: {
+//             $in: subMarketTypePayload.map((subMarket) => subMarket.subMarketId),
+//           },
+//         });
+
+//         // Check if all requested submarket types exist in the database
+//         const existingSubMarketIds = subMarketTypes.map(
+//           (subMarketType) => subMarketType.subMarketId
+//         );
+//         const missingSubMarketIds = subMarketTypePayload
+//           .filter(
+//             (subMarket) => !existingSubMarketIds.includes(subMarket.subMarketId)
+//           )
+//           .map((subMarket) => subMarket.subMarketId);
+//         if (missingSubMarketIds.length > 0) {
+//           return res.status(404).send({
+//             message: `Submarket types not found for market type '${
+//               marketType.name
+//             }': ${missingSubMarketIds.join(', ')}`,
+//           });
+//         }
+
+//         // Update the status of the found submarket types
+//         await SubMarketType.updateMany(
+//           {
+//             marketId: marketType.marketId,
+//             subMarketId: {
+//               $in: subMarketTypePayload.map(
+//                 (subMarket) => subMarket.subMarketId
+//               ),
+//             },
+//           },
+//           { $set: { status: subMarketTypePayload[0].status } }
+//         );
+
+//         // Add blocked submarketIds to blockedSubMarkets array
+//         const blockedSubMarketIds = subMarketTypePayload
+//           .filter((subMarket) => subMarket.status === 0)
+//           .map((subMarket) => subMarket.subMarketId);
+//         blockedSubMarkets.push(...blockedSubMarketIds);
+//       }
+
+//       // Otherwise, update the status of all submarket types related to this market type
+//       else {
+//         await SubMarketType.updateMany(
+//           { marketId: marketType.marketId },
+//           { $set: { status: req.body.status[marketIdString] } }
+//         );
+//       }
+
+//       // Add blocked market places to blockedMarketPlaces array
+//       if (req.body.status[marketIdString] === 0) {
+//         blockedMarketPlaces.push(marketType.marketId);
+//       }
+//     }
+
+//     // Update blockedMarketPlaces and blockedSubMarkets arrays in user collection
+//     const user = await User.findOneAndUpdate(
+//       { userId: userId },
+
+//       {
+//         blockedSubMarkets: blockedSubMarkets,
+//         blockedMarketPlaces: blockedMarketPlaces,
+//       },
+//       { new: true, upsert: false }
+//     );
+//     // console.log('reuslttt',marketTypes);
+//     await user.save();
+//     return res.send({
+//       success: true,
+//       message: 'Allowed market types updated successfully',
+//       results: marketTypes,
+//     });
+// } catch (error) {
+//   console.error(error);
+//   return res.status(404).send({
+//     success: false,
+//     message: 'Failed to update allowed market types',
+//   });
+// }
+// }
+
 async function addAllowedMarketTypes(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
@@ -132,7 +377,6 @@ async function addAllowedMarketTypes(req, res) {
 
       // Update the status of the market type
       marketType.status = req.body.status[marketIdString];
-      await marketType.save();
 
       // If specific submarkets are specified in the request body, update their status
       const subMarketTypePayload =
@@ -163,19 +407,6 @@ async function addAllowedMarketTypes(req, res) {
           });
         }
 
-        // Update the status of the found submarket types
-        await SubMarketType.updateMany(
-          {
-            marketId: marketType.marketId,
-            subMarketId: {
-              $in: subMarketTypePayload.map(
-                (subMarket) => subMarket.subMarketId
-              ),
-            },
-          },
-          { $set: { status: subMarketTypePayload[0].status } }
-        );
-
         // Add blocked submarketIds to blockedSubMarkets array
         const blockedSubMarketIds = subMarketTypePayload
           .filter((subMarket) => subMarket.status === 0)
@@ -183,37 +414,27 @@ async function addAllowedMarketTypes(req, res) {
         blockedSubMarkets.push(...blockedSubMarketIds);
       }
 
-      // Otherwise, update the status of all submarket types related to this market type
-      else {
-        await SubMarketType.updateMany(
-          { marketId: marketType.marketId },
-          { $set: { status: req.body.status[marketIdString] } }
-        );
-      }
-
       // Add blocked market places to blockedMarketPlaces array
       if (req.body.status[marketIdString] === 0) {
         blockedMarketPlaces.push(marketType.marketId);
       }
+
+      // Update blockedMarketPlaces and blockedSubMarkets arrays in user collection
+      const user = await User.findOneAndUpdate(
+        { userId: userId },
+        {
+          blockedSubMarkets: blockedSubMarkets,
+          blockedMarketPlaces: blockedMarketPlaces,
+        },
+        { new: true, upsert: false }
+      );
+      await user.save();
+      return res.send({
+        success: true,
+        message: 'Allowed market types updated successfully',
+        results: marketTypes,
+      });
     }
-
-    // Update blockedMarketPlaces and blockedSubMarkets arrays in user collection
-    const user = await User.findOneAndUpdate(
-      { userId: userId },
-
-      {
-        blockedSubMarkets: blockedSubMarkets,
-        blockedMarketPlaces: blockedMarketPlaces,
-      },
-      { new: true, upsert: false }
-    );
-    // console.log('reuslttt',marketTypes);
-    await user.save();
-    return res.send({
-      success: true,
-      message: 'Allowed market types updated successfully',
-      results: marketTypes,
-    });
   } catch (error) {
     console.error(error);
     return res.status(404).send({

@@ -96,28 +96,29 @@ module.exports.validate = (method) => {
           .notEmpty()
           .withMessage('password cannot be empty'),
         body('isActive', 'isActive is required')
-          .exists()
+          .optional()
           .isBoolean()
           .withMessage(' isActive must be Boolean')
           .notEmpty()
           .withMessage('isActive cannot be empty'),
         body('bettingAllowed', 'bettingAllowed is required')
+          .optional()
           .isBoolean()
           .withMessage(' bettingAllowed must be Boolean'),
         body('canSettlePL', 'canSettlePL is required')
-          .exists()
+          .optional()
           .isBoolean()
           .withMessage(' canSettlePL must be Boolean'),
         body('phone', 'phone is required')
-          .exists()
+          .optional()
           .isString()
           .withMessage(' phone must be string'),
         body('reference', 'reference is required')
-          .exists()
+          .optional()
           .isString()
           .withMessage(' reference must be string'),
         body('notes', 'notes is required')
-          .exists()
+          .optional()
           .isString()
           .withMessage(' notes must be string'),
       ];
