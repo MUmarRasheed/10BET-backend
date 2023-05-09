@@ -94,7 +94,7 @@ app.use('/api', require('./app/routes/betSizes').loginRouter);
 app.use('/api', require('./app/routes/recharges').loginRouter);
 app.use('/api', require('./app/routes/modulePermissionsUsers').loginRouter);
 app.use('/api', require('./app/routes/modulePermissions').loginRouter);
-app.use('/api', require('./app/routes/marketTypes').loginRouter);
+app.use('/api', require('./app/routes/marketPlaces').loginRouter);
 app.use('/api', require('./app/routes/betLocks').loginRouter);
 app.use('/api', require('./app/routes/cashDeposit').loginRouter);
 app.use('/api', require('./app/routes/cashCredit').loginRouter);
@@ -114,7 +114,7 @@ app.use('/api', require('./app/routes/bets').loginRouter);
 // LISTEN HERE
 // Create HTTPs server.
 var server = https.createServer(option, app);
-server.listen(config.PORT, (err) => {
+app.listen(config.PORT, (err) => {
   if (err) throw new Error(err);
   console.log(`Server is listening on port ${config.PORT}`);
 });
