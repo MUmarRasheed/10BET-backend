@@ -69,12 +69,15 @@ function addSubMarketTypes(req, res) {
 }
 
 function getAllMarketTypes(req, res) {
+  console.log('in here');
   User.findOne({ userId: req.decoded.userId }, (err, user) => {
     if (err || !user) {
       return res.status(404).send({ message: 'USER_NOT_FOUND' });
     }
     const blockedMarkets = user.blockedMarketPlaces;
     const blockedSubMarkets = user.blockedSubMarkets;
+    console.log('blockedMarkets', blockedMarkets);
+    console.log('blockedSubMarkets', blockedSubMarkets);
 
     // Build the dynamic query based on the blocked markets and submarkets
     const query = [
@@ -126,10 +129,11 @@ function getAllMarketTypes(req, res) {
             subMarketId: subMarketType.subMarketId,
             name: subMarketType.name,
             marketId: subMarketType.marketId,
-            status: isBlockedSubMarket || status === 0 ? 0 : 1,
+            status: isBlockedSubMarket ? 0 : 1,
             createdAt: subMarketType.createdAt,
           };
         });
+
         return {
           _id,
           marketId,
