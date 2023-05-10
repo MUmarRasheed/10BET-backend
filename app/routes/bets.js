@@ -19,29 +19,6 @@ async function placeBet(req, res) {
   const { sportsId, selectedTeam, betAmount, betRate, matchId, subMarketId } =
     req.body;
   const userId = req.decoded.userId;
-  console.log('req.decod.parentId', req.decoded.parentId);
-  console.log('req.decod.adminId', req.decoded.adminId);
-  console.log('req.decod.master', req.decoded.masterId);
-  console.log('req.decod.superAdmi', req.decoded.superAdminId);
-  const filterForMain = {
-    $or: [
-      { userId: req.decoded.superAdminId },
-      { userId: req.decoded.adminId },
-      { userId: req.decoded.parentId },
-      { userId: req.decoded.masterId },
-      { userId: 0 },
-    ],
-    isDeleted: false,
-  };
-  let parentUser = await User.find(filterForMain);
-  if (parentUser[0].blockedMarketPlaces.includes(sportsId)) {
-    return res.status(404).send({ message: 'Market Locked by the dealer' });
-  }
-  if (parentUser[0].blockedSubMarkets.includes(subMarketId)) {
-    return res
-      .status(404)
-      .send({ message: 'Betting not allowed in this market' });
-  }
   if (
     req.decoded.login.role == '0' ||
     req.decoded.login.role == '1' ||
@@ -57,21 +34,43 @@ async function placeBet(req, res) {
     if (!user) {
       return res.status(404).send({ message: 'User not found' });
     }
-    // Check if the user is allowed to place a bet in the specified market and submarket
-    if (user.blockedMarketPlaces.includes(sportsId)) {
-      return res.status(400).send({ message: 'Market Locked by the dealer' });
-    }
-    if (user.blockedSubMarkets.includes(subMarketId)) {
-      return res
-        .status(404)
-        .send({ message: 'Betting not allowed in this market' });
-    }
     if (user.bettingAllowed === false) {
       return res
         .status(404)
         .send({ message: 'Bet is not allowed for your account' });
     }
 
+    const filterForMain = {
+      $or: [
+        { userId: req.decoded.superAdminId },
+        { userId: req.decoded.adminId },
+        { userId: req.decoded.parentId },
+        { userId: req.decoded.masterId },
+        { userId: 0 },
+      ],
+      isDeleted: false,
+    };
+    // seeing from markettypes
+    let parentUser = await User.find(filterForMain);
+    if (
+      parentUser[0].blockedMarketPlaces.includes(sportsId) ||
+      parentUser[0].blockedSubMarkets.includes(subMarketId)
+    ) {
+      return res
+        .status(404)
+        .send({ message: 'Betting disabled by your dealer' });
+    }
+    // Check if the user is allowed to place a bet in the specified market and submarket
+    if (user.betLockStatus === true || user.matchOddsStatus === true) {
+      return res
+        .status(400)
+        .send({ message: 'Bet not allowed for your account' });
+    }
+    if (user.blockedSubMarkets.includes(subMarketId)) {
+      return res
+        .status(404)
+        .send({ message: 'Betting not allowed in this market' });
+    }
     const match = await CricketMatch.findOne({
       sportsId: sportsId,
       id: matchId,
