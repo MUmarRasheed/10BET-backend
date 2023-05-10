@@ -15,9 +15,7 @@ const router = express.Router();
 const loginRouter = express.Router();
 const app = express();
 
-//to do add condition on downline share
 function registerUser(req, res) {
-  //to do bettor share line not be saved
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
@@ -96,22 +94,8 @@ function registerUser(req, res) {
       user.token = token;
       user.createdBy = req.decoded.userId;
       user.save((err, user) => {
-        if (err)
+        if (err || !user)
           return res.status(404).send({ message: 'user not registered', err });
-        // Add balance to recharge collection
-        const recharge = new Recharge({
-          userId: user.userId,
-          dateCreated: Date.now(),
-          amount: req.body.balance,
-          createdBy: req.decoded.userId,
-          rechargedBy: req.decoded.role,
-          role: req.body.role,
-        });
-        recharge.save((err, success) => {
-          if (err)
-            return res.status(404).send({ message: 'recharge not saved', err });
-          console.log('recharge saved successfully');
-        });
         return res.send({
           message: 'Register Success',
           success: true,

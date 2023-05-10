@@ -161,8 +161,8 @@ async function addBetLock(req, res) {
           //   updateQuery.$set = { betLockStatus: true, matchOddsStatus: true };
           // }
           updateQuery.$addToSet = {
-            blockedMarketPlaces: marketId,
-            blockedSubMarkets: {
+            blockedMarketPlacesByParent: marketId,
+            blockedSubMarketsByParent: {
               $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
             },
           };
@@ -176,9 +176,9 @@ async function addBetLock(req, res) {
             updateQuery.$set = { betLockStatus: false };
           }
           updateQuery.$pull = {
-            blockedMarketPlaces: marketId,
+            blockedMarketPlacesByParent: marketId,
 
-            blockedSubMarkets: {
+            blockedSubMarketsByParent: {
               $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
             },
           };
@@ -212,9 +212,8 @@ async function addBetLock(req, res) {
 
             // (updateQuery.$set = { betLockStatus: true }),
             updateQuery.$addToSet = {
-              blockedMarketPlaces: marketId,
-
-              blockedSubMarkets: {
+              blockedMarketPlacesByParent: marketId,
+              blockedSubMarketsByParent: {
                 $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
               },
             };
@@ -230,8 +229,8 @@ async function addBetLock(req, res) {
 
             // (updateQuery.$set = { betLockStatus: false }),
             updateQuery.$pull = {
-              blockedMarketPlaces: marketId,
-              blockedSubMarkets: {
+              blockedMarketPlacesByParent: marketId,
+              blockedSubMarketsByParent: {
                 $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
               },
             };

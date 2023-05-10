@@ -175,7 +175,7 @@ function getUserBets(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   // Initialize variables with default values
-  let query = { userId: req.body.userId };
+  let query = { userId: req.query.userId };
   let page = 1;
   let sort = -1;
   let sortValue = 'createdAt';
