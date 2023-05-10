@@ -141,6 +141,14 @@ async function addBetLock(req, res) {
       query.masterId = req.decoded.userId;
     }
 
+    let loginUser = await User.findOne({ userId: req.decoded.userId });
+    if (
+      loginUser.betLockStatus === true ||
+      loginUser.matchOddsStatus === true
+    ) {
+      return res.status(404).send({ message: 'Market Locked by the dealer' });
+    }
+
     let foundUsers = [];
     if (allUsers) {
       foundUsers = await User.find(query).select(
@@ -161,7 +169,6 @@ async function addBetLock(req, res) {
           //   updateQuery.$set = { betLockStatus: true, matchOddsStatus: true };
           // }
           updateQuery.$addToSet = {
-            blockedMarketPlacesByParent: marketId,
             blockedSubMarketsByParent: {
               $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
             },
@@ -176,8 +183,6 @@ async function addBetLock(req, res) {
             updateQuery.$set = { betLockStatus: false };
           }
           updateQuery.$pull = {
-            blockedMarketPlacesByParent: marketId,
-
             blockedSubMarketsByParent: {
               $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
             },
@@ -212,7 +217,6 @@ async function addBetLock(req, res) {
 
             // (updateQuery.$set = { betLockStatus: true }),
             updateQuery.$addToSet = {
-              blockedMarketPlacesByParent: marketId,
               blockedSubMarketsByParent: {
                 $each: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
               },
@@ -229,7 +233,6 @@ async function addBetLock(req, res) {
 
             // (updateQuery.$set = { betLockStatus: false }),
             updateQuery.$pull = {
-              blockedMarketPlacesByParent: marketId,
               blockedSubMarketsByParent: {
                 $in: subMarketId?.map(({ subMarketId }) => subMarketId) || [],
               },
