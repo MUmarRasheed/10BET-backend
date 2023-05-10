@@ -168,6 +168,59 @@ const BetRateList = {
     return betRateList;
   },
 };
+
+function getUserBets(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  // Initialize variables with default values
+  let query = { userId: req.body.userId };
+  let page = 1;
+  let sort = -1;
+  let sortValue = 'createdAt';
+  var limit = config.pageSize;
+  if (req.query.numRecords) {
+    if (isNaN(req.query.numRecords))
+      return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+    if (req.query.numRecords < 0)
+      return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+    if (req.query.numRecords > 100)
+      return res.status(404).send({
+        message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100',
+      });
+    limit = Number(req.query.numRecords);
+  }
+  if (req.query.sortValue) sortValue = req.query.sortValue;
+  if (req.query.sort) {
+    sort = Number(req.query.sort);
+  }
+  if (req.query.page) {
+    page = Number(req.query.page);
+  }
+  if (req.query.endDate && req.query.startDate) {
+    query.createdAt = {
+      $gte: req.query.startDate,
+      $lte: req.query.endDate,
+    };
+  }
+
+  Bets.paginate(
+    query,
+    { page: page, sort: { [sortValue]: sort }, limit: limit },
+    (err, result) => {
+      if (err || !result)
+        return res.status(404).send({ message: 'bets not found' });
+      return res.send({
+        success: true,
+        message: 'bets record found',
+        results: result,
+      });
+    }
+  );
+}
+
 loginRouter.post('/placeBet', placeBet);
+loginRouter.get('/getUserBets', getUserBets);
 
 module.exports = { loginRouter };

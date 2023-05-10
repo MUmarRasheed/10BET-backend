@@ -40,5 +40,6 @@
   "GetAllCashDepositLedger",
   "GetAllCashCreditLedger",
   "getAllSportsHighlight",
-  "placeBet"
+  "placeBet",
+  "getUserBets"
 ]
