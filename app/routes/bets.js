@@ -175,33 +175,33 @@ function getUserBets(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   // Initialize variables with default values
-  let query = { userId: req.query.userId };
+  let query = { userId: req.body.userId };
   let page = 1;
   let sort = -1;
   let sortValue = 'createdAt';
   var limit = config.pageSize;
-  if (req.query.numRecords) {
-    if (isNaN(req.query.numRecords))
+  if (req.body.numRecords) {
+    if (isNaN(req.body.numRecords))
       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    if (req.query.numRecords < 0)
+    if (req.body.numRecords < 0)
       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    if (req.query.numRecords > 100)
+    if (req.body.numRecords > 100)
       return res.status(404).send({
         message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100',
       });
-    limit = Number(req.query.numRecords);
+    limit = Number(req.body.numRecords);
   }
-  if (req.query.sortValue) sortValue = req.query.sortValue;
-  if (req.query.sort) {
-    sort = Number(req.query.sort);
+  if (req.body.sortValue) sortValue = req.body.sortValue;
+  if (req.body.sort) {
+    sort = Number(req.body.sort);
   }
   if (req.query.page) {
-    page = Number(req.query.page);
+    page = Number(req.body.page);
   }
-  if (req.query.endDate && req.query.startDate) {
+  if (req.body.endDate && req.body.startDate) {
     query.createdAt = {
-      $gte: req.query.startDate,
-      $lte: req.query.endDate,
+      $gte: req.body.startDate,
+      $lte: req.body.endDate,
     };
   }
 
@@ -221,6 +221,6 @@ function getUserBets(req, res) {
 }
 
 loginRouter.post('/placeBet', placeBet);
-loginRouter.get('/getUserBets', getUserBets);
+loginRouter.post('/getUserBets', getUserBets);
 
 module.exports = { loginRouter };
