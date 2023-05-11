@@ -33,6 +33,7 @@ async function addCashDeposit(req, res) {
       userId: userToUpdate.userId,
     }).sort({
       _id: -1,
+      cashOrCredit: -1,
     });
     if (req.decoded.role == '0') {
       if (
@@ -106,6 +107,7 @@ async function addCashDeposit(req, res) {
       balance: newBalance,
       availableBalance: newAvailableBalance,
       maxWithdraw: newBalance,
+      cashOrCredit: 'Cash',
     });
 
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance
@@ -240,6 +242,7 @@ async function withDrawCashDeposit(req, res) {
       balance: newBalance,
       availableBalance: newAvailableBalance,
       maxWithdraw: newBalance,
+      cashOrCredit: 'Cash',
     });
 
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance

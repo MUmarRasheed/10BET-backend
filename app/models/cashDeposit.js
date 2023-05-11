@@ -13,6 +13,7 @@ let cashSchema = new Schema({
   createdBy: { type: String },
   updatedAt: { type: String },
   createdAt: { type: String },
+  cashOrCredit: { type: String },
 });
 
 cashSchema.plugin(Global.aggregatePaginate);
@@ -32,7 +33,7 @@ cashSchema.pre('save', function (next) {
   next();
 });
 
-const Cash = mongoose.model('cash', cashSchema);
+const Cash = mongoose.model('deposits', cashSchema);
 Cash.createIndexes();
 
 module.exports = Cash;

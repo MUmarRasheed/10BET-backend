@@ -10,6 +10,7 @@ const CricketMatch = require('../models/cricketMatches');
 const Markets = require('../models/marketTypes');
 const SubMarketType = require('../models/subMarketTypes');
 const loginRouter = express.Router();
+const betValidator = require('../validators/bets');
 
 async function placeBet(req, res) {
   const errors = validationResult(req);
@@ -219,7 +220,7 @@ function getUserBets(req, res) {
   );
 }
 
-loginRouter.post('/placeBet', placeBet);
+loginRouter.post('/placeBet', betValidator.validate('placeBet'), placeBet);
 loginRouter.post('/getUserBets', getUserBets);
 
 module.exports = { loginRouter };

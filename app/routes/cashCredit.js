@@ -91,34 +91,25 @@ async function addCredit(req, res) {
     }
 
     await userToUpdate.save();
-
-    // Update the cashWithdraw field in cashdeposit collection
-    const cashDeposit = await CashDeposit.findOne({
-      userId: userToUpdate.userId,
-    }).sort({ _id: -1 });
-    if (cashDeposit) {
-      cashDeposit.maxWithdraw += req.body.amount;
-      await cashDeposit.save();
-    }
-
-    let cash = await Credit.findOne({ userId: userToUpdate.userId });
+    let cash = await CashDeposit.findOne({ userId: userToUpdate.userId });
     if (!cash) {
-      cash = new Credit({
+      cash = new CashDeposit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: currentUser.role,
         amount: req.body.amount,
         credit: req.body.amount,
         balance: req.body.amount,
-        maxWithdraw: userToUpdate.clientPL + req.body.amount,
+        maxWithdraw: userToUpdate.balance,
         creditLimit: userToUpdate.creditLimit,
         availableBalance: req.body.amount,
+        cashOrCredit: 'Credit',
       });
     } else {
-      const cashCredit = await Credit.findOne({
+      const cashCredit = await CashDeposit.findOne({
         userId: userToUpdate.userId,
-      }).sort({ _id: -1 });
-      cash = new Credit({
+      }).sort({ _id: -1, cashOrCredit: -1 });
+      cash = new CashDeposit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: currentUser.role,
@@ -128,25 +119,10 @@ async function addCredit(req, res) {
         maxWithdraw: cashCredit.maxWithdraw + req.body.amount,
         creditLimit: userToUpdate.creditLimit,
         availableBalance: cashCredit.availableBalance + req.body.amount,
+        cashOrCredit: 'Credit',
       });
     }
 
-    // Update credit limit for both users
-    const userToUpdateCredit = await Credit.findOne({
-      userId: userToUpdate.userId,
-    });
-    if (userToUpdateCredit) {
-      userToUpdateCredit.creditLimit += req.body.amount;
-      await userToUpdateCredit.save();
-    }
-
-    const currentUserCredit = await Credit.findOne({
-      userId: currentUser.userId,
-    });
-    if (currentUserCredit) {
-      currentUserCredit.creditLimit -= req.body.amount;
-      await currentUserCredit.save();
-    }
     const cashCredit = await cash.save();
     return res.send({
       success: true,
@@ -250,15 +226,6 @@ async function withdrawCredit(req, res) {
       });
     }
 
-    // Update the maxWithdraw field in cashdeposit collection
-    const cashDeposit = await CashDeposit.findOne({
-      userId: userToUpdate.userId,
-    }).sort({ _id: -1 });
-    if (cashDeposit) {
-      cashDeposit.maxWithdraw -= req.body.amount;
-      await cashDeposit.save();
-    }
-
     if (req.decoded.role == '0') {
       if (
         req.body.role == '1' ||
@@ -315,9 +282,9 @@ async function withdrawCredit(req, res) {
     }
     await userToUpdate.save();
 
-    const cashCreditWithdraw = await Credit.findOne().sort({ _id: -1 });
+    const cashCreditWithdraw = await CashDeposit.findOne().sort({ _id: -1 });
     const cash = cashCreditWithdraw.credit - req.body.amount;
-    const creditWithdraw = new Credit({
+    const creditWithdraw = new CashDeposit({
       credit: cash,
       userId: userToUpdate.userId,
       description: req.body.description ? req.body.description : '(Cash)',
@@ -325,7 +292,8 @@ async function withdrawCredit(req, res) {
       amount: -req.body.amount,
       balance: cashCreditWithdraw.balance - req.body.amount,
       availableBalance: cashCreditWithdraw.availableBalance - req.body.amount,
-      //   maxWithdraw: cashCreditWithdraw.maxWithdraw + req.body.amount,
+      maxWithdraw: cashCreditWithdraw.maxWithdraw - req.body.amount,
+      cashOrCredit: 'Credit',
     });
     await creditWithdraw.save();
     return res
@@ -346,7 +314,7 @@ function getAllCredits(req, res) {
     if (err || !success)
       return res.status(404).send({ message: 'user not found' });
 
-    Credit.findOne(
+    CashDeposit.findOne(
       { userId: req.query.userId },
       //creditlimit should be of the user that is login
       { credit: 1, availableBalance: 1 }
