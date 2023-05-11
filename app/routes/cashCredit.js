@@ -209,9 +209,8 @@ async function withdrawCredit(req, res) {
 
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
-    if (!currentUser) {
-      return res.status(404).send({ message: 'user not found' });
-    }
+    currentUser.creditLimit += req.body.amount;
+    await currentUser.save();
 
     const userToUpdate = await User.findOne({
       userId: req.body.userId,
@@ -318,6 +317,7 @@ function getAllCredits(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   User.findOne({ userId: req.decoded.userId }, (err, success) => {
+    console.log('successs.credit', success.creditLimit);
     if (err || !success)
       return res.status(404).send({ message: 'user not found' });
 
@@ -326,8 +326,9 @@ function getAllCredits(req, res) {
       //creditlimit should be of the user that is login
       { credit: 1, availableBalance: 1 }
     )
-      .sort({ _id: -1 })
+      .sort({ _id: -1, cashOrCredit: -1 })
       .exec((err, results) => {
+        console.log('result', results);
         if (err || !results)
           return res.status(404).send({ message: 'Credit Record Not Found' });
         else
