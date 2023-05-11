@@ -280,6 +280,12 @@ async function withdrawCredit(req, res) {
         userToUpdate.clientPL -= req.body.amount;
       }
     }
+
+    //return the amount to the user's balance
+    if (currentUser.userId !== userToUpdate.userId) {
+      currentUser.balance += req.body.amount;
+      await currentUser.save();
+    }
     await userToUpdate.save();
 
     const cashCreditWithdraw = await CashDeposit.findOne().sort({ _id: -1 });
@@ -296,6 +302,7 @@ async function withdrawCredit(req, res) {
       cashOrCredit: 'Credit',
     });
     await creditWithdraw.save();
+
     return res
       .status(200)
       .send({ message: 'Credit withdrawal successful', creditWithdraw });
