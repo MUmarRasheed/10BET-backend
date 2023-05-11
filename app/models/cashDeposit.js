@@ -35,7 +35,7 @@ depositsSchema.pre('save', function (next) {
   next();
 });
 
-const Deposits = mongoose.model('deposits', creditSchema);
-Credit.createIndexes();
+const Deposits = mongoose.model('deposits', depositsSchema);
+Deposits.createIndexes();
 
 module.exports = Deposits;
