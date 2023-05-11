@@ -2,7 +2,6 @@ const express = require('express');
 const { validationResult } = require('express-validator');
 let config = require('config');
 const CashDeposit = require('../models/cashDeposit');
-const Credit = require('../models/cashCredit');
 const User = require('../models/user');
 
 const reportValidator = require('../validators/reports');
@@ -148,7 +147,7 @@ function cashCreditLedger(req, res) {
     ];
   }
   match.userId = req.body.userId;
-  Credit.paginate(
+  CashDeposit.paginate(
     match,
     {
       page: page,
@@ -375,7 +374,7 @@ function GetAllCashCreditLedger(req, res) {
     ];
   }
 
-  Credit.find(
+  CashDeposit.find(
     match,
     { description: 1, amount: 1, balance: 1, createdAt: 1, _id: 0 },
 

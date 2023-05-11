@@ -2,7 +2,7 @@ const express = require('express');
 const { validationResult } = require('express-validator');
 let config = require('config');
 const CashDeposit = require('../models/cashDeposit');
-const Credit = require('../models/cashCredit');
+// const Credit = require('../models/cashCredit');
 
 const User = require('../models/user');
 const cashValidator = require('../validators/cashDeposit');
