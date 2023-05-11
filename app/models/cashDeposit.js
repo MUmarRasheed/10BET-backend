@@ -1,9 +1,10 @@
+/* eslint no-unused-vars: "off" */
 let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 mongoose.set('debug', true);
 let Global = require('../global/settings');
 
-let cashSchema = new Schema({
+let depositsSchema = new Schema({
   userId: { type: Number, index: true },
   description: { type: String, required: false },
   amount: { type: Number, required: true, default: 0 },
@@ -13,13 +14,14 @@ let cashSchema = new Schema({
   createdBy: { type: String },
   updatedAt: { type: String },
   createdAt: { type: String },
-  cashOrCredit: { type: String },
+  availableBalance: { type: Number, default: 0 },
+  creditLimit: { type: Number, default: 0 },
 });
 
-cashSchema.plugin(Global.aggregatePaginate);
-cashSchema.plugin(Global.paginate);
+depositsSchema.plugin(Global.aggregatePaginate);
+depositsSchema.plugin(Global.paginate);
 
-cashSchema.pre('save', function (next) {
+depositsSchema.pre('save', function (next) {
   var now = new Date();
   var year = now.getFullYear().toString(); // Extract last two digits of year
   var month = (now.getMonth() + 1).toString().padStart(2, '0'); // Convert month to two digits and pad with zero if necessary
@@ -33,7 +35,7 @@ cashSchema.pre('save', function (next) {
   next();
 });
 
-const Cash = mongoose.model('deposits', cashSchema);
-Cash.createIndexes();
+const Deposits = mongoose.model('deposits', creditSchema);
+Credit.createIndexes();
 
-module.exports = Cash;
+module.exports = Deposits;
