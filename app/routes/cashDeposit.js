@@ -247,7 +247,9 @@ async function withDrawCashDeposit(req, res) {
 
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance
     if (currentUser.userId !== userToUpdate.userId) {
-      currentUser.balance += req.body.amount;
+      currentUser.creditLimit += req.body.amount;
+      currentUser.credit += req.body.amount;
+
       await currentUser.save();
     }
 
