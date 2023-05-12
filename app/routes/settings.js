@@ -5,6 +5,9 @@ const Settings = require('../models/settings');
 const User = require('../models/user');
 const settingsValidation = require('../validators/settings');
 const termsAndConditions = require('../models/termsAndConditions');
+const PrivacyPolicy = require('../models/privacyPolicy');
+
+const Exchanges = require('../models/exchanges');
 
 const loginRouter = express.Router();
 
@@ -101,7 +104,11 @@ function addTermsAndConditions(req, res) {
   tncAndPrivacyPolicy.save((err, results) => {
     if (err || !results)
       return res.status(404).send({ message: 'Data Not Saved' });
-    return res.send({ message: 'Terms And Conditions Added Successfully' });
+    return res.send({
+      success: true,
+      message: 'Terms And Conditions Added Successfully',
+      results: results,
+    });
   });
 }
 
@@ -122,7 +129,8 @@ function GetAllTermsAndConditions(req, res) {
         return res.status(404).send({ message: 'Record Not Found' });
       else
         return res.send({
-          message: 'Terms And Conditions Records Found',
+          success: true,
+          message: 'Terms And Conditions Record Found',
           results: success,
         });
     });
@@ -138,14 +146,18 @@ function addPrivacyPolicy(req, res) {
       .status(404)
       .send({ message: 'only company can add privacy policies' });
   }
-  let privacyPolicyContent = new termsAndConditions({
+  let privacyPolicyContent = new PrivacyPolicy({
     privacyPolicyContent: req.body.privacyPolicyContent,
   });
 
   privacyPolicyContent.save((err, results) => {
     if (err || !results)
       return res.status(404).send({ message: 'Data Not Saved' });
-    return res.send({ message: 'Terms And Conditions Added Successfully' });
+    return res.send({
+      success: true,
+      message: 'Privacy Policy Added Successfully',
+      results: results,
+    });
   });
 }
 
@@ -155,18 +167,18 @@ function GetAllPrivacyPolicy(req, res) {
       .status(404)
       .send({ message: 'only company can see privacy policies' });
   }
-  termsAndConditions
-    .findOne(
-      {},
-      { privacyPolicyContent: 1, createdAt: 1, updatedAt: 1, _id: 1 }
-    )
+  PrivacyPolicy.findOne(
+    {},
+    { privacyPolicyContent: 1, createdAt: 1, updatedAt: 1, _id: 1 }
+  )
     .sort({ _id: -1 })
     .exec((err, success) => {
       if (err || !success)
         return res.status(404).send({ message: 'Record Not Found' });
       else
         return res.send({
-          message: 'Terms And Conditions Records Found',
+          success: true,
+          message: 'Privacy Policy Record Found',
           results: success,
         });
     });
