@@ -175,7 +175,7 @@ function getUserBets(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   // Initialize variables with default values
-  let query = { userId: req.body.userId };
+  let query = {};
   let page = 1;
   let sort = -1;
   let sortValue = 'createdAt';
@@ -204,7 +204,34 @@ function getUserBets(req, res) {
       $lte: req.body.endDate,
     };
   }
-
+  if (req.body.userId) {
+    query.userId = req.body.userId;
+  }
+  if (req.body.status) {
+    query.status = req.body.status;
+  }
+  if (req.body.marketId) {
+    query.marketId = req.body.marketId;
+  }
+  if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
+    query.$or = [
+      { name: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$betRate' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: {
+            input: { $toString: '$betAmount' },
+            regex: searchRegex,
+          },
+        },
+      },
+    ];
+  }
   Bets.paginate(
     query,
     { page: page, sort: { [sortValue]: sort }, limit: limit },

@@ -3,7 +3,7 @@ const BetSizes = require('./betSizes');
 let Global = require('../global/settings');
 /**
  * [betSchema description]
- *  @status [ active),(settled),(cancelled),(voided)]
+ *  @status [ 1 active), 2 (settled), 3 (cancelled), 4 (voided)]
  */
 const betSchema = new mongoose.Schema({
   sportsId: { type: String, required: true },
@@ -13,10 +13,9 @@ const betSchema = new mongoose.Schema({
   returnAmount: { type: Number, required: true },
   createdAt: { type: Number },
   updatedAt: { type: Number },
-  status: { type: String, default: 'pending' },
+  status: { type: Number, default: 1 },
   team: { type: String },
   matchId: { type: String },
-  status: { type: String },
   winningAmount: { type: Number },
   loosingAmount: { type: Number },
   subMarketId: { type: String },
@@ -24,6 +23,7 @@ const betSchema = new mongoose.Schema({
   event: { type: String, default: '' },
   runner: { type: String, default: '' },
   position: { type: Number, default: 0 },
+  name: { type: String },
 });
 
 betSchema.pre('save', function (next) {
