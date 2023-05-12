@@ -42,5 +42,5 @@
   "getAllSportsHighlight",
   "placeBet",
   "getUserBets",
-  "defaultLoginPage"
+  "updateDefaultLoginPage"
 ]

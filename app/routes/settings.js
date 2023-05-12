@@ -74,7 +74,7 @@ function updateDefaultLoginPage(req, res) {
         }
         return res.send({
           success: true,
-          message: 'Theme added successfully',
+          message: 'Default Login Page added successfully',
           results: loginPage,
         });
       }

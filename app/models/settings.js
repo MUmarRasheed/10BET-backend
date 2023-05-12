@@ -18,12 +18,13 @@ settingsSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
+    this.updatedAt = now;
   } else {
     this.updatedAt = now;
   }
   next();
 });
 
-const Theme = mongoose.model('settings', settingsSchema);
+const Settings = mongoose.model('settings', settingsSchema);
 
-module.exports = Theme;
+module.exports = Settings;
