@@ -42,5 +42,7 @@
   "getAllSportsHighlight",
   "placeBet",
   "getUserBets",
-  "updateDefaultLoginPage"
+  "updateDefaultLoginPage",
+  "addTermsAndConditions",
+  "GetAllTermsAndConditions"
 ]

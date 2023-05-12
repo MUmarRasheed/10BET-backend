@@ -27,5 +27,16 @@ module.exports.validate = (method) => {
           .withMessage('newLoginPage must be string'),
       ];
     }
+    case 'addTermsAndConditions': {
+      return [
+        body(
+          'termAndConditionsContent',
+          'please enter termAndConditionsContent'
+        )
+          .exists()
+          .isString()
+          .withMessage('termAndConditionsContent must be string'),
+      ];
+    }
   }
 };

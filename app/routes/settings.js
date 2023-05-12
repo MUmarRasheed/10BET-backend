@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator');
 const Settings = require('../models/settings');
 const User = require('../models/user');
 const settingsValidation = require('../validators/settings');
+const termsAndConditions = require('../models/termsAndConditions');
 
 const loginRouter = express.Router();
 
@@ -82,6 +83,38 @@ function updateDefaultLoginPage(req, res) {
   });
 }
 
+function addTermsAndConditions(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  let tncAndPrivacyPolicy = new termsAndConditions({
+    termAndConditionsContent: req.body.termAndConditionsContent,
+  });
+
+  tncAndPrivacyPolicy.save((err, results) => {
+    if (err || !results)
+      return res.status(404).send({ message: 'Data Not Saved' });
+    return res.send({ message: 'Terms And Conditions Added Successfully' });
+  });
+}
+
+function GetAllTermsAndConditions(req, res) {
+  termsAndConditions.find(
+    {},
+    { termAndConditionsContent: 1, createdAt: 1, updatedAt: 1, _id: 1 },
+    (err, success) => {
+      if (err || !success)
+        return res.status(404).send({ message: 'Record Not Found' });
+      else
+        return res.send({
+          message: 'Terms And Conditions Records Found',
+          results: success,
+        });
+    }
+  );
+}
+
 loginRouter.post(
   '/updateDefaultTheme',
   settingsValidation.validate('updateDefaultTheme'),
@@ -92,5 +125,11 @@ loginRouter.post(
   settingsValidation.validate('updateDefaultLoginPage'),
   updateDefaultLoginPage
 );
+loginRouter.post(
+  '/addTermsAndConditions',
+  settingsValidation.validate('addTermsAndConditions'),
+  addTermsAndConditions
+);
+loginRouter.get('/GetAllTermsAndConditions', GetAllTermsAndConditions);
 
 module.exports = { loginRouter };
