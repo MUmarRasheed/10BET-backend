@@ -99,7 +99,6 @@ app.use(function (req, res, next) {
 // APIS With Authorization
 app.use('/api', require('./app/routes/user').loginRouter);
 app.use('/api', require('./app/routes/betSizes').loginRouter);
-app.use('/api', require('./app/routes/recharges').loginRouter);
 app.use('/api', require('./app/routes/modulePermissionsUsers').loginRouter);
 app.use('/api', require('./app/routes/modulePermissions').loginRouter);
 app.use('/api', require('./app/routes/marketPlaces').loginRouter);

@@ -4,7 +4,7 @@ mongoose.set('debug', true);
 let Global = require('../global/settings');
 const exchangesSchema = new mongoose.Schema({
   currency: { type: String, required: false },
-  amount: { type: Number, required: false },
+  exchangeAmount: { type: Number, required: false },
   createdAt: { type: Number },
   updatedAt: { type: Number },
 });

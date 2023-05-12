@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 let config = require('config');
 const User = require('../models/user');
-const Recharge = require('../models/recharges');
 const LoginActivity = require('../models/loginActivity');
 const Settings = require('../models/settings');
 

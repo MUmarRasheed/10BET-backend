@@ -46,5 +46,17 @@ module.exports.validate = (method) => {
           .withMessage('privacyPolicyContent must be string'),
       ];
     }
+    case 'updateDefaultExchange': {
+      return [
+        body('currency', 'please enter currency')
+          .exists()
+          .isString()
+          .withMessage('currency must be string'),
+        body('exchangeAmount', 'please enter exchangeAmount')
+          .exists()
+          .isInt()
+          .withMessage('exchangeAmount must be Number'),
+      ];
+    }
   }
 };
