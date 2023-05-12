@@ -15,5 +15,17 @@ module.exports.validate = (method) => {
           .withMessage('newThemeName must be string'),
       ];
     }
+    case 'updateDefaultLoginPage': {
+      return [
+        body('oldLoginPage', 'please enter oldLoginPage')
+          .exists()
+          .isString()
+          .withMessage('oldLoginPage must be string'),
+        body('newLoginPage', 'please enter newLoginPage')
+          .exists()
+          .isString()
+          .withMessage('newLoginPage must be string'),
+      ];
+    }
   }
 };

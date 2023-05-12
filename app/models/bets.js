@@ -6,7 +6,7 @@ let Global = require('../global/settings');
  *  @status [ 1 active), 2 (settled), 3 (cancelled), 4 (voided)]
  */
 const betSchema = new mongoose.Schema({
-  sportsId: { type: String, required: true },
+  marketId: { type: String, required: true },
   userId: { type: Number, required: true },
   betAmount: { type: Number, required: true },
   betRate: { type: Number, required: true }, // bet rate chosen by user
@@ -14,7 +14,7 @@ const betSchema = new mongoose.Schema({
   createdAt: { type: Number },
   updatedAt: { type: Number },
   status: { type: Number, default: 1 },
-  team: { type: String },
+  // team: { type: String },
   matchId: { type: String },
   winningAmount: { type: Number },
   loosingAmount: { type: Number },

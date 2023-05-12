@@ -107,7 +107,7 @@ app.use('/api', require('./app/routes/betLocks').loginRouter);
 app.use('/api', require('./app/routes/cashDeposit').loginRouter);
 app.use('/api', require('./app/routes/cashCredit').loginRouter);
 app.use('/api', require('./app/routes/reports').loginRouter);
-app.use('/api', require('./app/routes/theme').loginRouter);
+app.use('/api', require('./app/routes/settings').loginRouter);
 app.use('/api', require('./app/routes/betFairGames').loginRouter);
 app.use('/api', require('./app/routes/sportsHighlights').loginRouter);
 app.use('/api', require('./app/routes/bets').loginRouter);

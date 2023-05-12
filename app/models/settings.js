@@ -4,16 +4,17 @@ let Schema = mongoose.Schema;
 mongoose.set('debug', true);
 let Global = require('../global/settings');
 
-let themeSchema = new Schema({
+let settingsSchema = new Schema({
   defaultThemeName: { type: String, required: false },
+  defaultLoginPage: { type: String, required: false },
   updatedAt: { type: Number },
   createdAt: { type: Number },
 });
 
-themeSchema.plugin(Global.aggregatePaginate);
-themeSchema.plugin(Global.paginate);
+settingsSchema.plugin(Global.aggregatePaginate);
+settingsSchema.plugin(Global.paginate);
 
-themeSchema.pre('save', function (next) {
+settingsSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -23,6 +24,6 @@ themeSchema.pre('save', function (next) {
   next();
 });
 
-const Theme = mongoose.model('theme', themeSchema);
+const Theme = mongoose.model('settings', settingsSchema);
 
 module.exports = Theme;

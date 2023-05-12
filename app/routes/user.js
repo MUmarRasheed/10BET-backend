@@ -7,7 +7,7 @@ let config = require('config');
 const User = require('../models/user');
 const Recharge = require('../models/recharges');
 const LoginActivity = require('../models/loginActivity');
-const Theme = require('../models/theme');
+const Settings = require('../models/settings');
 
 var getIP = require('ipware')().get_ip;
 
@@ -139,9 +139,10 @@ function login(req, res) {
         var ipInfo = getIP(req);
 
         // Retrieve the user's default theme from the database
-        Theme.find({}, (err, theme) => {
-          if (err || !theme) {
-            return res.status(404).send({ message: 'theme not found' });
+        Settings.find({}, (err, setting) => {
+          console.log('setting', setting[1]);
+          if (err || !setting) {
+            return res.status(404).send({ message: 'setting not found' });
           }
 
           var userDetailsForLoginActivity = {
@@ -172,7 +173,8 @@ function login(req, res) {
               role: user.role,
               userId: user.userId,
               balance: user.balance,
-              defaultTheme: theme[0].defaultThemeName,
+              defaultTheme: setting[1].defaultThemeName,
+              defaultLoginPage: setting[0].defaultLoginPage,
             });
           });
         });

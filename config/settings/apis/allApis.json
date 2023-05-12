@@ -41,5 +41,6 @@
   "GetAllCashCreditLedger",
   "getAllSportsHighlight",
   "placeBet",
-  "getUserBets"
+  "getUserBets",
+  "defaultLoginPage"
 ]
