@@ -38,5 +38,13 @@ module.exports.validate = (method) => {
           .withMessage('termAndConditionsContent must be string'),
       ];
     }
+    case 'addPrivacyPolicy': {
+      return [
+        body('privacyPolicyContent', 'please enter privacyPolicyContent')
+          .exists()
+          .isString()
+          .withMessage('privacyPolicyContent must be string'),
+      ];
+    }
   }
 };

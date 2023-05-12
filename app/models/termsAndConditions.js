@@ -4,6 +4,7 @@ mongoose.set('debug', true);
 let Global = require('../global/settings');
 const tncSchema = new mongoose.Schema({
   termAndConditionsContent: { type: String, required: false },
+  privacyPolicyContent: { type: String, required: false },
   createdAt: { type: Number },
   updatedAt: { type: Number },
 });

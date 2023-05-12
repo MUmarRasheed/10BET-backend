@@ -44,5 +44,7 @@
   "getUserBets",
   "updateDefaultLoginPage",
   "addTermsAndConditions",
-  "GetAllTermsAndConditions"
+  "GetAllTermsAndConditions",
+  "addPrivacyPolicy",
+  "GetAllPrivacyPolicy"
 ]

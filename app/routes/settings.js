@@ -88,6 +88,12 @@ function addTermsAndConditions(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .send({ message: 'only company can add terms and conditions' });
+  }
+
   let tncAndPrivacyPolicy = new termsAndConditions({
     termAndConditionsContent: req.body.termAndConditionsContent,
   });
@@ -100,10 +106,18 @@ function addTermsAndConditions(req, res) {
 }
 
 function GetAllTermsAndConditions(req, res) {
-  termsAndConditions.find(
-    {},
-    { termAndConditionsContent: 1, createdAt: 1, updatedAt: 1, _id: 1 },
-    (err, success) => {
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .send({ message: 'only company can see terms and conditions' });
+  }
+  termsAndConditions
+    .findOne(
+      {},
+      { termAndConditionsContent: 1, createdAt: 1, updatedAt: 1, _id: 1 }
+    )
+    .sort({ _id: -1 })
+    .exec((err, success) => {
       if (err || !success)
         return res.status(404).send({ message: 'Record Not Found' });
       else
@@ -111,8 +125,51 @@ function GetAllTermsAndConditions(req, res) {
           message: 'Terms And Conditions Records Found',
           results: success,
         });
-    }
-  );
+    });
+}
+
+function addPrivacyPolicy(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .send({ message: 'only company can add privacy policies' });
+  }
+  let privacyPolicyContent = new termsAndConditions({
+    privacyPolicyContent: req.body.privacyPolicyContent,
+  });
+
+  privacyPolicyContent.save((err, results) => {
+    if (err || !results)
+      return res.status(404).send({ message: 'Data Not Saved' });
+    return res.send({ message: 'Terms And Conditions Added Successfully' });
+  });
+}
+
+function GetAllPrivacyPolicy(req, res) {
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .send({ message: 'only company can see privacy policies' });
+  }
+  termsAndConditions
+    .findOne(
+      {},
+      { privacyPolicyContent: 1, createdAt: 1, updatedAt: 1, _id: 1 }
+    )
+    .sort({ _id: -1 })
+    .exec((err, success) => {
+      if (err || !success)
+        return res.status(404).send({ message: 'Record Not Found' });
+      else
+        return res.send({
+          message: 'Terms And Conditions Records Found',
+          results: success,
+        });
+    });
 }
 
 loginRouter.post(
@@ -131,5 +188,11 @@ loginRouter.post(
   addTermsAndConditions
 );
 loginRouter.get('/GetAllTermsAndConditions', GetAllTermsAndConditions);
+loginRouter.post(
+  '/addPrivacyPolicy',
+  settingsValidation.validate('addPrivacyPolicy'),
+  addPrivacyPolicy
+);
+loginRouter.get('/GetAllPrivacyPolicy', GetAllPrivacyPolicy);
 
 module.exports = { loginRouter };
