@@ -247,7 +247,40 @@ function getUserBets(req, res) {
   );
 }
 
+function betFunds(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+
+  User.findOne({ userId: req.decoded.userId }, (err, user) => {
+    if (err || !user) {
+      return res.send({ message: 'User Not Found' });
+    }
+
+    let results;
+    if (req.decoded.role === '5') {
+      results = {
+        balance: user.balance,
+        exposure: user.exposure,
+        credit: user.credit,
+        available: user.availableBalance,
+      };
+    } else {
+      results = {
+        balance: 0,
+        exposure: user.exposure,
+        credit: 0,
+        available: 0,
+      };
+    }
+
+    return res.send({ message: 'Funds Record Found', results: results });
+  });
+}
+
 loginRouter.post('/placeBet', betValidator.validate('placeBet'), placeBet);
 loginRouter.post('/getUserBets', getUserBets);
+loginRouter.get('/betFunds', betFunds);
 
 module.exports = { loginRouter };

@@ -3,8 +3,6 @@
   "login",
   "register",
   "getAllUsers",
-  "loadUserBalance",
-  "assignUserBalance",
   "getUsers",
   "changePassword",
   "updateUser",
@@ -12,7 +10,6 @@
   "addModulePermissions",
   "addModulePermissionsUser",
   "searchUsers",
-  "getAllRecharges",
   "getCurrentUser",
   "getSingleUser",
   "addMarketType",
@@ -48,5 +45,8 @@
   "addPrivacyPolicy",
   "GetAllPrivacyPolicy",
   "updateDefaultExchange",
-  "GetExchangeRates"
+  "GetExchangeRates",
+  "betFunds",
+  "betsNews",
+  "updateDefaultBetSizes"
 ]

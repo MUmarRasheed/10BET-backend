@@ -7,3 +7,36 @@
 # "password":"Company@123"
 
 # "userName" : "Company"
+
+default theme and login page for company
+db.settings.insertMany([
+{
+"_id" : ObjectId("645e20c8023e705fdc7edad2"),
+"defaultLoginPage" : "login-page-one",
+"createdAt" : 1683894409.774,
+"updatedAt" : 1683894409.774
+},
+{
+"_id" : ObjectId("645e239b023e705fdc7edad4"),
+"defaultThemeName" : "grey-theme",
+"createdAt" : 1683894409.774,
+"updatedAt" : 1683894409.774
+}])
+
+default maxbetsizes for company
+
+db.maxbetsizes.insertMany([{
+"_id" : ObjectId("645f8016b9bfff0edb6317e7"),
+"soccer" : 250000,
+"tennis" : 250000,
+"cricket" : 5000,
+"fancy" : 200000,
+"races" : 200000,
+"casino" : 50000,
+"greyHound" : 50000,
+"bookMaker" : 2000000,
+"iceHockey" : 5000000,
+"snooker" : 5000000,
+"kabbadi" : 5000000,
+"userId" : 0
+}]);

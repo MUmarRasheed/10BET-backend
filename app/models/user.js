@@ -64,6 +64,7 @@ const userSchema = new Schema({
   blockedSubMarketsByParent: { type: Array },
   betLockStatus: { type: Boolean },
   matchOddsStatus: { type: Boolean },
+  baseCurrency: { type: String },
 });
 // userSchema.plugin(Global.paginate)
 

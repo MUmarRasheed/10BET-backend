@@ -8,8 +8,10 @@ const termsAndConditions = require('../models/termsAndConditions');
 const PrivacyPolicy = require('../models/privacyPolicy');
 
 const Exchanges = require('../models/exchanges');
+const MaxBetSize = require('../models/maxBetSizes');
 
 const loginRouter = express.Router();
+const router = express.Router();
 
 function updateDefaultTheme(req, res) {
   const errors = validationResult(req);
@@ -224,6 +226,65 @@ function GetExchangeRates(req, res) {
   });
 }
 
+function updateDefaultBetSizes(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .json({ message: 'Only company can add default bet sizes' });
+  }
+
+  const {
+    soccer,
+    tennis,
+    cricket,
+    fancy,
+    races,
+    casino,
+    greyHound,
+    bookMaker,
+    iceHockey,
+    snooker,
+    kabbadi,
+  } = req.body;
+
+  MaxBetSize.findOneAndUpdate(
+    { userId: req.decoded.userId },
+    {
+      $set: {
+        soccer,
+        tennis,
+        cricket,
+        fancy,
+        races,
+        casino,
+        greyHound,
+        bookMaker,
+        iceHockey,
+        snooker,
+        kabbadi,
+      },
+    },
+    { new: true, upsert: true },
+    (err, maxBetSize) => {
+      if (err) {
+        return res.status(404).json({ message: 'Server error' });
+      }
+      return res.json({
+        success: true,
+        message: 'Max bet sizes updated successfully',
+        results: maxBetSize,
+      });
+    }
+  );
+}
+
+module.exports = updateDefaultBetSizes;
+
 loginRouter.post(
   '/updateDefaultTheme',
   settingsValidation.validate('updateDefaultTheme'),
@@ -239,19 +300,25 @@ loginRouter.post(
   settingsValidation.validate('addTermsAndConditions'),
   addTermsAndConditions
 );
-loginRouter.get('/GetAllTermsAndConditions', GetAllTermsAndConditions);
+router.get('/GetAllTermsAndConditions', GetAllTermsAndConditions);
 loginRouter.post(
   '/addPrivacyPolicy',
   settingsValidation.validate('addPrivacyPolicy'),
   addPrivacyPolicy
 );
-loginRouter.get('/GetAllPrivacyPolicy', GetAllPrivacyPolicy);
+router.get('/GetAllPrivacyPolicy', GetAllPrivacyPolicy);
 loginRouter.post(
   '/updateDefaultExchange',
   settingsValidation.validate('updateDefaultExchange'),
   updateDefaultExchange
 );
 
+loginRouter.post(
+  '/updateDefaultBetSizes',
+  settingsValidation.validate('updateDefaultBetSizes'),
+  updateDefaultBetSizes
+);
+
 loginRouter.get('/GetExchangeRates', GetExchangeRates);
 
-module.exports = { loginRouter };
+module.exports = { loginRouter, router };

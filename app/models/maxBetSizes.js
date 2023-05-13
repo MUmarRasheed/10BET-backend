@@ -4,7 +4,7 @@ let Schema = mongoose.Schema;
 mongoose.set('debug', true);
 // let Global = require('../global/settings')
 
-let betSizesSchema = new Schema({
+let maxBetSizesSchema = new Schema({
   userId: { type: Number, unique: true, index: true },
   soccer: { type: Number },
   tennis: { type: Number },
@@ -22,10 +22,7 @@ let betSizesSchema = new Schema({
   iceHockey: { type: Number },
 });
 
-// betSizesSchema.plugin(Global.aggregatePaginate)
-// betSizesSchema.plugin(Global.paginate)
-
-betSizesSchema.pre('save', function (next) {
+maxBetSizesSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -35,7 +32,6 @@ betSizesSchema.pre('save', function (next) {
   next();
 });
 
-const BetSizes = mongoose.model('betSize', betSizesSchema);
-// BetSizes.createIndexes();
+const maxBetSizes = mongoose.model('maxbetsizes', maxBetSizesSchema);
 
-module.exports = BetSizes;
+module.exports = maxBetSizes;

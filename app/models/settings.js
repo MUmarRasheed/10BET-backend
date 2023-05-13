@@ -7,8 +7,6 @@ let Global = require('../global/settings');
 let settingsSchema = new Schema({
   defaultThemeName: { type: String, required: false },
   defaultLoginPage: { type: String, required: false },
-  termAndConditionsContent: { type: String, required: false },
-  privacyPolicyContent: { type: String, required: false },
   updatedAt: { type: Number },
   createdAt: { type: Number },
 });

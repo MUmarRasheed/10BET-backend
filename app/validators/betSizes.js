@@ -40,6 +40,18 @@ module.exports.validate = (method) => {
           .exists()
           .isInt()
           .withMessage(' tPin must be integer'),
+        body('iceHockey', 'please enter valid iceHockey amount')
+          .exists()
+          .isInt({ min: 0 })
+          .withMessage('iceHockey must be a positive integer'),
+        body('snooker', 'please enter valid snooker amount')
+          .exists()
+          .isInt({ min: 0 })
+          .withMessage('snooker must be a positive integer'),
+        body('kabbadi', 'please enter valid kabbadi amount')
+          .exists()
+          .isInt({ min: 0 })
+          .withMessage('kabbadi must be a positive integer'),
       ];
     }
   }
