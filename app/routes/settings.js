@@ -115,11 +115,11 @@ function addTermsAndConditions(req, res) {
 }
 
 function GetAllTermsAndConditions(req, res) {
-  if (req.decoded.role !== '0') {
-    return res
-      .status(404)
-      .send({ message: 'only company can see terms and conditions' });
-  }
+  // if (req.decoded.role !== '0') {
+  //   return res
+  //     .status(404)
+  //     .send({ message: 'only company can see terms and conditions' });
+  // }
   termsAndConditions
     .findOne(
       {},
@@ -164,11 +164,11 @@ function addPrivacyPolicy(req, res) {
 }
 
 function GetAllPrivacyPolicy(req, res) {
-  if (req.decoded.role !== '0') {
-    return res
-      .status(404)
-      .send({ message: 'only company can see privacy policies' });
-  }
+  // if (req.decoded.role !== '0') {
+  //   return res
+  //     .status(404)
+  //     .send({ message: 'only company can see privacy policies' });
+  // }
   PrivacyPolicy.findOne(
     {},
     { privacyPolicyContent: 1, createdAt: 1, updatedAt: 1, _id: 1 }
