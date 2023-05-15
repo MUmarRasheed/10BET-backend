@@ -4,14 +4,14 @@ let Schema = mongoose.Schema;
 mongoose.set('debug', true);
 // let Global = require('../global/settings')
 
-let maxBetSizesSchema = new Schema({
+let betLimitsSchema = new Schema({
   name: { type: String, required: true },
-  amount: { type: Number, required: true },
+  maxAmount: { type: Number, required: true },
   updatedAt: { type: Number },
   createdAt: { type: Number },
 });
 
-maxBetSizesSchema.pre('save', function (next) {
+betLimitsSchema.pre('save', function (next) {
   var now = new Date().getTime() / 1000;
   if (!this.createdAt) {
     this.createdAt = now;
@@ -21,6 +21,6 @@ maxBetSizesSchema.pre('save', function (next) {
   next();
 });
 
-const maxBetSizes = mongoose.model('maxbetsizes', maxBetSizesSchema);
+const betLimits = mongoose.model('betLimits', betLimitsSchema);
 
-module.exports = maxBetSizes;
+module.exports = betLimits;

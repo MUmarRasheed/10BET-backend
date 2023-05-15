@@ -4,11 +4,13 @@ const userValidation = require('../validators/user');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 let config = require('config');
-const BetSizes = require('../models/betSizes');
+const BetSizes = require('../models/userBetSizes');
 const User = require('../models/user');
 const MarketType = require('../models/marketTypes');
-const MaxBetSize = require('../models/maxBetSizes');
+const MaxBetSize = require('../models/betLimits');
 const betSizeValidator = require('../validators/betSizes');
+const betLimits = require('../models/betLimits');
+const userBetSizes = require('../models/userBetSizes');
 const loginRouter = express.Router();
 
 function addBetSizes(req, res) {
@@ -166,11 +168,136 @@ function getBetSizeLimits(callback) {
   });
 }
 
+function getAllBetSizes(req, res) {
+  const userId = Number(req.query.userId);
+
+  if (!userId) {
+    return res.status(400).send({ message: 'USER_ID_MISSING' });
+  }
+
+  User.findOne({ userId: userId }, (err, user) => {
+    if (err || !user) {
+      return res.status(404).send({ message: 'USER_NOT_FOUND' });
+    }
+
+    const query = [
+      {
+        $lookup: {
+          from: 'userbetsizes',
+          let: { betLimitId: { $toString: '$_id' } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$betLimitId', '$$betLimitId'] },
+                    { $eq: ['$userId', userId] },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                amount: 1,
+              },
+            },
+          ],
+          as: 'userBetSizes',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          maxAmount: 1,
+          name: 1,
+          'userBetSizes._id': 1,
+          'userBetSizes.amount': 1,
+        },
+      },
+      {
+        $addFields: {
+          userBetSizes: {
+            $arrayElemAt: ['$userBetSizes', 0],
+          },
+        },
+      },
+    ];
+
+    betLimits.aggregate(query, (err, results) => {
+      if (err) {
+        return res.status(404).send({ message: 'Bet Sizes Not Found' });
+      }
+      return res.send({
+        success: true,
+        message: 'BET_SIZES_FETCHED_SUCCESSFULLY',
+        results: results,
+      });
+    });
+  });
+}
+
+// function getAllBetSizes(req, res) {
+//   const userId = Number(req.query.userId);
+
+//   if (!userId) {
+//     return res.status(400).send({ message: 'USER_ID_MISSING' });
+//   }
+
+//   User.findOne({ userId: userId }, (err, user) => {
+//     if (err || !user) {
+//       return res.status(404).send({ message: 'USER_NOT_FOUND' });
+//     }
+
+//     const query = [
+//       {
+//         $lookup: {
+//           from: 'userbetsizes',
+//           let: { userId: '$userId' },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: {
+//                   $eq: ['$userId', '$$userId'],
+//                 },
+//               },
+//             },
+//             {
+//               $project: {
+//                 _id: 1,
+//                 maxAmount: 1, // Exclude maxAmount field
+//                 name: 1, // Exclude name field
+//                 'userBetSizes._id': 1, // Exclude _id field in userBetSizes array
+//                 'userBetSizes.userId': 1, // Exclude maxAmount field in userBetSizes array
+//                 'userBetSizes.betLimitId': 1, // Exclude name field in userBetSizes array
+//                 'userBetSizes.amount': 1, // Exclude amount field in userBetSizes array
+//               },
+//             },
+//           ],
+//           as: 'userBetSizes',
+//         },
+//       },
+//     ];
+
+//     betLimits.aggregate(query, (err, results) => {
+//       if (err) {
+//         return res.status(404).send({ message: 'Bet Sizes Not Found' });
+//       }
+//       return res.send({
+//         success: true,
+//         message: 'BET_SIZES_FETCHED_SUCCESSFULLY',
+//         results: results,
+//       });
+//     });
+//   });
+// }
+
 loginRouter.post(
   '/addBetSizes',
   betSizeValidator.validate('addBetSizes'),
   addBetSizes
 );
 loginRouter.get('/betsNews', betsNews);
+loginRouter.get('/getAllBetSizes', getAllBetSizes);
 
 module.exports = { loginRouter };

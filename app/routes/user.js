@@ -7,6 +7,8 @@ let config = require('config');
 const User = require('../models/user');
 const LoginActivity = require('../models/loginActivity');
 const Settings = require('../models/settings');
+const BetLimits = require('../models/betLimits');
+const UserBetSizes = require('../models/userBetSizes');
 
 var getIP = require('ipware')().get_ip;
 
@@ -92,13 +94,34 @@ function registerUser(req, res) {
       );
       user.token = token;
       user.createdBy = req.decoded.userId;
-      user.save((err, user) => {
-        if (err || !user)
-          return res.status(404).send({ message: 'user not registered', err });
-        return res.send({
-          message: 'Register Success',
-          success: true,
-          results: user,
+
+      BetLimits.find({}, (err, betLimits) => {
+        console.log('betLimits.amount', betLimits.maxAmount);
+        if (err || !betLimits) {
+          return res.status(404).send({ message: 'bet limits not found' });
+        }
+        user.save((err, user) => {
+          if (err || !user)
+            return res
+              .status(404)
+              .send({ message: 'user not registered', err });
+
+          const userbetSizesData = betLimits.map((betLimit) => ({
+            userId: user.userId,
+            betLimitId: betLimit._id,
+            amount: betLimit.maxAmount,
+          }));
+
+          console.log('userBetsizes', userbetSizesData);
+          UserBetSizes.insertMany(userbetSizesData, (err, insertedDocs) => {
+            if (err) return res.send({ message: err });
+
+            return res.send({
+              message: 'Register Success',
+              success: true,
+              results: user,
+            });
+          });
         });
       });
     });

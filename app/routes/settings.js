@@ -8,7 +8,7 @@ const termsAndConditions = require('../models/termsAndConditions');
 const PrivacyPolicy = require('../models/privacyPolicy');
 
 const Exchanges = require('../models/exchanges');
-const MaxBetSize = require('../models/maxBetSizes');
+const MaxBetSize = require('../models/betLimits');
 
 const loginRouter = express.Router();
 const router = express.Router();
@@ -243,7 +243,7 @@ function updateDefaultBetSizes(req, res) {
   const updatePromises = betLimits.map((betLimit) => {
     return MaxBetSize.findOneAndUpdate(
       { _id: betLimit._id },
-      { $set: { amount: betLimit.amount } },
+      { $set: { amount: betLimit.maxAmount } },
       { new: true, upsert: true }
     );
   });

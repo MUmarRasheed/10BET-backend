@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const BetSizes = require('./betSizes');
 let Global = require('../global/settings');
 /**
  * [betSchema description]

@@ -49,5 +49,6 @@
   "betFunds",
   "betsNews",
   "updateDefaultBetSizes",
-  "getDefaultBetSizes"
+  "getDefaultBetSizes",
+  "getAllBetSizes"
 ]
