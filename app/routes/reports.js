@@ -279,40 +279,10 @@ function getClientList(req, res) {
   // Initialize variables with default values
   let query = { isDeleted: false };
   let countQuery = {};
-  console.log('req.decoded.login', req.decoded.login);
-
-  if (req.decoded.login.role === '0') {
-    query.userId = req.decoded.userId;
-    countQuery.createdBy = req.decoded.userId;
-  } else if (req.decoded.login.role === '1') {
-    query.superAdminId = req.decoded.userId;
-    countQuery.superAdminId = req.decoded.userId;
-  } else if (req.decoded.login.role === '2') {
-    query.userId = Number(req.decoded.userId);
-    countQuery.parentId = req.decoded.userId;
-  } else if (req.decoded.login.role === '3') {
-    query.adminId = req.decoded.userId;
-    countQuery.adminId = req.decoded.userId;
-  } else if (req.decoded.login.role === '4') {
-    query.masterId = req.decoded.userId;
-    countQuery.masterId = req.decoded.userId;
-  } else if (req.decoded.login.role === '5') {
-    query.userId = null;
-    countQuery.userId = null;
-  }
 
   if (req.query.userId) {
     const userId = parseInt(req.query.userId);
-    query = {
-      $or: [
-        { superAdminId: userId },
-        { createdBy: userId },
-        { adminId: userId },
-        { parentId: userId },
-        { masterId: userId },
-      ],
-      isDeleted: false,
-    };
+    query = { userId, isDeleted: false };
 
     countQuery = {
       $or: [
@@ -324,10 +294,6 @@ function getClientList(req, res) {
       ],
     };
   }
-
-  // console.log('query', query);
-  // console.log('countQuery', countQuery);
-
   // Retrieve the desired fields from the User collection
   User.findOne(query)
     // .select('credit creditRemaining clientPL plDownline plUpline')
