@@ -238,49 +238,28 @@ function updateDefaultBetSizes(req, res) {
       .json({ message: 'Only company can add default bet sizes' });
   }
 
-  const {
-    soccer,
-    tennis,
-    cricket,
-    fancy,
-    races,
-    casino,
-    greyHound,
-    bookMaker,
-    iceHockey,
-    snooker,
-    kabbadi,
-  } = req.body;
+  const { betLimits } = req.body;
 
-  MaxBetSize.findOneAndUpdate(
-    { userId: req.decoded.userId },
-    {
-      $set: {
-        soccer,
-        tennis,
-        cricket,
-        fancy,
-        races,
-        casino,
-        greyHound,
-        bookMaker,
-        iceHockey,
-        snooker,
-        kabbadi,
-      },
-    },
-    { new: true, upsert: true },
-    (err, maxBetSize) => {
-      if (err) {
-        return res.status(404).json({ message: 'Server error' });
-      }
+  const updatePromises = betLimits.map((betLimit) => {
+    return MaxBetSize.findOneAndUpdate(
+      { name: betLimit.name },
+      { $set: { amount: betLimit.amount } },
+      { new: true, upsert: true }
+    );
+  });
+
+  Promise.all(updatePromises)
+    .then((updatedBetLimits) => {
       return res.json({
         success: true,
         message: 'Max bet sizes updated successfully',
-        results: maxBetSize,
+        results: updatedBetLimits,
       });
-    }
-  );
+    })
+    .catch((err) => {
+      console.log('err', err);
+      return res.status(500).json({ message: 'Server error' });
+    });
 }
 
 function getDefaultBetSizes(req, res) {

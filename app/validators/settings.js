@@ -60,50 +60,10 @@ module.exports.validate = (method) => {
     }
     case 'updateDefaultBetSizes': {
       return [
-        body('soccer', 'please enter valid soccer amount')
+        body('betLimits', 'betLimits are required')
           .exists()
-          .isInt({ min: 0 })
-          .withMessage('soccer must be a positive integer'),
-        body('tennis', 'please enter valid tennis amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('tennis must be a positive integer'),
-        body('cricket', 'please enter valid cricket amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('cricket must be a positive integer'),
-        body('fancy', 'please enter valid fancy amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('fancy must be a positive integer'),
-        body('races', 'please enter valid races amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('races must be a positive integer'),
-        body('casino', 'please enter valid casino amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('casino must be a positive integer'),
-        body('greyHound', 'please enter valid greyHound amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('greyHound must be a positive integer'),
-        body('bookMaker', 'please enter valid bookMaker amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('bookMaker must be a positive integer'),
-        body('iceHockey', 'please enter valid iceHockey amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('iceHockey must be a positive integer'),
-        body('snooker', 'please enter valid snooker amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('snooker must be a positive integer'),
-        body('kabbadi', 'please enter valid kabbadi amount')
-          .exists()
-          .isInt({ min: 0 })
-          .withMessage('kabbadi must be a positive integer'),
+          .isArray({ min: 0 })
+          .withMessage('betLimits must be array'),
       ];
     }
   }
