@@ -352,6 +352,7 @@ function getAllUsers(req, res) {
     query = {
       $or: [
         { superAdminId: userId },
+        { createdBy: userId },
         { adminId: userId },
         { parentId: userId },
         { masterId: userId },

@@ -279,27 +279,54 @@ function getClientList(req, res) {
   // Initialize variables with default values
   let query = { isDeleted: false };
   let countQuery = {};
-  if (req.decoded.login.role == '0') {
+  console.log('req.decoded.login', req.decoded.login);
+
+  if (req.decoded.login.role === '0') {
     query.userId = req.decoded.userId;
-  }
-  if (req.decoded.login.role === '1') {
-    query.superAdminId = req.query.userId;
-    countQuery.superAdminId = req.query.userId;
+    countQuery.createdBy = req.decoded.userId;
+  } else if (req.decoded.login.role === '1') {
+    query.superAdminId = req.decoded.userId;
+    countQuery.superAdminId = req.decoded.userId;
   } else if (req.decoded.login.role === '2') {
-    query.userId = Number(req.query.userId);
-    countQuery.parentId = req.query.userId;
+    query.userId = Number(req.decoded.userId);
+    countQuery.parentId = req.decoded.userId;
   } else if (req.decoded.login.role === '3') {
-    query.adminId = req.query.userId;
-    countQuery.adminId = req.query.userId;
+    query.adminId = req.decoded.userId;
+    countQuery.adminId = req.decoded.userId;
   } else if (req.decoded.login.role === '4') {
-    query.masterId = req.query.userId;
-    countQuery.masterId = req.query.userId;
+    query.masterId = req.decoded.userId;
+    countQuery.masterId = req.decoded.userId;
   } else if (req.decoded.login.role === '5') {
     query.userId = null;
     countQuery.userId = null;
   }
-  console.log('query', query);
-  console.log('countQuery', countQuery);
+
+  if (req.query.userId) {
+    const userId = parseInt(req.query.userId);
+    query = {
+      $or: [
+        { superAdminId: userId },
+        { createdBy: userId },
+        { adminId: userId },
+        { parentId: userId },
+        { masterId: userId },
+      ],
+      isDeleted: false,
+    };
+
+    countQuery = {
+      $or: [
+        { superAdminId: userId },
+        { createdBy: userId },
+        { adminId: userId },
+        { parentId: userId },
+        { masterId: userId },
+      ],
+    };
+  }
+
+  // console.log('query', query);
+  // console.log('countQuery', countQuery);
 
   // Retrieve the desired fields from the User collection
   User.findOne(query)
@@ -318,7 +345,6 @@ function getClientList(req, res) {
         if (err) {
           return res.status(404).send({ message: 'COUNT_FAILED' });
         }
-
         // Combine the User fields and user count into a single response object
         const response = {
           creditRecieved: results.credit,
