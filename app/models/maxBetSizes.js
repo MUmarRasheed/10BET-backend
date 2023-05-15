@@ -5,21 +5,10 @@ mongoose.set('debug', true);
 // let Global = require('../global/settings')
 
 let maxBetSizesSchema = new Schema({
-  userId: { type: Number, unique: true, index: true },
-  soccer: { type: Number },
-  tennis: { type: Number },
-  cricket: { type: Number },
-  fancy: { type: Number },
-  races: { type: Number },
-  casino: { type: Number },
-  greyHound: { type: Number },
-  bookMaker: { type: Number },
-  tPin: { type: Number },
+  name: { type: String, required: true },
+  amount: { type: Number, required: true },
   updatedAt: { type: Number },
   createdAt: { type: Number },
-  kabbadi: { type: Number },
-  snooker: { type: Number },
-  iceHockey: { type: Number },
 });
 
 maxBetSizesSchema.pre('save', function (next) {
