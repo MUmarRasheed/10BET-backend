@@ -48,5 +48,6 @@
   "GetExchangeRates",
   "betFunds",
   "betsNews",
-  "updateDefaultBetSizes"
+  "updateDefaultBetSizes",
+  "getDefaultBetSizes"
 ]

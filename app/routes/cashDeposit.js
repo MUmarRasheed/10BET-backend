@@ -16,7 +16,7 @@ async function addCashDeposit(req, res) {
     if (!currentUser) {
       return res.status(404).send({ message: 'user not found' });
     }
-    if (currentUser.balance < req.body.amount) {
+    if (currentUser.clientPL < req.body.amount) {
       return res
         .status(400)
         .send({ message: 'Insufficient balance to make the deposit' });
@@ -43,7 +43,6 @@ async function addCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
-        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -57,7 +56,6 @@ async function addCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
-        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -67,7 +65,6 @@ async function addCashDeposit(req, res) {
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL += req.body.amount;
-        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -76,7 +73,6 @@ async function addCashDeposit(req, res) {
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
         userToUpdate.clientPL += req.body.amount;
-        userToUpdate.balance += req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -112,7 +108,7 @@ async function addCashDeposit(req, res) {
 
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance
     if (currentUser.userId !== userToUpdate.userId) {
-      currentUser.balance -= req.body.amount;
+      currentUser.clientPL -= req.body.amount;
       await currentUser.save();
     }
 
@@ -175,7 +171,6 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -189,7 +184,6 @@ async function withDrawCashDeposit(req, res) {
         req.body.role == '4'
       ) {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -199,7 +193,6 @@ async function withDrawCashDeposit(req, res) {
     if (req.decoded.role == '2') {
       if (req.body.role == '3' || req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -208,14 +201,12 @@ async function withDrawCashDeposit(req, res) {
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
         userToUpdate.clientPL -= req.body.amount;
-        userToUpdate.balance -= req.body.amount;
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
         userToUpdate.clientPL -= req.body.amount;
       }
     } else if (req.decoded.role == '4') {
-      userToUpdate.balance -= req.body.amount;
       if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
@@ -247,8 +238,7 @@ async function withDrawCashDeposit(req, res) {
 
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance
     if (currentUser.userId !== userToUpdate.userId) {
-      currentUser.creditLimit += req.body.amount;
-      currentUser.credit += req.body.amount;
+      currentUser.clientPL += req.body.amount;
 
       await currentUser.save();
     }

@@ -283,7 +283,28 @@ function updateDefaultBetSizes(req, res) {
   );
 }
 
-module.exports = updateDefaultBetSizes;
+function getDefaultBetSizes(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  if (req.decoded.role !== '0') {
+    return res
+      .status(404)
+      .json({ message: 'Only company can add default bet sizes' });
+  }
+  MaxBetSize.find({ userId: req.decoded.userId }, {}, (err, results) => {
+    if (err) {
+      return res.status(404).json({ message: 'bet sizes not found' });
+    }
+    return res.json({
+      success: true,
+      message: 'Max bet sizes Found successfully',
+      results: results,
+    });
+  });
+}
 
 loginRouter.post(
   '/updateDefaultTheme',
@@ -320,5 +341,5 @@ loginRouter.post(
 );
 
 loginRouter.get('/GetExchangeRates', GetExchangeRates);
-
+loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
 module.exports = { loginRouter, router };
