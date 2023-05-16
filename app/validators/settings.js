@@ -74,6 +74,16 @@ module.exports.validate = (method) => {
           .exists()
           .isArray({ min: 0 })
           .withMessage('betLimits must be array'),
+          body('betLimits.*.maxAmount')
+          .exists()
+          .withMessage('maxAmount is required')
+          .isInt()
+          .withMessage('maxAmount must be a number'),
+        body('betLimits.*._id')
+          .exists()
+          .withMessage('_id is required')
+          .isString()
+          .withMessage('_id must be a string'),
       ];
     }
   }

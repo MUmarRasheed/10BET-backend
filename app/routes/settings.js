@@ -256,7 +256,7 @@ function updateDefaultBetSizes(req, res) {
   const updatePromises = betLimits.map((betLimit) => {
     return MaxBetSize.findOneAndUpdate(
       { _id: betLimit._id },
-      { $set: { amount: betLimit.maxAmount } },
+      { $set: { maxAmount: betLimit.maxAmount } },
       { new: true, upsert: true }
     );
   });

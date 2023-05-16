@@ -262,14 +262,14 @@ function betFunds(req, res) {
     if (req.decoded.role === '5') {
       results = {
         balance: user.balance,
-        exposure: user.exposure,
+        liable: user.exposure,
         credit: user.credit,
         available: user.availableBalance,
       };
     } else {
       results = {
         balance: 0,
-        exposure: user.exposure,
+        liable: user.exposure,
         credit: 0,
         available: 0,
       };
