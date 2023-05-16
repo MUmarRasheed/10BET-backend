@@ -228,10 +228,16 @@ function getAllBetSizes(req, res) {
       if (err) {
         return res.status(404).send({ message: 'Bet Sizes Not Found' });
       }
+      const modifiedResults = results.map((result) => ({
+        _id: result.userBetSizes._id,
+        name: result.name,
+        maxAmount: result.maxAmount,
+        amount: result.userBetSizes.amount,
+      }));
       return res.send({
         success: true,
         message: 'BET_SIZES_FETCHED_SUCCESSFULLY',
-        results: results,
+        results: modifiedResults,
       });
     });
   });
