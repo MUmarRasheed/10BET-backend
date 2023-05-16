@@ -33,6 +33,7 @@ async function addCredit(req, res) {
     }
 
     currentUser.creditLimit -= req.body.amount;
+    currentUser.credit -= req.body.amount;
     await currentUser.save();
 
     if (req.decoded.role == '0') {
@@ -47,7 +48,8 @@ async function addCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.credit += req.body.amount;
+        userToUpdate.creditLimit += req.body.amount;
       }
     }
     if (req.decoded.role == '1') {
@@ -61,7 +63,8 @@ async function addCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.credit += req.body.amount;
+        userToUpdate.creditLimit += req.body.amount;
       }
     }
     if (req.decoded.role == '2') {
@@ -71,7 +74,8 @@ async function addCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.credit += req.body.amount;
+        userToUpdate.creditLimit += req.body.amount;
       }
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
@@ -80,13 +84,15 @@ async function addCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.credit += req.body.amount;
+        userToUpdate.creditLimit += req.body.amount;
       }
     } else if (req.decoded.role == '4') {
       if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.clientPL += req.body.amount;
+        userToUpdate.credit += req.body.amount;
+        userToUpdate.creditLimit += req.body.amount;
       }
     }
 
@@ -210,6 +216,8 @@ async function withdrawCredit(req, res) {
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
     currentUser.creditLimit += req.body.amount;
+    currentUser.credit += req.body.amount;
+
     await currentUser.save();
 
     const userToUpdate = await User.findOne({
@@ -237,7 +245,8 @@ async function withdrawCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
-        userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.credit -= req.body.amount;
+        userToUpdate.creditLimit -= req.body.amount;
       }
     }
     if (req.decoded.role == '1') {
@@ -251,7 +260,8 @@ async function withdrawCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
-        userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.credit -= req.body.amount;
+        userToUpdate.creditLimit -= req.body.amount;
       }
     }
     if (req.decoded.role == '2') {
@@ -261,7 +271,8 @@ async function withdrawCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
-        userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.credit -= req.body.amount;
+        userToUpdate.creditLimit -= req.body.amount;
       }
     } else if (req.decoded.role == '3') {
       if (req.body.role == '4') {
@@ -270,21 +281,23 @@ async function withdrawCredit(req, res) {
       } else if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
-        userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.credit -= req.body.amount;
+        userToUpdate.creditLimit -= req.body.amount;
       }
     } else if (req.decoded.role == '4') {
       if (req.body.role == '5') {
         userToUpdate.balance -= req.body.amount;
         userToUpdate.availableBalance -= req.body.amount;
-        userToUpdate.clientPL -= req.body.amount;
+        userToUpdate.credit -= req.body.amount;
+        userToUpdate.creditLimit -= req.body.amount;
       }
     }
 
-    //return the amount to the user's balance
-    if (currentUser.userId !== userToUpdate.userId) {
-      currentUser.balance += req.body.amount;
-      await currentUser.save();
-    }
+    // //return the amount to the user's balance
+    // if (currentUser.userId !== userToUpdate.userId) {
+    //   currentUser.balance += req.body.amount;
+    //   await currentUser.save();
+    // }
     await userToUpdate.save();
 
     const cashCreditWithdraw = await CashDeposit.findOne().sort({ _id: -1 });

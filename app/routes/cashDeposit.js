@@ -91,6 +91,7 @@ async function addCashDeposit(req, res) {
     const newBalance = lastDeposit
       ? lastDeposit.balance + req.body.amount
       : req.body.amount;
+    console.log('newBalance', newBalance);
     const newAvailableBalance = lastDeposit
       ? lastDeposit.availableBalance + req.body.amount
       : req.body.amount;
