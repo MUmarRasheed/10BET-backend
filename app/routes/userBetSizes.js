@@ -4,10 +4,8 @@ const userValidation = require('../validators/user');
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator');
 let config = require('config');
-const BetSizes = require('../models/userBetSizes');
 const User = require('../models/user');
 const MarketType = require('../models/marketTypes');
-const MaxBetSize = require('../models/betLimits');
 const betSizeValidator = require('../validators/userBetSizes');
 const betLimits = require('../models/betLimits');
 const UserBetSizes = require('../models/userBetSizes');
@@ -49,7 +47,7 @@ function betsNews(req, res) {
 
   if (req.decoded.role === '5') {
     const marketId = req.query.marketId;
-    const query = { userId: req.decoded.userId };
+    const query = { userId: Number(req.decoded.userId) };
     if (marketId) {
       MarketType.findOne({ marketId }, (err, market) => {
         if (err || !market) {
@@ -58,24 +56,27 @@ function betsNews(req, res) {
         }
         const marketName = market.name.toLowerCase();
         query[marketName] = { $exists: true };
-        BetSizes.findOne(query, (err, data) => {
-          if (err || !data) {
-            // check if bet size data is not found
-            return res.status(404).send({ message: 'News not found' });
+        UserBetSizes.findOne(
+          { userId: req.decoded.userId, name: marketName },
+          (err, data) => {
+            if (err || !data) {
+              // check if bet size data is not found
+              return res.status(404).send({ message: 'News not found' });
+            }
+            const results = {
+              betSizes: {
+                userId: data.userId,
+                [marketName]: data.amount,
+              },
+              text: 'Welcome to Exchange.-Announcement :- All casino Profit Loss will be 1 to 10 Ratio from now On.Her casino may Jeet Har 1 ka 10 ho ge. -Welcome . -Welcome . -Welcome to Exchange.',
+            };
+            return res.send({
+              success: true,
+              message: 'News Data found',
+              results,
+            });
           }
-          const results = {
-            betSizes: {
-              userId: data.userId,
-              [marketName]: data[marketName.toLowerCase()],
-            },
-            text: 'Welcome to Exchange.-Announcement :- All casino Profit Loss will be 1 to 10 Ratio from now On.Her casino may Jeet Har 1 ka 10 ho ge. -Welcome . -Welcome . -Welcome to Exchange.',
-          };
-          return res.send({
-            success: true,
-            message: 'News Data found',
-            results,
-          });
-        });
+        );
       });
     } else if (!req.query.marketId) {
       const results = {
@@ -99,33 +100,6 @@ function betsNews(req, res) {
       results,
     });
   }
-}
-
-function getBetSizeLimits(callback) {
-  MaxBetSize.findOne({}, (err, limits) => {
-    if (err) {
-      callback(err);
-    } else if (!limits) {
-      callback(new Error('Bet size limits not found'));
-    } else {
-      const limitsObj = {
-        soccer: limits.soccer,
-        tennis: limits.tennis,
-        cricket: limits.cricket,
-        fancy: limits.fancy,
-        races: limits.races,
-        casino: limits.casino,
-        greyHound: limits.greyHound,
-        bookMaker: limits.bookMaker,
-        tPin: limits.tPin,
-        iceHockey: limits.iceHockey,
-        snooker: limits.snooker,
-        kabbadi: limits.kabbadi,
-        tPin: limits.tPin,
-      };
-      callback(null, limitsObj);
-    }
-  });
 }
 
 function getAllBetSizes(req, res) {
