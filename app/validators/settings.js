@@ -59,7 +59,7 @@ module.exports.validate = (method) => {
         body('exchangeRates.*.exchangeAmount')
           .exists()
           .withMessage('exchangeAmount is required')
-          .isInt()
+          .isNumeric()
           .withMessage('exchangeAmount must be a number'),
         body('exchangeRates.*._id')
           .exists()
@@ -74,7 +74,7 @@ module.exports.validate = (method) => {
           .exists()
           .isArray({ min: 0 })
           .withMessage('betLimits must be array'),
-          body('betLimits.*.maxAmount')
+        body('betLimits.*.maxAmount')
           .exists()
           .withMessage('maxAmount is required')
           .isInt()
