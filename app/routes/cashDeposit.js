@@ -95,25 +95,37 @@ async function addCashDeposit(req, res) {
     const newAvailableBalance = lastDeposit
       ? lastDeposit.availableBalance + req.body.amount
       : req.body.amount;
-
-    const cash = new Cash({
-      userId: userToUpdate.userId,
-      description: req.body.description ? req.body.description : '(Cash)',
-      createdBy: currentUser.role,
-      amount: req.body.amount,
-      balance: newBalance,
-      availableBalance: newAvailableBalance,
-      maxWithdraw: newBalance,
-      cashOrCredit: 'Cash',
-    });
-
+    let cash;
+    if (req.body.role !== '5') {
+      cash = new Cash({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        balance: 0,
+        availableBalance: 0,
+        maxWithdraw: newBalance,
+        cashOrCredit: 'Cash',
+      });
+      await cash.save();
+    } else if (req.body.role == '5') {
+      cash = new Cash({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        balance: newBalance,
+        availableBalance: newAvailableBalance,
+        maxWithdraw: newBalance,
+        cashOrCredit: 'Cash',
+      });
+      await cash.save();
+    }
     // if the user making the deposit is not the same as the user receiving the deposit, deduct the amount from the user's balance
     if (currentUser.userId !== userToUpdate.userId) {
       currentUser.clientPL -= req.body.amount;
       await currentUser.save();
     }
-
-    await cash.save();
 
     return res.send({
       success: true,
