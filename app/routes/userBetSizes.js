@@ -8,75 +8,35 @@ const BetSizes = require('../models/userBetSizes');
 const User = require('../models/user');
 const MarketType = require('../models/marketTypes');
 const MaxBetSize = require('../models/betLimits');
-const betSizeValidator = require('../validators/betSizes');
+const betSizeValidator = require('../validators/userBetSizes');
 const betLimits = require('../models/betLimits');
-const userBetSizes = require('../models/userBetSizes');
+const UserBetSizes = require('../models/userBetSizes');
 const loginRouter = express.Router();
 
-function addBetSizes(req, res) {
+function updateBetSizes(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  const userId = req.decoded.userId;
-  const betSizesData = {
-    soccer: req.body.soccer,
-    tennis: req.body.tennis,
-    cricket: req.body.cricket,
-    fancy: req.body.fancy,
-    races: req.body.races,
-    casino: req.body.casino,
-    greyHound: req.body.greyHound,
-    bookMaker: req.body.bookMaker,
-    tPin: req.body.tPin,
-    userId: userId,
-    iceHockey: req.body.iceHockey,
-    snooker: req.body.snooker,
-    kabbadi: req.body.kabbadi,
-  };
+  const betSizes = req.body.betSizes;
 
-  getBetSizeLimits((err, limits) => {
+  const updatedBetSizes = betSizes.map((betSize) => ({
+    updateOne: {
+      filter: { _id: betSize._id },
+      update: { $set: { amount: betSize.amount } },
+      upsert: false,
+    },
+  }));
+
+  UserBetSizes.bulkWrite(updatedBetSizes, { ordered: false }, (err, result) => {
     if (err) {
-      return res
-        .status(404)
-        .send({ message: 'Error retrieving bet size limits' });
+      return res.status(404).send({ message: 'Error updating bet sizes' });
     }
 
-    const betTypes = Object.keys(betSizesData);
-    for (let i = 0; i < betTypes.length; i++) {
-      const betType = betTypes[i];
-      const amount = betSizesData[betType];
-      const maxAmount = limits[betType];
-      if (amount > maxAmount) {
-        return res.status(404).send({
-          message: `${betType} bet size cannot exceed ${maxAmount}`,
-        });
-      }
-    }
-
-    User.findOne({ userId }, (err, user) => {
-      if (err || !user) {
-        return res.status(404).send({ message: 'User not found' });
-      }
-
-      BetSizes.findOneAndUpdate(
-        { userId },
-        betSizesData,
-        { upsert: true, new: true },
-        (err, betSizes) => {
-          if (err) {
-            return res
-              .status(404)
-              .send({ message: 'Error adding/updating bet sizes' });
-          }
-          return res.send({
-            success: true,
-            message: 'Bet sizes added/updated successfully',
-            results: betSizes,
-          });
-        }
-      );
+    return res.send({
+      success: true,
+      message: 'Bet sizes updated successfully',
     });
   });
 }
@@ -299,9 +259,9 @@ function getAllBetSizes(req, res) {
 // }
 
 loginRouter.post(
-  '/addBetSizes',
-  betSizeValidator.validate('addBetSizes'),
-  addBetSizes
+  '/updateBetSizes',
+  betSizeValidator.validate('updateBetSizes'),
+  updateBetSizes
 );
 loginRouter.get('/betsNews', betsNews);
 loginRouter.get('/getAllBetSizes', getAllBetSizes);

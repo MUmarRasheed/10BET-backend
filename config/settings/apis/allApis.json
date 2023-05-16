@@ -6,7 +6,7 @@
   "getUsers",
   "changePassword",
   "updateUser",
-  "addBetSizes",
+  "updateBetSizes",
   "addModulePermissions",
   "addModulePermissionsUser",
   "searchUsers",

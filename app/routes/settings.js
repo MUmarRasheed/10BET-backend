@@ -197,10 +197,24 @@ function updateDefaultExchange(req, res) {
       .send({ message: 'only company can add default exchange rate' });
   }
 
-  Exchanges.findOneAndUpdate(
-    { currency: req.body.currency },
-    { $set: { exchangeAmount: req.body.exchangeAmount } },
-    { new: true },
+  const exchangeRates = req.body.exchangeRates;
+
+  const updatedExchangeRates = exchangeRates.map((exchangeRates) => ({
+    updateOne: {
+      filter: { _id: exchangeRates._id },
+      update: {
+        $set: {
+          currency: exchangeRates.currency,
+          exchangeAmount: exchangeRates.exchangeAmount,
+        },
+      },
+      upsert: false,
+    },
+  }));
+
+  Exchanges.bulkWrite(
+    updatedExchangeRates,
+    { ordered: false },
     (err, exchanges) => {
       if (err || !exchanges) {
         return res.status(404).send({ message: 'exchanges not found' });
@@ -208,7 +222,6 @@ function updateDefaultExchange(req, res) {
       return res.send({
         success: true,
         message: 'Exchange Rate updated successfully',
-        results: exchanges,
       });
     }
   );

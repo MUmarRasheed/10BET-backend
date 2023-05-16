@@ -48,14 +48,24 @@ module.exports.validate = (method) => {
     }
     case 'updateDefaultExchange': {
       return [
-        body('currency', 'please enter currency')
+        body('exchangeRates')
+          .isArray({ min: 1 })
+          .withMessage('exchangeRates must be a non-empty array'),
+        body('exchangeRates.*.currency')
           .exists()
+          .withMessage('currency is required')
           .isString()
-          .withMessage('currency must be string'),
-        body('exchangeAmount', 'please enter exchangeAmount')
+          .withMessage('currency must be a string'),
+        body('exchangeRates.*.exchangeAmount')
           .exists()
+          .withMessage('exchangeAmount is required')
           .isInt()
-          .withMessage('exchangeAmount must be Number'),
+          .withMessage('exchangeAmount must be a number'),
+        body('exchangeRates.*._id')
+          .exists()
+          .withMessage('_id is required')
+          .isString()
+          .withMessage('_id must be a string'),
       ];
     }
     case 'updateDefaultBetSizes': {
