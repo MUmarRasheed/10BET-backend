@@ -519,8 +519,7 @@ function updateUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-
-  User.findOne({ _id: req.body.id }, (err, user) => {
+  User.findOne({ userId: req.body.id }, (err, user) => {
     if (err || !user) {
       return res.status(404).send({ message: 'User not found' });
     }
@@ -544,7 +543,7 @@ function updateUser(req, res) {
         updateData.password = hash;
 
         User.updateOne(
-          { _id: req.body.id },
+          { userId: req.body.id },
           { $set: updateData },
           { new: true },
           (err, updatedUser) => {
@@ -561,7 +560,7 @@ function updateUser(req, res) {
       });
     } else {
       User.updateOne(
-        { _id: req.body.id },
+        { userId: req.body.id },
         { $set: updateData },
         { new: true },
         (err, updatedUser) => {
@@ -667,6 +666,7 @@ function activeUser(req, res) {
       return res.status(404).send({ message: 'user is already active' });
     }
     result.isActive = true;
+    result.status = 1;
     result.save((err, user) => {
       if (err || !user)
         return res.status(404).send({ message: 'user not saved' });
@@ -690,6 +690,7 @@ function deactiveUser(req, res) {
     if (user.isActive == false)
       return res.status(404).send({ message: 'user is already deactivated' });
     user.isActive = false;
+    user.status = 0;
     user.save((err, user) => {
       if (err || !user)
         return res.status(404).send({ message: 'user not saved' });
