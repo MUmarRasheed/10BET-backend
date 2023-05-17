@@ -50,5 +50,6 @@
   "betsNews",
   "updateDefaultBetSizes",
   "getDefaultBetSizes",
-  "getAllBetSizes"
+  "getAllBetSizes",
+  "getDefaultSettings"
 ]

@@ -297,6 +297,23 @@ function getDefaultBetSizes(req, res) {
     });
   });
 }
+function getDefaultSettings(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  Settings.find({}, (err, results) => {
+    if (err) {
+      return res.status(404).json({ message: 'settings not found' });
+    }
+    return res.json({
+      success: true,
+      message: 'Setting Data Found successfully',
+      results: results,
+    });
+  });
+}
 
 loginRouter.post(
   '/updateDefaultTheme',
@@ -334,4 +351,6 @@ loginRouter.post(
 
 loginRouter.get('/GetExchangeRates', GetExchangeRates);
 loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
+loginRouter.get('/getDefaultSettings', getDefaultSettings);
+
 module.exports = { loginRouter, router };
