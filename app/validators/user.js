@@ -92,9 +92,7 @@ module.exports.validate = (method) => {
         body('password', 'password is required')
           .optional()
           .isString()
-          .withMessage(' password must be string')
-          .notEmpty()
-          .withMessage('password cannot be empty'),
+          .withMessage(' password must be string'),
         body('isActive', 'isActive is required')
           .optional()
           .isBoolean()
