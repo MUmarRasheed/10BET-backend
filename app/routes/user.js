@@ -387,7 +387,7 @@ function getAllUsers(req, res) {
       isDeleted: false,
     };
   } else if (req.decoded.login.role == '0') {
-    query = {};
+    query = { role: { $ne: req.decoded.login.role } };
   } else if (req.decoded.login.role === '1') {
     query.superAdminId = req.decoded.userId;
   } else if (req.decoded.login.role === '2') {

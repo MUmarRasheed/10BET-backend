@@ -16,6 +16,7 @@ let depositsSchema = new Schema({
   createdAt: { type: String },
   availableBalance: { type: Number, default: 0 },
   creditLimit: { type: Number, default: 0 },
+  cashOrCredit: { type: String },
 });
 
 depositsSchema.plugin(Global.aggregatePaginate);

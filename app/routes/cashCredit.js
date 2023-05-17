@@ -9,7 +9,7 @@ const cashValidator = require('../validators/cashDeposit');
 const loginRouter = express.Router();
 
 //old working code
-async function addCrredit(req, res) {
+async function addCredit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -293,7 +293,7 @@ function getAllCredits(req, res) {
   });
 }
 
-async function addCredit(req, res) {
+async function addCcredit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -388,6 +388,7 @@ async function addCredit(req, res) {
     });
     if (!cash) {
       if (req.body.role !== '5') {
+        console.log('log first');
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -400,7 +401,10 @@ async function addCredit(req, res) {
           availableBalance: 0,
           cashOrCredit: 'Credit',
         });
+        await cash.save();
       } else if (req.body.role == '5') {
+        console.log('log first bettor');
+
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -413,9 +417,14 @@ async function addCredit(req, res) {
           availableBalance: req.body.amount,
           cashOrCredit: 'Credit',
         });
+        await cash.save();
       }
     } else {
+      console.log('if alredady present');
+
       if (req.body.role !== '5') {
+        console.log('log if alredady present');
+
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -428,7 +437,9 @@ async function addCredit(req, res) {
           availableBalance: 0,
           cashOrCredit: 'Credit',
         });
+        await cash.save();
       } else if (req.body.role == '5') {
+        console.log('in here bettor else');
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -441,10 +452,10 @@ async function addCredit(req, res) {
           availableBalance: cashCredit.availableBalance + req.body.amount,
           cashOrCredit: 'Credit',
         });
+        await cash.save();
       }
     }
 
-    await cash.save();
     return res.send({
       success: true,
       message: 'Credit added successfully',
