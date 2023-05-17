@@ -5,26 +5,26 @@ module.exports.validate = (method) => {
   switch (method) {
     case 'updateDefaultTheme': {
       return [
-        body('oldThemeName', 'please enter oldThemeName')
+        body('_id', 'please enter _id')
           .exists()
           .isString()
-          .withMessage('oldThemeName must be string'),
-        body('newThemeName', 'please enter newThemeName')
+          .withMessage('_id must be string'),
+        body('defaultThemeName', 'please enter defaultThemeName')
           .exists()
           .isString()
-          .withMessage('newThemeName must be string'),
+          .withMessage('defaultThemeName must be string'),
       ];
     }
     case 'updateDefaultLoginPage': {
       return [
-        body('oldLoginPage', 'please enter oldLoginPage')
+        body('_id', 'please enter _id')
           .exists()
           .isString()
-          .withMessage('oldLoginPage must be string'),
-        body('newLoginPage', 'please enter newLoginPage')
+          .withMessage('_id must be string'),
+        body('defaultLoginPage', 'please enter defaultLoginPage')
           .exists()
           .isString()
-          .withMessage('newLoginPage must be string'),
+          .withMessage('defaultLoginPage must be string'),
       ];
     }
     case 'addTermsAndConditions': {

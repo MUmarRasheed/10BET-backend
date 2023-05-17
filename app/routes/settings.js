@@ -23,31 +23,22 @@ function updateDefaultTheme(req, res) {
       .status(404)
       .send({ message: 'only company can add default theme' });
   }
-  User.findOne({ role: req.decoded.role }, (err, user) => {
-    if (err || !user) {
-      return res.status(404).send({ message: 'User not found' });
-    }
-    Settings.findOneAndUpdate(
-      { defaultThemeName: req.body.oldThemeName },
-      { $set: { defaultThemeName: req.body.newThemeName } },
-      { new: true },
-      (err, theme) => {
-        if (err || !theme) {
-          return res.status(404).send({ message: 'theme not found' });
-        }
-        if (req.body.oldThemeName === req.body.newThemeName) {
-          return res
-            .status(404)
-            .send({ message: 'both theme name cannot be same' });
-        }
-        return res.send({
-          success: true,
-          message: 'Theme added successfully',
-          results: theme,
-        });
+  Settings.findOneAndUpdate(
+    { _id: req.body._id },
+    { $set: { defaultThemeName: req.body.defaultThemeName } },
+    { new: true },
+    (err, theme) => {
+      if (err || !theme) {
+        return res.status(404).send({ message: 'theme not found' });
       }
-    );
-  });
+
+      return res.send({
+        success: true,
+        message: 'Theme updated successfully',
+        results: theme,
+      });
+    }
+  );
 }
 
 function updateDefaultLoginPage(req, res) {
@@ -60,32 +51,23 @@ function updateDefaultLoginPage(req, res) {
       .status(404)
       .send({ message: 'only company can add default login page' });
   }
-  User.findOne({ role: req.decoded.role }, (err, user) => {
-    if (err || !user) {
-      return res.status(404).send({ message: 'User not found' });
-    }
 
-    Settings.findOneAndUpdate(
-      { defaultLoginPage: req.body.oldLoginPage },
-      { $set: { defaultLoginPage: req.body.newLoginPage } },
-      { new: true },
-      (err, loginPage) => {
-        if (err || !loginPage) {
-          return res.status(404).send({ message: 'loginPage not found' });
-        }
-        if (req.body.oldLoginPage === req.body.newLoginPage) {
-          return res
-            .status(404)
-            .send({ message: 'both loginPage cannot be same' });
-        }
-        return res.send({
-          success: true,
-          message: 'Default Login Page added successfully',
-          results: loginPage,
-        });
+  Settings.findOneAndUpdate(
+    { _id: req.body._id },
+    { $set: { defaultLoginPage: req.body.defaultLoginPage } },
+    { new: true },
+    (err, loginPage) => {
+      if (err || !loginPage) {
+        return res.status(404).send({ message: 'loginPage not found' });
       }
-    );
-  });
+
+      return res.send({
+        success: true,
+        message: 'Default Login Page added successfully',
+        results: loginPage,
+      });
+    }
+  );
 }
 
 function addTermsAndConditions(req, res) {
