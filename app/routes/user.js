@@ -558,7 +558,11 @@ function updateUser(req, res) {
           }
         );
       });
-    } else {
+    } else if (
+      req.body.password == null ||
+      req.body.password == '' ||
+      req.body.password == undefined
+    ) {
       User.updateOne(
         { userId: req.body.id },
         { $set: updateData },

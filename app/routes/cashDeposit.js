@@ -268,6 +268,36 @@ async function withDrawCashDeposit(req, res) {
   }
 }
 
+//for withdraw
+// let cash;
+//     if (req.body.role !== '5') {
+//       cash = new Cash({
+//         userId: userToUpdate.userId,
+//         description: req.body.description
+//           ? req.body.description
+//           : 'Cash withdrawal',
+//         createdBy: currentUser.role,
+//         amount: -req.body.amount,
+//         balance: 0,
+//         availableBalance: 0,
+//         maxWithdraw: newBalance,
+//         cashOrCredit: 'Cash',
+//       });
+//     } else if (req.body.role == '5') {
+//       cash = new Cash({
+//         userId: userToUpdate.userId,
+//         description: req.body.description
+//           ? req.body.description
+//           : 'Cash withdrawal',
+//         createdBy: currentUser.role,
+//         amount: -req.body.amount,
+//         balance: newBalance,
+//         availableBalance: newAvailableBalance,
+//         maxWithdraw: newBalance,
+//         cashOrCredit: 'Cash',
+//       });
+//     }
+
 function getAllCashDeposits(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

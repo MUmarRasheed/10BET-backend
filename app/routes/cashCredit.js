@@ -302,7 +302,7 @@ async function addCcredit(req, res) {
   try {
     const currentUser = await User.findOne({ userId: req.decoded.userId });
     if (!currentUser) {
-      return res.status(404).send({ message: 'user not found' });
+      return res.status(404).send({ message: 'User not found' });
     }
 
     const userToUpdate = await User.findOne({
@@ -310,7 +310,7 @@ async function addCcredit(req, res) {
       role: req.body.role,
     });
     if (!userToUpdate) {
-      return res.status(404).send({ message: 'user not found' });
+      return res.status(404).send({ message: 'User not found' });
     }
 
     if (currentUser.creditLimit < req.body.amount) {
@@ -321,7 +321,13 @@ async function addCcredit(req, res) {
     currentUser.credit -= req.body.amount;
     await currentUser.save();
 
-    if (req.decoded.role == '0') {
+    if (
+      req.decoded.role == '0' ||
+      req.decoded.role == '1' ||
+      req.decoded.role == '2' ||
+      req.decoded.role == '3' ||
+      req.decoded.role == '4'
+    ) {
       if (
         req.body.role == '1' ||
         req.body.role == '2' ||
@@ -336,43 +342,7 @@ async function addCcredit(req, res) {
         userToUpdate.credit += req.body.amount;
         userToUpdate.creditLimit += req.body.amount;
       }
-    }
-    if (req.decoded.role == '1') {
-      if (
-        req.body.role == '2' ||
-        req.body.role == '3' ||
-        req.body.role == '4'
-      ) {
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      } else if (req.body.role == '5') {
-        userToUpdate.balance += req.body.amount;
-        userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      }
-    }
-    if (req.decoded.role == '2') {
-      if (req.body.role == '3' || req.body.role == '4') {
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      } else if (req.body.role == '5') {
-        userToUpdate.balance += req.body.amount;
-        userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      }
-    } else if (req.decoded.role == '3') {
-      if (req.body.role == '4') {
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      } else if (req.body.role == '5') {
-        userToUpdate.balance += req.body.amount;
-        userToUpdate.availableBalance += req.body.amount;
-        userToUpdate.credit += req.body.amount;
-        userToUpdate.creditLimit += req.body.amount;
-      }
-    } else if (req.decoded.role == '4') {
+    } else if (req.decoded.role == '5') {
       if (req.body.role == '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
@@ -382,13 +352,14 @@ async function addCcredit(req, res) {
     }
 
     await userToUpdate.save();
+
     let cash = await CashDeposit.findOne({ userId: userToUpdate.userId }).sort({
       _id: -1,
       cashOrCredit: -1,
     });
+
     if (!cash) {
       if (req.body.role !== '5') {
-        console.log('log first');
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -401,10 +372,7 @@ async function addCcredit(req, res) {
           availableBalance: 0,
           cashOrCredit: 'Credit',
         });
-        await cash.save();
       } else if (req.body.role == '5') {
-        console.log('log first bettor');
-
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
@@ -417,44 +385,38 @@ async function addCcredit(req, res) {
           availableBalance: req.body.amount,
           cashOrCredit: 'Credit',
         });
-        await cash.save();
       }
     } else {
-      console.log('if alredady present');
-
       if (req.body.role !== '5') {
-        console.log('log if alredady present');
-
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
           createdBy: currentUser.role,
           amount: req.body.amount,
-          credit: cashCredit.credit + req.body.amount,
+          credit: cash.credit + req.body.amount,
           balance: 0,
-          maxWithdraw: cashCredit.maxWithdraw + req.body.amount,
+          maxWithdraw: cash.maxWithdraw + req.body.amount,
           creditLimit: userToUpdate.creditLimit,
           availableBalance: 0,
           cashOrCredit: 'Credit',
         });
-        await cash.save();
       } else if (req.body.role == '5') {
-        console.log('in here bettor else');
         cash = new CashDeposit({
           userId: userToUpdate.userId,
           description: req.body.description ? req.body.description : '(Cash)',
           createdBy: currentUser.role,
           amount: req.body.amount,
-          credit: cashCredit.credit + req.body.amount,
-          balance: cashCredit.balance + req.body.amount,
-          maxWithdraw: cashCredit.maxWithdraw + req.body.amount,
+          credit: cash.credit + req.body.amount,
+          balance: cash.balance + req.body.amount,
+          maxWithdraw: cash.maxWithdraw + req.body.amount,
           creditLimit: userToUpdate.creditLimit,
-          availableBalance: cashCredit.availableBalance + req.body.amount,
+          availableBalance: cash.availableBalance + req.body.amount,
           cashOrCredit: 'Credit',
         });
-        await cash.save();
       }
     }
+
+    await cash.save();
 
     return res.send({
       success: true,
