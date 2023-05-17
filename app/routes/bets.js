@@ -265,6 +265,7 @@ function betFunds(req, res) {
         liable: user.exposure,
         credit: user.credit,
         available: user.availableBalance,
+        activeBets: 3,
       };
     } else {
       results = {
@@ -272,6 +273,7 @@ function betFunds(req, res) {
         liable: user.exposure,
         credit: 0,
         available: 0,
+        activeBets: 3,
       };
     }
 

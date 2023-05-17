@@ -23,20 +23,56 @@ db.settings.insertMany([
 "updatedAt" : 1683894409.774
 }])
 
-default maxbetsizes for company
-
-db.maxbetsizes.insertMany([{
-"_id" : ObjectId("645f8016b9bfff0edb6317e7"),
-"soccer" : 250000,
-"tennis" : 250000,
-"cricket" : 5000,
-"fancy" : 200000,
-"races" : 200000,
-"casino" : 50000,
-"greyHound" : 50000,
-"bookMaker" : 2000000,
-"iceHockey" : 5000000,
-"snooker" : 5000000,
-"kabbadi" : 5000000,
-"userId" : 0
-}]);
+default betlimits for company
+db.betlimits.insertMany([
+{
+"_id" : ObjectId("64623bc234ad06204d412beb"),
+"name" : "soccer",
+"maxAmount" : 280000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bec"),
+"name" : "cricket",
+"maxAmount" : 50000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bed"),
+"name" : "fancy",
+"maxAmount" : 200000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bee"),
+"name" : "races",
+"maxAmount" : 200000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bef"),
+"name" : "casino",
+"maxAmount" : 50000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bf0"),
+"name" : "greyHound",
+"maxAmount" : 50000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bf1"),
+"name" : "bookMaker",
+"maxAmount" : 2000000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bf2"),
+"name" : "iceHockey",
+"maxAmount" : 5000000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bf3"),
+"name" : "snooker",
+"maxAmount" : 5000000
+},
+{
+"_id" : ObjectId("64623bc234ad06204d412bf4"),
+"name" : "kabbadi",
+"maxAmount" : 5000000
+}
+])
