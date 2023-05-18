@@ -97,20 +97,22 @@ async function placeBet(req, res) {
     const returnAmount = betAmount * betRate;
     const winningAmount = betAmount * betRate;
     const loosingAmount = req.body.betAmount;
-
+    let marketId = sportsId;
     // Create the bet object
     const bet = new Bets({
-      sportsId,
+      marketId,
       userId,
       team: selectedTeam,
       betAmount,
       betRate,
       returnAmount,
       matchId: matchId,
-      status: match.status,
+      matchStatus: match.status,
       loosingAmount: loosingAmount,
       winningAmount: winningAmount,
       subMarketId: subMarketId,
+      runner: selectedTeam,
+      event: match.name,
     });
 
     // Save the bet object to the database

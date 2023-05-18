@@ -23,6 +23,7 @@ const betSchema = new mongoose.Schema({
   runner: { type: String, default: '' },
   position: { type: Number, default: 0 },
   name: { type: String },
+  matchStatus: { type: String },
 });
 
 betSchema.pre('save', function (next) {
