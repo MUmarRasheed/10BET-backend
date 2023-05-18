@@ -252,98 +252,98 @@ app.set('secret', config.secret);
 
 //   This will ensure that only users with roles that are allowed to access the endpoint can load user balance.
 
-function loadUserBalance(req, res) {
-  const errors = validationResult(req);
-  if (errors.errors.length !== 0) {
-    return res.status(400).send({ errors: errors.errors });
-  }
-  if (
-    req.body.role == req.decoded.role &&
-    req.body.userId == req.decoded.userId
-  ) {
-    return res
-      .status(404)
-      .send({ message: 'You cannot recharge balance to yourself ' });
-  }
-  // Find the user who is initiating the balance transfer
-  User.findOne(
-    { role: req.decoded.role, userId: req.decoded.userId },
-    (err, user) => {
-      if (err || !user) {
-        return res.status(404).send({ message: 'User not found' });
-      }
+// function loadUserBalance(req, res) {
+//   const errors = validationResult(req);
+//   if (errors.errors.length !== 0) {
+//     return res.status(400).send({ errors: errors.errors });
+//   }
+//   if (
+//     req.body.role == req.decoded.role &&
+//     req.body.userId == req.decoded.userId
+//   ) {
+//     return res
+//       .status(404)
+//       .send({ message: 'You cannot recharge balance to yourself ' });
+//   }
+//   // Find the user who is initiating the balance transfer
+//   User.findOne(
+//     { role: req.decoded.role, userId: req.decoded.userId },
+//     (err, user) => {
+//       if (err || !user) {
+//         return res.status(404).send({ message: 'User not found' });
+//       }
 
-      // Check if the user has enough balance to transfer the requested amount
-      if (user.balance < req.body.loadedAmount) {
-        return res.status(404).send({ message: 'Insufficient balance' });
-      }
+//       // Check if the user has enough balance to transfer the requested amount
+//       if (user.balance < req.body.loadedAmount) {
+//         return res.status(404).send({ message: 'Insufficient balance' });
+//       }
 
-      // Deduct the loaded amount from the user's balance
-      user.balance -= req.body.loadedAmount;
-      user.save();
+//       // Deduct the loaded amount from the user's balance
+//       user.balance -= req.body.loadedAmount;
+//       user.save();
 
-      // Deduct the loaded amount from the user's recharge amount
-      Recharge.findOne(
-        { role: req.decoded.role, userId: req.decoded.userId },
-        (err, recharge) => {
-          if (err || !recharge) {
-            return res
-              .status(404)
-              .send({ message: ' recharge amount not found' });
-          }
-          recharge.amount -= req.body.loadedAmount;
-          recharge.save();
+//       // Deduct the loaded amount from the user's recharge amount
+//       Recharge.findOne(
+//         { role: req.decoded.role, userId: req.decoded.userId },
+//         (err, recharge) => {
+//           if (err || !recharge) {
+//             return res
+//               .status(404)
+//               .send({ message: ' recharge amount not found' });
+//           }
+//           recharge.amount -= req.body.loadedAmount;
+//           recharge.save();
 
-          // Find the recipient user in the user
+//           // Find the recipient user in the user
 
-          User.findOne(
-            { role: req.body.role, userId: req.body.userId },
-            (err, recipientUser) => {
-              if (err || !recipientUser) {
-                return res
-                  .status(404)
-                  .send({ message: 'Recipient User not found' });
-              }
-              // Add the loaded amount in the recipient user's account
-              recipientUser.balance += req.body.loadedAmount;
-              recipientUser.save();
+//           User.findOne(
+//             { role: req.body.role, userId: req.body.userId },
+//             (err, recipientUser) => {
+//               if (err || !recipientUser) {
+//                 return res
+//                   .status(404)
+//                   .send({ message: 'Recipient User not found' });
+//               }
+//               // Add the loaded amount in the recipient user's account
+//               recipientUser.balance += req.body.loadedAmount;
+//               recipientUser.save();
 
-              // Find the recipient user in the recharge table
+//               // Find the recipient user in the recharge table
 
-              Recharge.findOne(
-                { userId: req.body.userId, role: req.body.role },
-                (err, recipientRecharge) => {
-                  if (err || !recipientRecharge) {
-                    return res.status(404).send({
-                      message: 'Recipient user recharge not found',
-                    });
-                  }
+//               Recharge.findOne(
+//                 { userId: req.body.userId, role: req.body.role },
+//                 (err, recipientRecharge) => {
+//                   if (err || !recipientRecharge) {
+//                     return res.status(404).send({
+//                       message: 'Recipient user recharge not found',
+//                     });
+//                   }
 
-                  // Add the loaded amount to the recipient user's balance
-                  recipientRecharge.amount += req.body.loadedAmount;
-                  recipientRecharge.loadedAmount = req.body.loadedAmount;
-                  recipientRecharge.loadedBy = req.decoded.role;
-                  recipientRecharge.save((err, results) => {
-                    if (err || !results) {
-                      return res.status(404).send({
-                        message: 'Failed to update recharge data',
-                      });
-                    }
-                    return res.send({
-                      success: true,
-                      message: 'Loaded user balance successfully',
-                      results: results,
-                    });
-                  });
-                }
-              );
-            }
-          );
-        }
-      );
-    }
-  );
-}
+//                   // Add the loaded amount to the recipient user's balance
+//                   recipientRecharge.amount += req.body.loadedAmount;
+//                   recipientRecharge.loadedAmount = req.body.loadedAmount;
+//                   recipientRecharge.loadedBy = req.decoded.role;
+//                   recipientRecharge.save((err, results) => {
+//                     if (err || !results) {
+//                       return res.status(404).send({
+//                         message: 'Failed to update recharge data',
+//                       });
+//                     }
+//                     return res.send({
+//                       success: true,
+//                       message: 'Loaded user balance successfully',
+//                       results: results,
+//                     });
+//                   });
+//                 }
+//               );
+//             }
+//           );
+//         }
+//       );
+//     }
+//   );
+// }
 
 function getAllUsers(req, res) {
   // Initialize variables with default values
@@ -736,11 +736,11 @@ loginRouter.post(
   userValidation.validate('registerUser'),
   registerUser
 );
-loginRouter.post(
-  '/loadUserBalance',
-  userValidation.validate('loadUserBalance'),
-  loadUserBalance
-);
+// loginRouter.post(
+//   '/loadUserBalance',
+//   userValidation.validate('loadUserBalance'),
+//   loadUserBalance
+// );
 loginRouter.get('/getAllUsers', getAllUsers);
 loginRouter.post(
   '/changePassword',

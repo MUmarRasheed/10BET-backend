@@ -33,7 +33,7 @@ const userSchema = new Schema({
   createdBy: { type: String, default: '0' },
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
-  canSettlePL: { type: Boolean, default: false },
+  canSettlePL: { type: Boolean, default: true },
   adminId: { type: String, default: '' }, // only for supermaster
   parentId: { type: String, default: '' }, // only for supermaster when admin add super master
   masterId: { type: String, default: '' }, //

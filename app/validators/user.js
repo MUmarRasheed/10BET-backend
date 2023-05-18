@@ -60,22 +60,6 @@ module.exports.validate = (method) => {
         // ),
       ];
     }
-    case 'loadUserBalance': {
-      return [
-        body('userId', 'userId is required')
-          .exists()
-          .isString()
-          .withMessage(' userId must be string'),
-        body('role', 'role is required')
-          .exists()
-          .isString()
-          .withMessage(' role must be string'),
-        body('loadedAmount', 'loadedAmount is required')
-          .exists()
-          .isInt()
-          .withMessage('loadedBalance must be integer'),
-      ];
-    }
     case 'changePassword': {
       return [
         body('password', 'password is required')
@@ -86,10 +70,17 @@ module.exports.validate = (method) => {
     }
     case 'updateUser': {
       return [
-        body('password', 'password is required')
-          .optional()
-          .isString()
-          .withMessage(' password must be string'),
+        (req, res, next) => {
+          if (req.body.password) {
+            const password = req.body.password;
+            if (password.length < 8) {
+              return res.status(400).send({
+                message: 'Password must be at least 8 characters long',
+              });
+            }
+          }
+          next();
+        },
         body('isActive', 'isActive is required')
           .optional()
           .isBoolean()
@@ -118,6 +109,7 @@ module.exports.validate = (method) => {
           .withMessage(' notes must be string'),
       ];
     }
+
     case 'searchUsers': {
       return [
         body('userName', 'userName is required')

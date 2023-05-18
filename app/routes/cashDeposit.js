@@ -36,7 +36,7 @@ async function addCashDeposit(req, res) {
       userId: userToUpdate.userId,
     }).sort({
       _id: -1,
-      cashOrCredit: -1,
+      cashOrCredit: 'Cash',
     });
     if (req.decoded.role == '0') {
       if (
