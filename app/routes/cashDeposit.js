@@ -320,6 +320,133 @@ function getAllCashDeposits(req, res) {
     });
 }
 
+async function addCashDdeposit(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  try {
+    const currentUser = await User.findOne({ userId: req.body.currentUserId });
+    if (!currentUser) {
+      return res.status(404).send({ message: 'user not found' });
+    }
+    if (currentUser.role !== '0') {
+      // Check if the user role is not 0
+      if (currentUser.clientPL < req.body.amount) {
+        return res
+          .status(400)
+          .send({ message: 'Insufficient balance to make the deposit' });
+      }
+    }
+
+    const currentUserId = parseInt(req.body.currentUserId);
+    const currentUserParent = await User.findOne({
+      $or: [
+        { superAdminId: currentUserId },
+        { createdBy: currentUserId },
+        { adminId: currentUserId },
+        { parentId: currentUserId },
+        { masterId: currentUserId },
+      ],
+      isDeleted: false,
+    });
+
+    console.log('console', currentUserParent);
+    const userToUpdate = await User.findOne({
+      userId: req.body.userId,
+      role: req.body.role,
+    });
+    if (!userToUpdate) {
+      return res.status(404).send({ message: 'user not found' });
+    }
+
+    let lastDeposit = await Cash.findOne({
+      userId: userToUpdate.userId,
+    }).sort({
+      _id: -1,
+      cashOrCredit: 'Cash',
+    });
+
+    let Dealers = ['1', '2', '3', '4'];
+    if (currentUser.role == '0' && Dealers.includes(req.body.role)) {
+      userToUpdate.clientPL += req.body.amount;
+    } else if (
+      Dealers.includes(currentUser.role) &&
+      Dealers.includes(req.body.role)
+    ) {
+      userToUpdate.clientPL += req.body.amount;
+      currentUser.clientPL -= req.body.amount;
+    } else if (currentUser.role == '0 ' && req.body.role === '5') {
+      userToUpdate.balance += req.body.amount;
+      userToUpdate.availableBalance += req.body.amount;
+      userToUpdate.clientPL += req.body.amount;
+    } else if (Dealers.includes(currentUser.role) && req.body.role === '5') {
+      userToUpdate.balance += req.body.amount;
+      userToUpdate.availableBalance += req.body.amount;
+      userToUpdate.clientPL += req.body.amount;
+      currentUser.clientPL -= req.body.amount;
+    }
+
+    await userToUpdate.save();
+    await currentUser.save();
+
+    // if the user has made previous deposits, add the amount to the existing balance and availableBalance
+    const newBalance = lastDeposit
+      ? lastDeposit.balance + req.body.amount
+      : req.body.amount;
+    console.log('newBalance', newBalance);
+    const newAvailableBalance = lastDeposit
+      ? lastDeposit.availableBalance + req.body.amount
+      : req.body.amount;
+    let cash;
+    if (req.body.role !== '5') {
+      cash = new Cash({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        balance: 0,
+        availableBalance: 0,
+        maxWithdraw: newBalance,
+        cashOrCredit: 'Cash',
+      });
+
+      await cash.save();
+    } else if (req.body.role == '5') {
+      cash = new Cash({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        balance: newBalance,
+        availableBalance: newAvailableBalance,
+        maxWithdraw: newBalance,
+        cashOrCredit: 'Cash',
+      });
+      await cash.save();
+    } else if (currentUserParent) {
+      cash = new Cash({
+        userId: userToUpdate.userId,
+        description: req.body.description ? req.body.description : '(Cash)',
+        createdBy: currentUser.role,
+        amount: req.body.amount,
+        balance: newBalance,
+        availableBalance: newAvailableBalance,
+        maxWithdraw: newBalance,
+        cashOrCredit: 'Cash',
+      });
+      await cash.save();
+    }
+    return res.send({
+      success: true,
+      message: 'Cash deposit added successfully',
+      results: cash,
+    });
+  } catch (err) {
+    return res.status(404).send({ message: 'server error', err });
+  }
+}
+
 loginRouter.post(
   '/addCashDeposit',
   cashValidator.validate('addCashDeposit'),

@@ -103,7 +103,7 @@ function betsNews(req, res) {
 }
 
 function getAllBetSizes(req, res) {
-  const userId = Number(req.query.userId);
+  const userId = req.query.userId;
 
   if (!userId) {
     return res.status(400).send({ message: 'USER_ID_MISSING' });
