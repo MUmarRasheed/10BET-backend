@@ -36,53 +36,52 @@ async function addCashDeposit(req, res) {
       userId: userToUpdate.userId,
     }).sort({
       _id: -1,
-      cashOrCredit: 'Cash',
+      cashOrCredit: -1,
     });
-    if (req.decoded.role == '0') {
+
+    if (req.decoded.role === '0') {
       if (
-        req.body.role == '1' ||
-        req.body.role == '2' ||
-        req.body.role == '3' ||
-        req.body.role == '4'
+        req.body.role === '1' ||
+        req.body.role === '2' ||
+        req.body.role === '3' ||
+        req.body.role === '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
-      } else if (req.body.role == '5') {
+      } else if (req.body.role === '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
         userToUpdate.clientPL += req.body.amount;
       }
-    }
-    if (req.decoded.role == '1') {
+    } else if (req.decoded.role === '1') {
       if (
-        req.body.role == '2' ||
-        req.body.role == '3' ||
-        req.body.role == '4'
+        req.body.role === '2' ||
+        req.body.role === '3' ||
+        req.body.role === '4'
       ) {
         userToUpdate.clientPL += req.body.amount;
-      } else if (req.body.role == '5') {
+      } else if (req.body.role === '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
         userToUpdate.clientPL += req.body.amount;
       }
-    }
-    if (req.decoded.role == '2') {
-      if (req.body.role == '3' || req.body.role == '4') {
+    } else if (req.decoded.role === '2') {
+      if (req.body.role === '3' || req.body.role === '4') {
         userToUpdate.clientPL += req.body.amount;
-      } else if (req.body.role == '5') {
+      } else if (req.body.role === '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
         userToUpdate.clientPL += req.body.amount;
       }
-    } else if (req.decoded.role == '3') {
-      if (req.body.role == '4') {
+    } else if (req.decoded.role === '3') {
+      if (req.body.role === '4') {
         userToUpdate.clientPL += req.body.amount;
-      } else if (req.body.role == '5') {
+      } else if (req.body.role === '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
         userToUpdate.clientPL += req.body.amount;
       }
-    } else if (req.decoded.role == '4') {
-      if (req.body.role == '5') {
+    } else if (req.decoded.role === '4') {
+      if (req.body.role === '5') {
         userToUpdate.balance += req.body.amount;
         userToUpdate.availableBalance += req.body.amount;
         userToUpdate.clientPL += req.body.amount;
@@ -111,7 +110,7 @@ async function addCashDeposit(req, res) {
         cashOrCredit: 'Cash',
       });
       await cash.save();
-    } else if (req.body.role == '5') {
+    } else if (req.body.role === '5') {
       cash = new Cash({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
@@ -136,6 +135,7 @@ async function addCashDeposit(req, res) {
       results: cash,
     });
   } catch (err) {
+    console.error(err);
     return res.status(404).send({ message: 'server error', err });
   }
 }
