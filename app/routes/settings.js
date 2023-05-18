@@ -80,20 +80,22 @@ function addTermsAndConditions(req, res) {
       .status(404)
       .send({ message: 'only company can add terms and conditions' });
   }
-
-  let tncAndPrivacyPolicy = new termsAndConditions({
-    termAndConditionsContent: req.body.termAndConditionsContent,
-  });
-
-  tncAndPrivacyPolicy.save((err, results) => {
-    if (err || !results)
-      return res.status(404).send({ message: 'Data Not Saved' });
-    return res.send({
-      success: true,
-      message: 'Terms And Conditions Added Successfully',
-      results: results,
-    });
-  });
+  //server _id
+  termsAndConditions.findOneAndUpdate(
+    { _id: '6460b601fe9cc89998d9eb29' },
+    { $set: { termAndConditionsContent: req.body.termAndConditionsContent } },
+    { new: true },
+    (err, results) => {
+      if (err || !results) {
+        return res.status(404).send({ message: 'Data Not Saved' });
+      }
+      return res.send({
+        success: true,
+        message: 'Terms And Conditions Added Successfully',
+        results: results,
+      });
+    }
+  );
 }
 
 function GetAllTermsAndConditions(req, res) {
@@ -130,19 +132,24 @@ function addPrivacyPolicy(req, res) {
       .status(404)
       .send({ message: 'only company can add privacy policies' });
   }
-  let privacyPolicyContent = new PrivacyPolicy({
-    privacyPolicyContent: req.body.privacyPolicyContent,
-  });
 
-  privacyPolicyContent.save((err, results) => {
-    if (err || !results)
-      return res.status(404).send({ message: 'Data Not Saved' });
-    return res.send({
-      success: true,
-      message: 'Privacy Policy Added Successfully',
-      results: results,
-    });
-  });
+  //server _id
+  PrivacyPolicy.findOneAndUpdate(
+    { _id: '64647166707979d7b58f4417' },
+    { $set: { privacyPolicyContent: req.body.privacyPolicyContent } },
+    { new: true },
+    (err, results) => {
+      if (err || !results) {
+        return res.status(404).send({ message: 'Data Not Saved' });
+      }
+
+      return res.send({
+        success: true,
+        message: 'Privacy Policy Added Successfully',
+        results: results,
+      });
+    }
+  );
 }
 
 function GetAllPrivacyPolicy(req, res) {
