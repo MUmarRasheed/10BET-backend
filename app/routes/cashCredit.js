@@ -9,7 +9,7 @@ const cashValidator = require('../validators/cashDeposit');
 const loginRouter = express.Router();
 
 //old working code
-async function addCredit(req, res) {
+async function addCrcedit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -293,7 +293,7 @@ function getAllCredits(req, res) {
   });
 }
 
-async function addCcredit(req, res) {
+async function addCredit(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
@@ -313,8 +313,11 @@ async function addCcredit(req, res) {
       return res.status(404).send({ message: 'User not found' });
     }
 
-    if (currentUser.creditLimit < req.body.amount) {
-      return res.status(400).send({ message: 'Insufficient credit limit' });
+    if (currentUser.role !== '0') {
+      // Check if the user role is not 0
+      if (currentUser.creditLimit < req.body.amount) {
+        return res.status(400).send({ message: 'Insufficient credit limit' });
+      }
     }
 
     currentUser.creditLimit -= req.body.amount;

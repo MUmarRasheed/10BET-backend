@@ -333,6 +333,6 @@ loginRouter.post(
 
 loginRouter.get('/GetExchangeRates', GetExchangeRates);
 loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
-loginRouter.get('/getDefaultSettings', getDefaultSettings);
+router.get('/getDefaultSettings', getDefaultSettings);
 
 module.exports = { loginRouter, router };

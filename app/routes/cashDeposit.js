@@ -16,10 +16,13 @@ async function addCashDeposit(req, res) {
     if (!currentUser) {
       return res.status(404).send({ message: 'user not found' });
     }
-    if (currentUser.clientPL < req.body.amount) {
-      return res
-        .status(400)
-        .send({ message: 'Insufficient balance to make the deposit' });
+    if (currentUser.role !== '0') {
+      // Check if the user role is not 0
+      if (currentUser.clientPL < req.body.amount) {
+        return res
+          .status(400)
+          .send({ message: 'Insufficient balance to make the deposit' });
+      }
     }
     const userToUpdate = await User.findOne({
       userId: req.body.userId,
