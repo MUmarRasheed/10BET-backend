@@ -36,11 +36,8 @@ module.exports.validate = (method) => {
           .isString()
           .withMessage('password must be string')
           .isLength({ min: 8 })
-          .withMessage('password has minimun 8 characters')
-          .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/)
-          .withMessage(
-            'Please enter a password at least 8 character and contain At least one uppercase. At least one lower case. At least one special character. At least one digit'
-          ),
+          .withMessage('Please enter a password at least 8 character long'),
+        // .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/)
       ];
     }
     case 'login': {
@@ -56,11 +53,11 @@ module.exports.validate = (method) => {
           .isString()
           .withMessage('password must be string')
           .notEmpty()
-          .withMessage('password cannot be null')
-          .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d@$.!%#?&]/)
-          .withMessage(
-            'Please enter a password at least 8 character and contain At least one uppercase.At least one lower case.At least one special character.At least One digit'
-          ),
+          .withMessage('password cannot be null'),
+        // .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z\d@$.!%#?&]/)
+        // .withMessage(
+        //   'Please enter a password at least 8 character and contain At least one uppercase.At least one lower case.At least one special character.At least One digit'
+        // ),
       ];
     }
     case 'loadUserBalance': {
