@@ -8,10 +8,6 @@ module.exports.validate = (method) => {
           .exists()
           .isInt()
           .withMessage('userId must be number'),
-        body('role', 'role is required')
-          .exists()
-          .isString()
-          .withMessage(' role must be string'),
         body('amount', 'amount is required')
           .exists()
           .isInt()
@@ -28,10 +24,7 @@ module.exports.validate = (method) => {
           .exists()
           .isInt()
           .withMessage('userId must be number'),
-        body('role', 'role is required')
-          .exists()
-          .isString()
-          .withMessage(' role must be string'),
+
         body('amount', 'amount is required')
           .exists()
           .isInt()
