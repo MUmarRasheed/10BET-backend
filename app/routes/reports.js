@@ -314,7 +314,7 @@ function getClientList(req, res) {
         // Combine the User fields and user count into a single response object
         const response = {
           creditRecieved: results.credit,
-          creditRemaining: results.credit - results.clientPL,
+          creditRemaining: results.creditRemaining,
           cash: results.clientPL,
           plDownline: results.balance,
           balanceUpline: results.clientPL,
