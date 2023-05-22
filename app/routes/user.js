@@ -24,12 +24,7 @@ function registerUser(req, res) {
   if (req.decoded.role === '5') {
     return res.status(404).send({ message: 'you are not allowed to do this ' });
   }
-  if (
-    req.body.role == '3' ||
-    req.body.role == '4' ||
-    req.body.role == '2' ||
-    req.body.role == '1'
-  ) {
+  if ( req.body.role !== '5' ) {
     if (!req.body.downLineShare) {
       return res.status(404).send({ message: 'downLineShare is required' });
     }
@@ -65,7 +60,7 @@ function registerUser(req, res) {
 
       user.userId = data.userId + 1;
       user.id = user._id;
-
+      
       if (req.decoded.role == '1') user.superAdminId = req.decoded.userId;
       if (req.decoded.role == '2') {
         user.parentId = req.decoded.userId;
@@ -139,8 +134,6 @@ function login(req, res) {
   User.findOne(
     {
       userName: req.body.userName,
-      status: 1,
-      isActive: true,
       isDeleted: false,
     },
     (err, user) => {
@@ -250,107 +243,10 @@ function getNonExpiringToken(
 }
 app.set('secret', config.secret);
 
-//   This will ensure that only users with roles that are allowed to access the endpoint can load user balance.
-
-// function loadUserBalance(req, res) {
-//   const errors = validationResult(req);
-//   if (errors.errors.length !== 0) {
-//     return res.status(400).send({ errors: errors.errors });
-//   }
-//   if (
-//     req.body.role == req.decoded.role &&
-//     req.body.userId == req.decoded.userId
-//   ) {
-//     return res
-//       .status(404)
-//       .send({ message: 'You cannot recharge balance to yourself ' });
-//   }
-//   // Find the user who is initiating the balance transfer
-//   User.findOne(
-//     { role: req.decoded.role, userId: req.decoded.userId },
-//     (err, user) => {
-//       if (err || !user) {
-//         return res.status(404).send({ message: 'User not found' });
-//       }
-
-//       // Check if the user has enough balance to transfer the requested amount
-//       if (user.balance < req.body.loadedAmount) {
-//         return res.status(404).send({ message: 'Insufficient balance' });
-//       }
-
-//       // Deduct the loaded amount from the user's balance
-//       user.balance -= req.body.loadedAmount;
-//       user.save();
-
-//       // Deduct the loaded amount from the user's recharge amount
-//       Recharge.findOne(
-//         { role: req.decoded.role, userId: req.decoded.userId },
-//         (err, recharge) => {
-//           if (err || !recharge) {
-//             return res
-//               .status(404)
-//               .send({ message: ' recharge amount not found' });
-//           }
-//           recharge.amount -= req.body.loadedAmount;
-//           recharge.save();
-
-//           // Find the recipient user in the user
-
-//           User.findOne(
-//             { role: req.body.role, userId: req.body.userId },
-//             (err, recipientUser) => {
-//               if (err || !recipientUser) {
-//                 return res
-//                   .status(404)
-//                   .send({ message: 'Recipient User not found' });
-//               }
-//               // Add the loaded amount in the recipient user's account
-//               recipientUser.balance += req.body.loadedAmount;
-//               recipientUser.save();
-
-//               // Find the recipient user in the recharge table
-
-//               Recharge.findOne(
-//                 { userId: req.body.userId, role: req.body.role },
-//                 (err, recipientRecharge) => {
-//                   if (err || !recipientRecharge) {
-//                     return res.status(404).send({
-//                       message: 'Recipient user recharge not found',
-//                     });
-//                   }
-
-//                   // Add the loaded amount to the recipient user's balance
-//                   recipientRecharge.amount += req.body.loadedAmount;
-//                   recipientRecharge.loadedAmount = req.body.loadedAmount;
-//                   recipientRecharge.loadedBy = req.decoded.role;
-//                   recipientRecharge.save((err, results) => {
-//                     if (err || !results) {
-//                       return res.status(404).send({
-//                         message: 'Failed to update recharge data',
-//                       });
-//                     }
-//                     return res.send({
-//                       success: true,
-//                       message: 'Loaded user balance successfully',
-//                       results: results,
-//                     });
-//                   });
-//                 }
-//               );
-//             }
-//           );
-//         }
-//       );
-//     }
-//   );
-// }
-
 function getAllUsers(req, res) {
   // Initialize variables with default values
   let query = {};
-  // if (req.decoded.login.role == '0') {
-  //   query = {};
-  // }
+
   let page = 1;
   let sort = -1;
   let sortValue = 'createdAt';
@@ -420,73 +316,6 @@ function getAllUsers(req, res) {
     }
   );
 }
-// function getAllUsers(req, res) {
-//   // Initialize variables with default values
-//   let query = {};
-//   if (req.decoded.login.role == '0') {
-//     query = {};
-//   }
-//   let page = 1;
-//   let sort = -1;
-//   let sortValue = 'createdAt';
-//   var limit = config.pageSize;
-//   if (req.query.numRecords) {
-//     if (isNaN(req.query.numRecords))
-//       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-//     if (req.query.numRecords < 0)
-//       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-//     if (req.query.numRecords > 100)
-//       return res.status(404).send({
-//         message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100',
-//       });
-//     limit = Number(req.query.numRecords);
-//   }
-//   if (req.query.sortValue) sortValue = req.query.sortValue;
-//   if (req.query.sort) {
-//     sort = Number(req.query.sort);
-//   }
-//   if (req.query.page) {
-//     page = Number(req.query.page);
-//   }
-//   if (req.decoded.login.role == '0') {
-//     query = {};
-//   }
-//   if (req.decoded.login.role === '1') {
-//     query.superAdminId = req.decoded.userId;
-//   } else if (req.decoded.login.role === '2') {
-//     query.parentId = req.decoded.userId;
-//   } else if (req.decoded.login.role === '3') {
-//     query.adminId = req.decoded.userId;
-//   } else if (req.decoded.login.role === '4') {
-//     query.masterId = req.decoded.userId;
-//   }
-//   if (req.decoded.login.role === '5') {
-//     query.userId = null;
-//   }
-//   if (req.query.userId) {
-//     query.userId = req.query.userId;
-//   }
-//   if (req.query.userName) {
-//     query.userName = req.query.userName;
-//   }
-//   query.isDeleted = false;
-//   User.paginate(
-//     query,
-//     { page: page, sort: { [sortValue]: sort }, limit: limit },
-//     (err, results) => {
-//       if (results.total == 0) {
-//         return res.status(404).send({ message: 'No records found' });
-//       }
-//       if (err)
-//         return res.status(404).send({ message: 'USERS_PAGINATION_FAILED' });
-//       return res.send({
-//         success: true,
-//         message: 'Users Record Found',
-//         results: results,
-//       });
-//     }
-//   );
-// }
 
 function changePassword(req, res) {
   const errors = validationResult(req);
@@ -736,11 +565,7 @@ loginRouter.post(
   userValidation.validate('registerUser'),
   registerUser
 );
-// loginRouter.post(
-//   '/loadUserBalance',
-//   userValidation.validate('loadUserBalance'),
-//   loadUserBalance
-// );
+
 loginRouter.get('/getAllUsers', getAllUsers);
 loginRouter.post(
   '/changePassword',
