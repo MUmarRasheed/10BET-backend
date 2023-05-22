@@ -239,7 +239,7 @@ async function withDrawCashDeposit(req, res) {
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: 0,
         availableBalance: 0,
 
@@ -258,7 +258,7 @@ async function withDrawCashDeposit(req, res) {
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: lastDeposit
           ? lastDeposit.balance - req.body.amount
           : req.body.amount,
@@ -283,7 +283,7 @@ async function withDrawCashDeposit(req, res) {
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: 0,
         availableBalance: 0,
         maxWithdraw: lastMaxWithdraw
@@ -297,7 +297,7 @@ async function withDrawCashDeposit(req, res) {
         userId: currentUserParent.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: 0,
         availableBalance: 0,
         maxWithdraw: parentLastMaxWithdraw
@@ -318,7 +318,7 @@ async function withDrawCashDeposit(req, res) {
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: lastDeposit
           ? lastDeposit.balance - req.body.amount
           : req.body.amount,
@@ -340,7 +340,7 @@ async function withDrawCashDeposit(req, res) {
         userId: currentUserParent.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
-        amount: req.body.amount,
+        amount: -req.body.amount,
         balance: 0,
         availableBalance: 0,
         maxWithdraw: parentLastMaxWithdraw
