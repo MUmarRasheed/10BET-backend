@@ -1,8 +1,7 @@
 const express = require('express');
 const { validationResult } = require('express-validator');
 let config = require('config');
-const CashDeposit = require('../models/cashDeposit');
-// const Credit = require('../models/cashCredit');
+const CashCredit = require('../models/cashDeposit');
 
 const User = require('../models/user');
 const cashValidator = require('../validators/cashDeposit');
@@ -28,27 +27,27 @@ async function addCredit(req, res) {
 
     if (currentUserParent.role !== '0') {
       // Check if the user role is not 0
-      if (  req.body.amount > (currentUserParent.clientPL + currentUserParent.credit )) {
+      if (  req.body.amount > (currentUserParent.credit )) {
         return res
           .status(400)
-          .send({ message: `Max available credit is is ${currentUserParent.clientPL + currentUserParent.credit}` });
+          .send({ message: `Max available credit is is ${currentUserParent.credit}` });
       }
     }
 
-    let lastDeposit = await Cash.findOne({
+    let lastDeposit = await CashCredit.findOne({
       userId: userToUpdate.userId,
-      cashOrCredit: 'Cash',
+      cashOrCredit: 'Credit',
     }).sort({
       _id: -1,
     });
 
-    let lastMaxWithdraw = await Cash.findOne({
+    let lastMaxWithdraw = await CashCredit.findOne({
       userId: userToUpdate.userId,
     }).sort({
       _id: -1,
     });
 
-    let parentLastMaxWithdraw = await Cash.findOne({
+    let parentLastMaxWithdraw = await CashCredit.findOne({
       userId: currentUserParent.userId,
     }).sort({
       _id: -1,
@@ -56,9 +55,10 @@ async function addCredit(req, res) {
 
     let Dealers = ['1', '2', '3', '4'];
     if (currentUserParent.role === '0' && userToUpdate.role !== '5') {
-      userToUpdate.clientPL += req.body.amount;
+      userToUpdate.credit += req.body.amount;
+      userToUpdate.creditRemaining += req.body.amount 
 
-      let cash = new Cash({
+      let cashCredit = new CashCredit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
@@ -69,15 +69,16 @@ async function addCredit(req, res) {
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
-      await cash.save();
+      await cashCredit.save();
     } else if (currentUserParent.role === '0' && userToUpdate.role == '5') {
       userToUpdate.balance += req.body.amount;
       userToUpdate.availableBalance += req.body.amount;
-      userToUpdate.clientPL += req.body.amount;
+      userToUpdate.credit += req.body.amount;
+      userToUpdate.creditRemaining += req.body.amount;
 
-      let cash = new Cash({
+      let cashCredit = new CashCredit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
@@ -93,16 +94,19 @@ async function addCredit(req, res) {
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
-      await cash.save();
+      await cashCredit.save();
     } 
     else if (Dealers.includes(currentUserParent.role) && Dealers.includes(userToUpdate.role)) {
-      currentUserParent.clientPL -= req.body.amount;
-      userToUpdate.clientPL += req.body.amount;
+      currentUserParent.credit -= req.body.amount;
+      currentUserParent.creditRemaining -= req.body.amount;
+
+      userToUpdate.credit += req.body.amount;
+      userToUpdate.creditRemaining += req.body.amount;
 
       // Add Cash 
-      let cash = new Cash({
+      let cashCredit = new CashCredit({
         userId: userToUpdate.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
@@ -112,11 +116,11 @@ async function addCredit(req, res) {
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
-      await cash.save();
+      await cashCredit.save();
       // -VS Cash from parent 
-      let parentCash = new Cash({
+      let parentCash = new CashCredit({
         userId: currentUserParent.userId,
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
@@ -126,18 +130,21 @@ async function addCredit(req, res) {
         maxWithdraw: parentLastMaxWithdraw
           ? parentLastMaxWithdraw.maxWithdraw - req.body.amount
           : -req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
       await parentCash.save();
     } else if (Dealers.includes(currentUserParent.role) && userToUpdate.role === '5') {
-      currentUserParent.clientPL -= req.body.amount;
+      currentUserParent.credit -= req.body.amount;
+      currentUserParent.creditRemaining -= req.body.amount;
+
       userToUpdate.balance += req.body.amount;
       userToUpdate.availableBalance += req.body.amount;
-      userToUpdate.clientPL += req.body.amount;
+      userToUpdate.credit += req.body.amount;
+      userToUpdate.creditRemaining += req.body.amount;
 
-      let cash = new Cash({
+      let cashCredit = new CashCredit({
         userId: userToUpdate.userId,
-        description: req.body.description ? req.body.description : '(Cash)',
+        description: req.body.description ? req.body.description : '(Credit)',
         createdBy: req.decoded.userId,
         amount: req.body.amount,
         balance: lastDeposit
@@ -151,14 +158,14 @@ async function addCredit(req, res) {
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
-      await cash.save();
+      await cashCredit.save();
 
       // parent update 
-      let parentCash = new Cash({
+      let parentCash = new CashCredit({
         userId: currentUserParent.userId,
-        description: req.body.description ? req.body.description : '(Cash)',
+        description: req.body.description ? req.body.description : '(Credit)',
         createdBy: req.decoded.userId,
         amount: -req.body.amount,
         balance: 0,
@@ -166,7 +173,7 @@ async function addCredit(req, res) {
         maxWithdraw: parentLastMaxWithdraw
           ? parentLastMaxWithdraw.maxWithdraw - req.body.amount
           : -req.body.amount,
-        cashOrCredit: 'Cash',
+        cashOrCredit: 'Credit',
       });
       await parentCash.save();
 
@@ -175,9 +182,10 @@ async function addCredit(req, res) {
     }
     await userToUpdate.save();
     await currentUserParent.save();
+
     return res.send({
       success: true,
-      message: 'Cash deposit added successfully',
+      message: 'Cash credit added successfully',
       results: null,
     });
   } catch (err) {
@@ -279,12 +287,13 @@ async function withdrawCredit(req, res) {
     // }
     await userToUpdate.save();
 
-    const cashCreditWithdraw = await CashDeposit.findOne().sort({
+    const cashCreditWithdraw = await CashCredit.findOne().sort({
       _id: -1,
       cashOrCredit: -1,
     });
     const cash = cashCreditWithdraw.credit - req.body.amount;
-    const creditWithdraw = new CashDeposit({
+
+    const creditWithdraw = new CashCredit({
       credit: cash,
       userId: userToUpdate.userId,
       description: req.body.description ? req.body.description : '(Cash)',
@@ -316,12 +325,12 @@ function getAllCredits(req, res) {
     if (err || !success)
       return res.status(404).send({ message: 'user not found' });
 
-    CashDeposit.findOne(
-      { userId: req.query.userId },
+    CashCredit.findOne(
+      { userId: req.query.userId, cashOrCredit:'Credit' },
       //creditlimit should be of the user that is login
       { credit: 1, availableBalance: 1 }
     )
-      .sort({ _id: -1, cashOrCredit: -1 })
+      .sort({ _id: -1 })
       .exec((err, results) => {
         console.log('result', results);
         if (err || !results)
@@ -331,7 +340,7 @@ function getAllCredits(req, res) {
             message: 'Credit Record Found',
             results: {
               ...results._doc,
-              creditLimit: success.creditLimit,
+              credit: success.credit,
             },
           });
       });
