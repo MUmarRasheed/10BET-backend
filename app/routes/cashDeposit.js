@@ -61,8 +61,10 @@ async function addCashDeposit(req, res) {
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
         amount: req.body.amount,
-        balance: 0,
-        availableBalance: 0,
+        balance: lastDeposit ? lastDeposit.balance + req.body.amount : req.body.amount,
+        availableBalance:lastDeposit
+        ? lastDeposit.availableBalance + req.body.amount
+        : req.body.amount,
 
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
@@ -105,8 +107,8 @@ async function addCashDeposit(req, res) {
         description: req.body.description ? req.body.description : '(Cash)',
         createdBy: req.decoded.userId,
         amount: req.body.amount,
-        balance: 0,
-        availableBalance: 0,
+        balance: lastDeposit ? lastDeposit.balance + req.body.amount : req.body.amount,
+        availableBalance: lastDeposit ? lastDeposit.availableBalance + req.body.amount : req.body.amount,
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,

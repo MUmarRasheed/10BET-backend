@@ -285,6 +285,8 @@ async function withdrawCredit(req, res) {
     } 
     else if (Dealers.includes(currentUserParent.role) && Dealers.includes(userToUpdate.role)) {
       currentUserParent.credit += req.body.amount;
+      currentUserParent.creditRemaining += req.body.amount;
+
       userToUpdate.credit -= req.body.amount;
 
       // Add Cash 
@@ -319,6 +321,7 @@ async function withdrawCredit(req, res) {
 
     } else if (Dealers.includes(currentUserParent.role) && userToUpdate.role === '5') {
       currentUserParent.credit += req.body.amount;
+      currentUserParent.creditRemaining += req.body.amount;
       userToUpdate.balance -= req.body.amount;
       userToUpdate.availableBalance -= req.body.amount;
       userToUpdate.credit -= req.body.amount;
