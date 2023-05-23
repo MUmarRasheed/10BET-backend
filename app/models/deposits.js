@@ -8,14 +8,12 @@ let depositsSchema = new Schema({
   userId: { type: Number, index: true },
   description: { type: String, required: false },
   amount: { type: Number, required: true, default: 0 },
-  balance: { type: Number, required: false, default: 0 },
+  balance: { type: Number, required: false },
+  availableBalance: { type: Number },
   maxWithdraw: { type: Number, default: 0 },
-  credit: { type: Number, default: 0 },
   createdBy: { type: String },
   updatedAt: { type: String },
   createdAt: { type: String },
-  availableBalance: { type: Number, default: 0 },
-  creditLimit: { type: Number, default: 0 },
   cashOrCredit: { type: String },
 });
 
