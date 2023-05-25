@@ -357,34 +357,29 @@ function getLedgerDetails(req, res) {
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-  User.findOne({ userId: req.query.userId }).exec((err, user) => {
+
+  const query = { userId: req.query.userId };
+
+  User.findOne(query).exec((err, user) => {
     if (err || !user) {
-      return res.status(404).send({ message: 'deposits record not found' });
+      return res.status(404).send({ message: 'user not found' });
     }
-    if (user.role === '5') {
-      Cash.find({ userId: req.query.userId }).exec((err, results) => {
-        if (err || !results) {
-          return res
-            .status(404)
-            .send({ message: 'Deposits record not found' });
-        }
-        return res.send({ message: 'Deposit Record Found', results });
-      });
-    } else if (user.role !== '5' && req.query.type) {
-      Cash.find({
-        userId: req.query.userId,
-        cashOrCredit: req.query.type,
-      }).exec((err, results) => {
-        if (err || !results || results.length === 0) {
-          return res
-            .status(404)
-            .send({ message: 'Deposit record not found' });
-        }
-        return res.send({ message: 'Deposits Record Found', results });
-      });
+
+    let cashQuery = { userId: req.query.userId };
+
+    if (user.role !== '5' && req.query.type) {
+      cashQuery.cashOrCredit = req.query.type;
     }
+
+    Cash.find(cashQuery).exec((err, results) => {
+      if (err || !results || results.length === 0) {
+        return res.status(404).send({ message: 'Deposit record not found' });
+      }
+      return res.send({ message: 'Deposits Record Found', results });
+    });
   });
 }
+
 
 function getAllDeposits1(req, res) {
   const errors = validationResult(req);
