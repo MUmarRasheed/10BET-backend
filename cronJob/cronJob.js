@@ -118,9 +118,34 @@ const updateDefaultTheme = async () => {
   }
 };
 
+const updateDefaultLoginPage = async () => {
+  try {
+    const settings = await Settings.findOne({_id: "642bff9fc9bb7f4cb5b35d0a" });
+    const currentLoginPage = settings.defaultLoginPage;
+    console.log('current LoginPage', currentLoginPage);
+    let updatedLoginPage;
+
+    if (currentLoginPage === 'login-page-one') {
+      updatedLoginPage = 'login-page-two';
+    } else if (currentLoginPage === 'login-page-two') {
+      updatedLoginPage = 'login-page-three';
+    } else {
+      updatedLoginPage = 'login-page-one';
+    }
+
+    // Update the default login page
+    settings.defaultLoginPage = updatedLoginPage;
+    await settings.save();
+    console.log('Default loginPage updated:', settings.defaultLoginPage);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const cronJob2 = () => {
   cron.schedule('*/5 * * * *', () => {
     updateDefaultTheme();
+    updateDefaultLoginPage();
   });
 };
 
