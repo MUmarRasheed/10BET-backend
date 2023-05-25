@@ -352,21 +352,38 @@ async function withDrawCashDeposit(req, res) {
   }
 }
 
-function getAllDeposits(req, res) {
+function getLedgerDetails(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
-
-  Cash.find(
-    { userId: req.query.userId }
-  ).exec((err, results) => {
-      if (err || !results)
-        return res
-          .status(404)
-          .send({ message: 'cash deposit record not found' });
-      else return res.send({ message: 'Cash Deposit Record Found', results });
-    });
+  User.findOne({ userId: req.query.userId }).exec((err, user) => {
+    if (err || !user) {
+      return res.status(404).send({ message: 'deposits record not found' });
+    }
+    if (user.role === '5') {
+      Cash.find({ userId: req.query.userId }).exec((err, results) => {
+        if (err || !results) {
+          return res
+            .status(404)
+            .send({ message: 'Deposits record not found' });
+        }
+        return res.send({ message: 'Deposit Record Found', results });
+      });
+    } else if (user.role !== '5' && req.query.type) {
+      Cash.find({
+        userId: req.query.userId,
+        cashOrCredit: req.query.type,
+      }).exec((err, results) => {
+        if (err || !results || results.length === 0) {
+          return res
+            .status(404)
+            .send({ message: 'Deposit record not found' });
+        }
+        return res.send({ message: 'Deposits Record Found', results });
+      });
+    }
+  });
 }
 
 function getAllDeposits1(req, res) {
@@ -417,7 +434,7 @@ loginRouter.post(
   withDrawCashDeposit
 );
 loginRouter.get(
-  '/getAllDeposits',
-  getAllDeposits
+  '/getLedgerDetails',
+  getLedgerDetails
 );
 module.exports = { loginRouter };

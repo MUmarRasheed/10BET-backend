@@ -52,5 +52,5 @@
   "getDefaultBetSizes",
   "getAllBetSizes",
   "getDefaultSettings",
-  "getAllDeposits"
+  "getLedgerDetails"
 ]
