@@ -101,12 +101,12 @@ const updateDefaultTheme = async () => {
     console.log('current theme', currentTheme);
     let updatedTheme;
 
-    if (currentTheme === 'white-theme') {
+    if (currentTheme === 'light-theme') {
       updatedTheme = 'dark-theme';
     } else if (currentTheme === 'dark-theme') {
       updatedTheme = 'grey-theme';
     } else {
-      updatedTheme = 'white-theme';
+      updatedTheme = 'light-theme';
     }
 
     // Update the default theme

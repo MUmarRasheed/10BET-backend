@@ -358,24 +358,58 @@ function getLedgerDetails(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  const query = { userId: req.query.userId };
+  const query = { userId: req.body.userId };
+  let page = 1;
+  let sort = 1;
+  let sortValue = '_id';
+  let limit = config.pageSize;
+  
+  if (req.body.numRecords) {
+    if (isNaN(req.body.numRecords)) {
+      return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+    }
+    if (req.body.numRecords < 0) {
+      return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
+    }
+    if (req.body.numRecords > 100) {
+      return res.status(404).send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
+    }
+    limit = Number(req.body.numRecords);
+  }
+  
+  if (req.body.sortValue) {
+    sortValue = req.body.sortValue;
+  }
+  
+  if (req.body.sort) {
+    sort = Number(req.body.sort);
+  }
+  
+  if (req.body.page) {
+    page = Number(req.body.page);
+  }
 
   User.findOne(query).exec((err, user) => {
     if (err || !user) {
-      return res.status(404).send({ message: 'user not found' });
+      return res.status(404).send({ message: 'User not found' });
     }
 
-    let cashQuery = { userId: req.query.userId };
+    let cashQuery = { userId: req.body.userId };
 
-    if (user.role !== '5' && req.query.type) {
-      cashQuery.cashOrCredit = req.query.type;
+    if (user.role !== '5' && req.body.type) {
+      cashQuery.cashOrCredit = req.body.type;
+    }
+    
+    // Add support for startDate and endDate search
+    if (req.body.startDate && req.body.endDate) {
+      cashQuery.createdAt = { $gte: req.body.startDate, $lte: req.body.endDate };
     }
 
-    Cash.find(cashQuery).exec((err, results) => {
+    Cash.paginate(cashQuery, { page: page, sort: { [sortValue]: sort }, limit: limit }, (err, results) => {
       if (err || !results || results.length === 0) {
         return res.status(404).send({ message: 'Deposit record not found' });
       }
-      return res.send({ message: 'Deposits Record Found', results });
+      return res.send({ message: 'Deposit Record Found', results });
     });
   });
 }
@@ -428,7 +462,7 @@ loginRouter.post(
   cashValidator.validate('withDrawCashDeposit'),
   withDrawCashDeposit
 );
-loginRouter.get(
+loginRouter.post(
   '/getLedgerDetails',
   getLedgerDetails
 );
