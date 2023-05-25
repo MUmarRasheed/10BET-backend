@@ -3,9 +3,11 @@ const axios = require('axios');
 const Bets = require('../app/models/bets');
 const CricketMatch = require('../app/models/cricketMatches');
 const User = require('../app/models/user');
+const Settings = require('../app/models/settings');
+
 let runningJob;
 
-const cronJob = () => {
+const cronJob1 = () => {
   runningJob = cron.schedule('*/5 * * * * *', async () => {
     try {
       const endedMatches = await getEndedMatches();
@@ -91,4 +93,36 @@ function handlePendingBet(bet) {
   console.log(`Bet ${bet._id} is pending.`);
 }
 
-module.exports = cronJob;
+
+const updateDefaultTheme = async () => {
+  try {
+    const settings = await Settings.findOne({_id: "645e27d8ba117017eb29bad8" });
+    const currentTheme = settings.defaultThemeName;
+    console.log('current theme', currentTheme);
+    let updatedTheme;
+
+    if (currentTheme === 'white-theme') {
+      updatedTheme = 'dark-theme';
+    } else if (currentTheme === 'dark-theme') {
+      updatedTheme = 'grey-theme';
+    } else {
+      updatedTheme = 'white-theme';
+    }
+
+    // Update the default theme
+    settings.defaultThemeName = updatedTheme;
+    await settings.save();
+    console.log('Default theme updated:', settings.defaultThemeName);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const cronJob2 = () => {
+  cron.schedule('*/5 * * * *', () => {
+    updateDefaultTheme();
+  });
+};
+
+module.exports = { cronJob1, cronJob2 };
+
