@@ -197,16 +197,16 @@ async function withDrawCashDeposit(req, res) {
       return res.status(404).send({ message: 'user not found' });
     }
 
-    if(userToUpdate.role !== '5' &&  req.body.amount > (userToUpdate.clientPL + userToUpdate.creditRemaining ) ) {
+      if(userToUpdate.role !== '5' &&  req.body.amount > (userToUpdate.clientPL + userToUpdate.creditRemaining ) ) {
       console.log("comming");
-      return res
-        .status(400)
-        .send({ message: `Max cash withdraw is ${userToUpdate.clientPL + userToUpdate.creditRemaining}` });
-    }
-    else if(userToUpdate.role === '5' &&  req.body.amount > userToUpdate.availableBalance ){
-      return res
-        .status(400)
-        .send({ message: `Max cash withdraw is ${userToUpdate.availableBalance }` });
+        return res
+          .status(400)
+          .send({ message: `Max cash withdraw is ${userToUpdate.clientPL + userToUpdate.creditRemaining}` });
+        }
+        else if(userToUpdate.role === '5' &&  req.body.amount > userToUpdate.availableBalance ){
+          return res
+            .status(400)
+            .send({ message: `Max cash withdraw is ${userToUpdate.availableBalance }` });
     }
 
     let lastDeposit = await Cash.findOne({
@@ -270,7 +270,7 @@ async function withDrawCashDeposit(req, res) {
       await cash.save();
     } 
 
-    else if (Dealers.includes(currentUserParent) && Dealers.includes(userToUpdate.role)) {
+    else if (Dealers.includes(currentUserParent.role) && Dealers.includes(userToUpdate.role)) {
       userToUpdate.clientPL -= req.body.amount;
       currentUserParent.clientPL += req.body.amount;
       // Add Cash 
@@ -413,19 +413,17 @@ function getLedgerDetails(req, res) {
 }
 
 
-function getAllDeposits1(req, res) {
+function getAllDeposits(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  User.findOne({ userId: req.query.userId }, (err, success) => {
-    console.log('successs', success);
-    if (err || !success) return res.status(404).send({ message: 'user not found' });
-    if ( success.role === '5' ) {
-  maxWithdraw  = success.maxWithdraw
-
-    }
+  User.findOne({ userId: req.decoded.userId }, (err, parentUser) => {
+    if (err || !parentUser) return res.status(404).send({ message: 'user not found' });
+    User.findOne({ userId: req.query.userId }, (err, user) => {
+      if (err || !user) return res.status(404).send({ message: 'user not found' });
+  
     Cash.findOne(
       { userId: req.query.userId },
       //creditlimit should be of the user that is login
@@ -438,16 +436,18 @@ function getAllDeposits1(req, res) {
           return res.status(404).send({ message: ' Record Not Found' });
         else
           return res.send({
-            message: 'Deposita Record Found',
+            message: 'Deposit Record Found',
             results: {
               ...results._doc,
-              creditLimit: success.creditRemaining,
-              balance: success.balance,
-              availableBalance: success.availableBalance,
+              creditLimit: parentUser.creditRemaining,
+              balance: user.balance,
+              credit: user.credit,
+              availableBalance: user.availableBalance,
             },
           });
       });
-  });
+   });
+  })
 }
 
 loginRouter.post(
@@ -463,5 +463,9 @@ loginRouter.post(
 loginRouter.post(
   '/getLedgerDetails',
   getLedgerDetails
+);
+loginRouter.get(
+  '/getAllDeposits',
+  getAllDeposits
 );
 module.exports = { loginRouter };
