@@ -105,6 +105,7 @@ async function addCashDeposit(req, res) {
         maxWithdraw: lastMaxWithdraw
           ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
+        // balance : lastMaxWithdraw - 
         cashOrCredit: 'Cash',
       });
       await cash.save();
@@ -269,7 +270,7 @@ async function withDrawCashDeposit(req, res) {
       await cash.save();
     } 
 
-    else if (Dealers.includes(currentUserParent.role) && Dealers.includes(userToUpdate.role)) {
+    else if (Dealers.includes(currentUserParent) && Dealers.includes(userToUpdate.role)) {
       userToUpdate.clientPL -= req.body.amount;
       currentUserParent.clientPL += req.body.amount;
       // Add Cash 
@@ -370,9 +371,6 @@ function getLedgerDetails(req, res) {
     }
     if (req.body.numRecords < 0) {
       return res.status(404).send({ message: 'NUMBER_RECORDS_IS_NOT_PROPER' });
-    }
-    if (req.body.numRecords > 100) {
-      return res.status(404).send({ message: 'NUMBER_RECORDS_NEED_TO_LESS_THAN_100' });
     }
     limit = Number(req.body.numRecords);
   }
