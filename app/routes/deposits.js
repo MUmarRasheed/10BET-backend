@@ -419,19 +419,18 @@ function getAllDeposits(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  User.findOne({ userId: req.decoded.userId }, (err, parentUser) => {
-    if (err || !parentUser) return res.status(404).send({ message: 'user not found' });
+
     User.findOne({ userId: req.query.userId }, (err, user) => {
       if (err || !user) return res.status(404).send({ message: 'user not found' });
-  
+    User.findOne({ userId: user.createdBy }, (err, parentUser) => {
+    if (err || !parentUser) return res.status(404).send({ message: 'user not found' });
     Cash.findOne(
       { userId: req.query.userId },
-      //creditlimit should be of the user that is login
+      //creditlimit should be of the parent user
       { maxWithdraw: 1 }
     )
       .sort({ _id: -1 })
       .exec((err, results) => {
-        console.log('result', results);
         if (err || !results)
           return res.status(404).send({ message: ' Record Not Found' });
         else
