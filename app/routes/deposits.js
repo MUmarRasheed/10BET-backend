@@ -386,8 +386,7 @@ function getLedgerDetails(req, res) {
   if (req.body.page) {
     page = Number(req.body.page);
   }
-
-  User.findOne(query).exec((err, user) => {
+  User.findOne(query,(err, user) => {
     if (err || !user) {
       return res.status(404).send({ message: 'User not found' });
     }
@@ -402,7 +401,22 @@ function getLedgerDetails(req, res) {
     if (req.body.startDate && req.body.endDate) {
       cashQuery.createdAt = { $gte: req.body.startDate, $lte: req.body.endDate };
     }
-
+if (req.body.searchValue) {
+    const searchRegex = new RegExp(req.body.searchValue, 'i');
+    cashQuery.$or = [
+      { description: { $regex: searchRegex } },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$amount' }, regex: searchRegex },
+        },
+      },
+      {
+        $expr: {
+          $regexMatch: { input: { $toString: '$maxWithdraw' }, regex: searchRegex },
+        },
+      },
+    ];
+  }
     Cash.paginate(cashQuery, { page: page, sort: { [sortValue]: sort }, limit: limit }, (err, results) => {
       if (err || !results || results.length === 0) {
         return res.status(404).send({ message: 'Deposit record not found' });
