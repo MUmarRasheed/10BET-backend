@@ -88,8 +88,8 @@ async function addCredit(req, res) {
           ? lastDeposit.availableBalance + req.body.amount
           : req.body.amount,
 
-        maxWithdraw: lastDeposit
-          ? lastDeposit.maxWithdraw + req.body.amount
+        maxWithdraw: lastMaxWithdraw
+          ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
         cashOrCredit: 'Credit',
       });
@@ -147,8 +147,8 @@ async function addCredit(req, res) {
         availableBalance: lastDeposit
           ? lastDeposit.availableBalance + req.body.amount
           : req.body.amount,
-          maxWithdraw: lastDeposit
-          ? lastDeposit.maxWithdraw + req.body.amount
+          maxWithdraw: lastMaxWithdraw
+          ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
         cashOrCredit: 'Credit',
       });
@@ -279,8 +279,8 @@ async function withdrawCredit(req, res) {
         availableBalance: lastMaxWithdraw
           ? lastMaxWithdraw.availableBalance - req.body.amount
           : req.body.amount,
-        maxWithdraw: lastDeposit
-          ? lastDeposit.maxWithdraw + req.body.amount
+        maxWithdraw: lastMaxWithdraw
+          ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
         cashOrCredit: 'Credit',
       });
@@ -340,8 +340,8 @@ async function withdrawCredit(req, res) {
         availableBalance: lastMaxWithdraw
           ? lastMaxWithdraw.availableBalance - req.body.amount
           : req.body.amount,
-        maxWithdraw: lastDeposit
-          ? lastDeposit.maxWithdraw + req.body.amount
+        maxWithdraw: lastMaxWithdraw
+          ? lastMaxWithdraw.maxWithdraw + req.body.amount
           : req.body.amount,
         cashOrCredit: 'Credit',
       });
