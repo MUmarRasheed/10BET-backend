@@ -267,7 +267,7 @@ async function withDrawCashDeposit(req, res) {
           ? lastMaxWithdraw.availableBalance - req.body.amount
           : req.body.amount,
         maxWithdraw: lastMaxWithdraw
-          ? lastMaxWithdraw.maxWithdraw + req.body.amount
+          ? lastMaxWithdraw.maxWithdraw - req.body.amount
           : req.body.amount,
         cashOrCredit: 'Cash',
       });
@@ -321,7 +321,7 @@ async function withDrawCashDeposit(req, res) {
           ? lastMaxWithdraw.availableBalance - req.body.amount
           : req.body.amount,
         maxWithdraw: lastMaxWithdraw
-          ? lastMaxWithdraw.maxWithdraw + req.body.amount
+          ? lastMaxWithdraw.maxWithdraw - req.body.amount
           : req.body.amount,
         cashOrCredit: 'Cash',
       });
