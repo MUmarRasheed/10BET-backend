@@ -86,7 +86,9 @@ async function addCashDeposit(req, res) {
         availableBalance: lastMaxWithdraw
           ? lastMaxWithdraw.availableBalance + req.body.amount
           : req.body.amount,
-
+        maxWithdraw: lastDeposit
+          ? lastDeposit.maxWithdraw + req.body.amount
+          : req.body.amount,
         cashOrCredit: 'Cash',
       });
       await cash.save();
@@ -142,9 +144,9 @@ async function addCashDeposit(req, res) {
           ? lastMaxWithdraw.availableBalance + req.body.amount
           : req.body.amount,
 
-        // maxWithdraw: lastDeposit
-        //   ? lastDeposit.maxWithdraw + req.body.amount
-        //   : req.body.amount,
+        maxWithdraw: lastDeposit
+          ? lastDeposit.maxWithdraw + req.body.amount
+          : req.body.amount,
         cashOrCredit: 'Cash',
       });
       await cash.save();
@@ -264,7 +266,9 @@ async function withDrawCashDeposit(req, res) {
         availableBalance: lastMaxWithdraw
           ? lastMaxWithdraw.availableBalance - req.body.amount
           : req.body.amount,
-
+        maxWithdraw: lastDeposit
+          ? lastDeposit.maxWithdraw + req.body.amount
+          : req.body.amount,
         cashOrCredit: 'Cash',
       });
       await cash.save();
@@ -315,6 +319,9 @@ async function withDrawCashDeposit(req, res) {
           : req.body.amount,
         availableBalance: lastMaxWithdraw
           ? lastMaxWithdraw.availableBalance - req.body.amount
+          : req.body.amount,
+        maxWithdraw: lastDeposit
+          ? lastDeposit.maxWithdraw + req.body.amount
           : req.body.amount,
         cashOrCredit: 'Cash',
       });
