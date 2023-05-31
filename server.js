@@ -21,11 +21,11 @@ var jsonContent = JSON.parse(content);
 
 var apisContent = fs.readFileSync(config.apisFileName);
 var jsonApis = JSON.parse(apisContent);
-const { cronJob2 } = require('./cronJob/cronJob'); // Import only cronJob2
+const { cronJob2, cronJob1 } = require('./cronJob/cronJob'); // Import only cronJob2
 
 // Run the cron job
 cronJob2();
-
+// cronJob1()
 // CONNECT THE DATABASE
 let options = {
   useNewUrlParser: true,
@@ -88,6 +88,7 @@ app.use(function (req, res, next) {
 //Without Authorization
 app.use('/api', require('./app/routes/user').router);
 app.use('/api', require('./app/routes/settings').router);
+app.use('/api', require('./app/routes/casinoGames').router);
 
 // Login middleware
 app.use(function (req, res, next) {

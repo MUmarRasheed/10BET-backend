@@ -24,7 +24,7 @@ function registerUser(req, res) {
   if (req.decoded.role === '5') {
     return res.status(404).send({ message: 'you are not allowed to do this ' });
   }
-  if ( req.body.role !== '5' ) {
+  if (req.body.role !== '5') {
     if (!req.body.downLineShare) {
       return res.status(404).send({ message: 'downLineShare is required' });
     }
@@ -60,7 +60,7 @@ function registerUser(req, res) {
 
       user.userId = data.userId + 1;
       user.id = user._id;
-      
+
       if (req.decoded.role == '1') user.superAdminId = req.decoded.userId;
       if (req.decoded.role == '2') {
         user.parentId = req.decoded.userId;
@@ -272,27 +272,11 @@ function getAllUsers(req, res) {
 
   if (req.query.userId) {
     const userId = parseInt(req.query.userId);
-    query = {
-      $or: [
-        { superAdminId: userId },
-        { createdBy: userId },
-        { adminId: userId },
-        { parentId: userId },
-        { masterId: userId },
-      ],
-      isDeleted: false,
-    };
-  } else if (req.decoded.login.role == '0') {
-    query = { role: { $ne: req.decoded.login.role } };
-  } else if (req.decoded.login.role === '1') {
-    query.superAdminId = req.decoded.userId;
-  } else if (req.decoded.login.role === '2') {
-    query.parentId = req.decoded.userId;
-  } else if (req.decoded.login.role === '3') {
-    query.adminId = req.decoded.userId;
-  } else if (req.decoded.login.role === '4') {
-    query.masterId = req.decoded.userId;
-  } else if (req.decoded.login.role === '5') {
+    query.createdBy = userId
+  } else if (req.decoded.login.role !== '5') {
+    query.createdBy = req.decoded.userId
+  }
+  else if (req.decoded.login.role === '5') {
     query.userId = null;
   }
   if (req.query.userName) {
@@ -311,6 +295,7 @@ function getAllUsers(req, res) {
       return res.send({
         success: true,
         message: 'Users Record Found',
+        total: results.total,
         results: results,
       });
     }

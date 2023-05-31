@@ -66,6 +66,7 @@ const userSchema = new Schema({
   matchOddsStatus: { type: Boolean },
   baseCurrency: { type: String },
   creditRemaining: { type: Number, default: 0 },
+  cash: { type: Number, default: 0 },
 });
 // userSchema.plugin(Global.paginate)
 

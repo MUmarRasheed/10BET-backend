@@ -13,13 +13,16 @@ async function addCredit(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   try {
-    const userToUpdate = await User.findOne({ userId: req.body.userId });
+    const userToUpdate = await User.findOne({ userId: req.body.userId,
+      isDeleted: false
+    });
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
     
     const currentUserParent = await User.findOne({
       userId: userToUpdate.createdBy,
+      isDeleted: false
     });
     console.log("currentUserParent--->>>", currentUserParent);
     if (!currentUserParent) {
@@ -192,13 +195,14 @@ async function withdrawCredit(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
   try {
-    const userToUpdate = await User.findOne({ userId: req.body.userId });
+    const userToUpdate = await User.findOne({ userId: req.body.userId ,isDeleted: false});
     if (!userToUpdate) {
       return res.status(404).send({ message: 'user not found' });
     }
     
     const currentUserParent = await User.findOne({
       userId: userToUpdate.createdBy,
+      isDeleted: false
     });
     if (!currentUserParent) {
       return res.status(404).send({ message: 'user not found' });

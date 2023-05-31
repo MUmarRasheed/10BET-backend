@@ -278,21 +278,12 @@ function getFinalReport(req, res) {
 function getClientList(req, res) {
   // Initialize variables with default values
   let query = { isDeleted: false };
-  let countQuery = {};
+  let countQuery = { isDeleted: false };
 
   if (req.query.userId) {
     const userId = parseInt(req.query.userId);
     query = { userId, isDeleted: false };
-
-    countQuery = {
-      $or: [
-        { superAdminId: userId },
-        { createdBy: userId },
-        { adminId: userId },
-        { parentId: userId },
-        { masterId: userId },
-      ],
-    };
+    countQuery.createdBy = userId;
   }
   // Retrieve the desired fields from the User collection
   User.findOne(query)
@@ -315,7 +306,7 @@ function getClientList(req, res) {
         const response = {
           creditRecieved: results.credit,
           creditRemaining: results.creditRemaining,
-          cash: results.clientPL,
+          cash: results.cash,
           plDownline: results.balance,
           balanceUpline: results.clientPL,
           users: count,

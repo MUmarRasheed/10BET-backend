@@ -273,7 +273,7 @@ function getDefaultBetSizes(req, res) {
   if (req.decoded.role !== '0') {
     return res
       .status(404)
-      .json({ message: 'Only company can add default bet sizes' });
+      .json({ message: 'Only company can see default bet sizes' });
   }
   MaxBetSize.find({}, (err, results) => {
     if (err) {
