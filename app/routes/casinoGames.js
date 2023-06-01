@@ -17,7 +17,8 @@ async function addCasinoGameDetails(req, res) {
       }
     );
 
-    const gameList = response.data;
+    console.log('Response:', response.data);
+    const gameList = response.data.response;
 
     const groupedGames = gameList.reduce((groups, game) => {
       const category = game.category;

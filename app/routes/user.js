@@ -46,10 +46,9 @@ function registerUser(req, res) {
       });
       // Check if the downline share is greater than the parent's downline share
       const parentUser = await User.findOne({ userId: req.decoded.userId });
-      if (parentUser.downLineShare < req.body.downLineShare) {
+      if (parentUser.role !== '0' && parentUser.downLineShare < req.body.downLineShare) {
         return res.status(404).send({
-          message:
-            "downLineShare cannot be greater than parent user's downLineShare",
+          message: `Max allowed downline share is 0 - ${parentUser.downLineShare}`,
         });
       }
       // Update their isDeleted field to true using updateMany()
