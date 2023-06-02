@@ -19,65 +19,15 @@ async function addCasinoGameDetails(req, res) {
 
     console.log('Response:', response.data);
     const gameList = response.data.response;
+    const bulkOps = gameList.map((game) => ({
+      updateOne: {
+        filter: { category: game.category },
+        update: { $push: { games: game } },
+        upsert: true,
+      },
+    }));
 
-    const groupedGames = gameList.reduce((groups, game) => {
-      const category = game.category;
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-      groups[category].push(game);
-      return groups;
-    }, {});
-
-    const bulkOps = [];
-
-    for (const category in groupedGames) {
-      const games = groupedGames[category];
-
-      const bulkInsertOps = games.map((game) => ({
-        insertOne: {
-          document: {
-            id: game.id,
-            name: game.name,
-            type: game.type,
-            subcategory: game.subcategory,
-            details: JSON.stringify(game.details),
-            new: game.new,
-            system: game.system,
-            position: game.position,
-            category: game.category,
-            licence: game.licence,
-            plays: game.plays,
-            rtp: game.rtp,
-            wagering: game.wagering,
-            gamename: game.gamename,
-            report: game.report,
-            mobile: game.mobile,
-            additional: game.additional,
-            id_hash: game.id_hash,
-            id_parent: game.id_parent,
-            id_hash_parent: game.id_hash_parent,
-            freerounds_supported: game.freerounds_supported,
-            featurebuy_supported: game.featurebuy_supported,
-            has_jackpot: game.has_jackpot,
-            provider: game.provider,
-            provider_name: game.provider_name,
-            play_for_fun_supported: game.play_for_fun_supported,
-            image: game.image,
-            image_preview: game.image_preview,
-            image_filled: game.image_filled,
-            image_portrait: game.image_portrait,
-            image_square: game.image_square,
-            image_background: game.image_background,
-            image_bw: game.image_bw,
-          },
-        },
-      }));
-
-      const bulkWriteResult = await CasinoGames.bulkWrite(bulkInsertOps);
-      bulkOps.push(bulkWriteResult);
-    }
-
+    await CasinoGames.bulkWrite(bulkOps);
     res.send({ success: true, message: 'Casino games added successfully' });
   } catch (error) {
     console.error(error);
