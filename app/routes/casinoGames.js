@@ -22,7 +22,7 @@ async function addCasinoGameDetails(req, res) {
     const bulkOps = gameList.map((game) => ({
       updateOne: {
         filter: { category: game.category },
-        update: { $push: { games: game } },
+        $push: { games: { ...game, details: JSON.parse(game.details) } },
         upsert: true,
       },
     }));
