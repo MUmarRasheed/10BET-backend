@@ -54,5 +54,7 @@
   "getDefaultSettings",
   "getLedgerDetails",
   "getAllDeposits",
-  "addCasinoGameDetails"
+  "addCasinoGameDetails",
+  "getAllCasinoCategories",
+  "getSelectedCasinoCategories"
 ]
