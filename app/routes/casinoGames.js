@@ -45,17 +45,20 @@ function getAllCasinoCategories(req, res) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
 
-    SelectedCasino.find({}, { _id: 1 }, (err, selectedCasino) => {
-      if (err ||!selectedCasino) {
+    SelectedCasino.find({}, { _id: 1, status: 1 }, (err, selectedCasino) => {
+      if (err || !selectedCasino) {
         return res.status(404).send({ message: 'Failed to retrieve casino categories' });
       }
 
-      const selectedCategoryIds = selectedCasino.map((selected) => selected._id);
-      const results = casinoCategories.map((category) => ({
-        _id: category._id,
-        category: category.category,
-        status: selectedCategoryIds.includes(category._id) ? 1 : 0,
-      }));
+      const results = casinoCategories.map((category) => {
+        const matchingCategory = selectedCasino.find((selected) => selected._id.equals(category._id));
+        const status = matchingCategory ? parseInt(matchingCategory.status) : 0;
+        return {
+          _id: category._id,
+          category: category.category,
+          status: status.toString(),
+        };
+      });
 
       return res.send({
         message: 'Casino Categories Found',
@@ -65,6 +68,7 @@ function getAllCasinoCategories(req, res) {
     });
   });
 }
+
 
 async function addSelectedCasinoCategories(req, res) {
   const { casinoCategories } = req.body;
@@ -94,6 +98,7 @@ async function addSelectedCasinoCategories(req, res) {
 
             if (matchingGame) {
               selectedCasino.games = matchingGame.games;
+              selectedCasino.status = status; // Set the status to 2
             }
           } else {
             const gameIdsToAdd = games
@@ -111,6 +116,7 @@ async function addSelectedCasinoCategories(req, res) {
               });
 
               selectedCasino.games.push(...selectedGames.filter(game => gameIdsToAdd.includes(game.id)));
+              selectedCasino.status = status; // Set the status to 1
             }
           }
 
@@ -125,7 +131,8 @@ async function addSelectedCasinoCategories(req, res) {
               await SelectedCasino.create({
                 _id: categoryId,
                 games: matchingGame.games,
-                category: categoryId
+                category: categoryId,
+                status: status // Set the status to 2
               });
             }
           } else {
@@ -142,7 +149,8 @@ async function addSelectedCasinoCategories(req, res) {
               await SelectedCasino.create({
                 _id: categoryId,
                 games: selectedGames,
-                category: categoryId
+                category: categoryId,
+                status: status // Set the status to 1
               });
             }
           }
