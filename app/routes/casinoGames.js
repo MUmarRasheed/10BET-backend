@@ -133,7 +133,6 @@ async function addSelectedCasinoCategories(req, res) {
 }
 
 
-
 function getSelectedCasinoGames(req, res) {
   let categoryId = req.query.categoryId;
   SelectedCasino.find({ _id: categoryId }, (err, casinoCategories) => {
@@ -152,9 +151,50 @@ function getSelectedCasinoGames(req, res) {
 }
 
 
+
+function getCategoryCasinoGames(req, res) {
+  let categoryId = req.query._id;
+  CasinoGames.findOne({ _id: categoryId }, (err, casinoCategories) => {
+    if (err || !casinoCategories || casinoCategories.length === 0) {
+      return res.status(404).send({ message: 'Casino Categories Not Found' });
+    }
+    SelectedCasino.findOne({ _id: categoryId }, (err, selectedCategory) => {
+
+      if (err || !selectedCategory || selectedCategory.length === 0) {
+        return res.status(404).send({ message: 'Casino Categories Not Found' });
+      }
+      const results = casinoCategories.games.map((game) => {
+
+          const matchingGame = selectedCategory.games.some(selected => selected.id === game.id);
+
+        console.log("matchibg", matchingGame);
+        
+        const status = matchingGame ? 1 : 0;
+        return {
+          _id: game._id,
+          game: game,
+          status: status,
+        }
+      })
+    return res.send({
+      message: 'Selected Casino Games Found',
+      success: true,
+      results: results,
+    });
+  })
+  })
+}
+
+
 router.post('/addCasinoGameDetails', addCasinoGameDetails);
+
 router.get('/getAllCasinoCategories', getAllCasinoCategories);
+
+router.get('/getCategoryCasinoGames', getCategoryCasinoGames);
+
+
 router.get('/getSelectedCasinoGames', getSelectedCasinoGames);
+
 router.post('/addSelectedCasinoCategories', addSelectedCasinoCategories);
 
 module.exports = { router };

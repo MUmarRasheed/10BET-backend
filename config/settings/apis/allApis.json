@@ -58,5 +58,6 @@
   "getAllCasinoCategories",
   "getSelectedCasinoCategories",
   "addSelectedCasinoCategories",
-  "getSelectedCasinoGames"
+  "getSelectedCasinoGames",
+  "getCategoryCasinoGames"
 ]
