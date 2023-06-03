@@ -69,92 +69,59 @@ function getAllCasinoCategories(req, res) {
   });
 }
 
-
 async function addSelectedCasinoCategories(req, res) {
   const { casinoCategories } = req.body;
 
   try {
     for (const category of casinoCategories) {
-      const { categoryId, status, games } = category;
+      const { _id, status, games } = category;
 
-      const filter = { _id: categoryId };
+      const allCasino = await CasinoGames.findOne({ _id }).exec();
+      let selectedCasino = await SelectedCasino.findOne({ _id }).exec();
 
-      if (status === 0) {
-        await SelectedCasino.deleteOne(filter);
-      } else {
-        const selectedCasino = await SelectedCasino.findOne(filter).exec();
+      if (!selectedCasino) {
+        selectedCasino = new SelectedCasino({
+          _id: _id,
+          category: _id,
+          status: status,
+          games: []
+        });
+      }
 
-        if (selectedCasino) {
-          const gameIdsToRemove = games
-            .filter(game => game.status === 0)
-            .map(game => game.id);
+      if (status === 2) {
+        console.log('in here');
+        // Add all games for _id in selectedCasino
+        selectedCasino._id = _id; // Assign _id
+        selectedCasino.status = status; // Assign status
+        selectedCasino.games = allCasino.games;
+        await selectedCasino.save();
+      } else if (status === 1) {
+        for (const gameID of games) {
+          let matchingGame = allCasino.games.find(game => game.id === gameID);
 
-          selectedCasino.games = selectedCasino.games.filter(game => !gameIdsToRemove.includes(game.id));
+          if (matchingGame) {
+            console.log("Matching game found:", matchingGame);
+            // Check if the game is already present in selectedCasino
+            const isGameAlreadyAdded = selectedCasino.games.some(game => game.id === gameID);
 
-          if (status === 2) {
-            const matchingGame = await CasinoGames.findOne({
-              _id: categoryId
-            }).exec();
-
-            if (matchingGame) {
-              selectedCasino.games = matchingGame.games;
-              selectedCasino.status = status; // Set the status to 2
+            if (!isGameAlreadyAdded) {
+              selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
+            } else {
+              console.log("Game already present:", matchingGame);
             }
           } else {
-            const gameIdsToAdd = games
-              .filter(game => game.status === 1 && !selectedCasino.games.some(existingGame => existingGame.id === game.id))
-              .map(game => game.id);
-
-            const matchingGame = await CasinoGames.findOne({
-              _id: categoryId
-            }).exec();
-
-            if (matchingGame) {
-              const selectedGames = matchingGame.games.filter(game => {
-                const gameToUpdate = games.find(g => g.id === game.id);
-                return gameToUpdate && (gameToUpdate.status === 1 || status === 2);
-              });
-
-              selectedCasino.games.push(...selectedGames.filter(game => gameIdsToAdd.includes(game.id)));
-              selectedCasino.status = status; // Set the status to 1
-            }
-          }
-
-          await selectedCasino.save();
-        } else {
-          if (status === 2) {
-            const matchingGame = await CasinoGames.findOne({
-              _id: categoryId
-            }).exec();
-
-            if (matchingGame) {
-              await SelectedCasino.create({
-                _id: categoryId,
-                games: matchingGame.games,
-                category: categoryId,
-                status: status // Set the status to 2
-              });
-            }
-          } else {
-            const matchingGame = await CasinoGames.findOne({
-              _id: categoryId
-            }).exec();
-
-            if (matchingGame) {
-              const selectedGames = matchingGame.games.filter(game => {
-                const gameToUpdate = games.find(g => g.id === game.id);
-                return gameToUpdate && (gameToUpdate.status === 1 || status === 2);
-              });
-
-              await SelectedCasino.create({
-                _id: categoryId,
-                games: selectedGames,
-                category: categoryId,
-                status: status // Set the status to 1
-              });
-            }
+            console.log("No matching game found for ID:", gameID);
           }
         }
+        await selectedCasino.save();
+      }
+    }
+
+    for (const category of casinoCategories) {
+      const { _id, status } = category;
+      if (status === 0) {
+        console.log('Deleting selected casino:', _id);
+        await SelectedCasino.deleteOne({ _id: _id });
       }
     }
 
@@ -164,6 +131,8 @@ async function addSelectedCasinoCategories(req, res) {
     res.status(500).send({ message: 'Failed to save selected casino categories' });
   }
 }
+
+
 
 function getSelectedCasinoGames(req, res) {
   let categoryId = req.query.categoryId;
