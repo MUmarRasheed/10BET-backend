@@ -157,7 +157,7 @@ async function addSelectedCasinoCategories(req, res) {
   }
 }
 
-function getSelectedCasinoCategories(req, res) {
+function getSelectedCasinoGames(req, res) {
   let categoryId = req.body.categoryId;
   SelectedCasino.find({ _id: categoryId }, (err, casinoCategories) => {
     if (err || !casinoCategories || casinoCategories.length === 0) {
@@ -177,7 +177,7 @@ function getSelectedCasinoCategories(req, res) {
 
 router.post('/addCasinoGameDetails', addCasinoGameDetails);
 router.get('/getAllCasinoCategories', getAllCasinoCategories);
-router.get('/getSelectedCasinoCategories', getSelectedCasinoCategories);
+router.get('/getSelectedCasinoGames', getSelectedCasinoGames);
 router.post('/addSelectedCasinoCategories', addSelectedCasinoCategories);
 
 module.exports = { router };
