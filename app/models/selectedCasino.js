@@ -3,6 +3,7 @@ let Global = require('../global/settings');
 
 const selectedCasinoSchema = new mongoose.Schema({
   category: { type: String },
+  status: { type : String },
   games: [
     {
       id: { type: String },

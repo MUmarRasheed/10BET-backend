@@ -59,45 +59,117 @@ function getAllCasinoCategories(req, res) {
 
       return res.send({
         message: 'Casino Categories Found',
+        success: true,
         results: results,
       });
     });
   });
 }
 
-function getSelectedCasinoCategories(req, res) {
-  const { selectedCategories } = req.body;
-  SelectedCasino.find({}, { _id: 1 }, (err, existingSelectedCasino) => {
-    if (err || !existingSelectedCasino) {
-      return res.status(404).send({ message: 'Failed to retrieve casino categories' });
+async function addSelectedCasinoCategories(req, res) {
+  const { casinoCategories } = req.body;
+
+  try {
+    for (const category of casinoCategories) {
+      const { categoryId, status, games } = category;
+
+      const filter = { _id: categoryId };
+
+      if (status === 0) {
+        await SelectedCasino.deleteOne(filter);
+      } else {
+        const selectedCasino = await SelectedCasino.findOne(filter).exec();
+
+        if (selectedCasino) {
+          const gameIdsToRemove = games
+            .filter(game => game.status === 0)
+            .map(game => game.id);
+
+          selectedCasino.games = selectedCasino.games.filter(game => !gameIdsToRemove.includes(game.id));
+
+          if (status === 2) {
+            const matchingGame = await CasinoGames.findOne({
+              _id: categoryId
+            }).exec();
+
+            if (matchingGame) {
+              selectedCasino.games = matchingGame.games;
+            }
+          } else {
+            const gameIdsToAdd = games
+              .filter(game => game.status === 1 && !selectedCasino.games.some(existingGame => existingGame.id === game.id))
+              .map(game => game.id);
+
+            const matchingGame = await CasinoGames.findOne({
+              _id: categoryId
+            }).exec();
+
+            if (matchingGame) {
+              const selectedGames = matchingGame.games.filter(game => {
+                const gameToUpdate = games.find(g => g.id === game.id);
+                return gameToUpdate && (gameToUpdate.status === 1 || status === 2);
+              });
+
+              selectedCasino.games.push(...selectedGames.filter(game => gameIdsToAdd.includes(game.id)));
+            }
+          }
+
+          await selectedCasino.save();
+        } else {
+          if (status === 2) {
+            const matchingGame = await CasinoGames.findOne({
+              _id: categoryId
+            }).exec();
+
+            if (matchingGame) {
+              await SelectedCasino.create({
+                _id: categoryId,
+                games: matchingGame.games,
+                category: categoryId
+              });
+            }
+          } else {
+            const matchingGame = await CasinoGames.findOne({
+              _id: categoryId
+            }).exec();
+
+            if (matchingGame) {
+              const selectedGames = matchingGame.games.filter(game => {
+                const gameToUpdate = games.find(g => g.id === game.id);
+                return gameToUpdate && (gameToUpdate.status === 1 || status === 2);
+              });
+
+              await SelectedCasino.create({
+                _id: categoryId,
+                games: selectedGames,
+                category: categoryId
+              });
+            }
+          }
+        }
+      }
     }
 
-    const existingSelectedCasinoIds = existingSelectedCasino.map((casino) => casino._id);
+    res.send({ message: 'Selected casino categories saved successfully', success: true });
+  } catch (err) {
+    console.error("Error saving selected casino categories:", err);
+    res.status(500).send({ message: 'Failed to save selected casino categories' });
+  }
+}
 
-    const deletePromises = existingSelectedCasinoIds
-      .filter((id) => !selectedCasinoIds.includes(id))
-      .map((id) => SelectedCasino.deleteOne({ _id: id }).exec());
+function getSelectedCasinoCategories(req, res) {
+  let categoryId = req.body.categoryId;
+  SelectedCasino.find({ _id: categoryId }, (err, casinoCategories) => {
+    if (err || !casinoCategories || casinoCategories.length === 0) {
+      return res.status(404).send({ message: 'Casino Categories Not Found' });
+    }
 
-    const savePromises = selectedCasinoIds
-      .filter((id) => !existingSelectedCasinoIds.includes(id))
-      .map((id) => {
-        const newSelectedCasino = new SelectedCasino({ _id: id });
-        return newSelectedCasino.save();
-      });
+    const games = casinoCategories[0].games;
 
-    const updatePromises = deletePromises.concat(savePromises);
-
-    SelectedCasino.find({ _id: { $in: selectedCasinoIds } }, (err, updatedSelectedCasino) => {
-      if (err) {
-        return res.status(500).send({ message: 'Failed to update casino categories' });
-      }
-
-      const results = updatedSelectedCasino.map((casino) => ({
-        _id: casino._id,
-        status: 1,
-      }));
-
-      return res.send({ message: 'Selected casino categories updated successfully', results });
+    return res.send({
+      message: 'Selected Casino Games Found',
+      success: true,
+      results: games,
     });
   });
 }
@@ -106,5 +178,6 @@ function getSelectedCasinoCategories(req, res) {
 router.post('/addCasinoGameDetails', addCasinoGameDetails);
 router.get('/getAllCasinoCategories', getAllCasinoCategories);
 router.get('/getSelectedCasinoCategories', getSelectedCasinoCategories);
+router.post('/addSelectedCasinoCategories', addSelectedCasinoCategories);
 
 module.exports = { router };
