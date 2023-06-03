@@ -158,7 +158,7 @@ async function addSelectedCasinoCategories(req, res) {
 }
 
 function getSelectedCasinoGames(req, res) {
-  let categoryId = req.body.categoryId;
+  let categoryId = req.query.categoryId;
   SelectedCasino.find({ _id: categoryId }, (err, casinoCategories) => {
     if (err || !casinoCategories || casinoCategories.length === 0) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
