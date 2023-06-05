@@ -1,8 +1,9 @@
 const express = require('express');
 const CasinoGames = require('../models/casinoGames');
 const SelectedCasino = require('../models/selectedCasino');
-
-const router = express.Router();
+const selectedCasinoValidator = require('../validators/casinoGames');
+const { validationResult } = require('express-validator');
+const loginRouter = express.Router();
 const axios = require('axios');
 
 async function addCasinoGameDetails(req, res) {
@@ -24,7 +25,9 @@ async function addCasinoGameDetails(req, res) {
     const bulkOps = gameList.map((game) => ({
       updateOne: {
         filter: { category: game.category },
-        update: { $push: { games: { ...game, details: JSON.parse(game.details) } } },
+        update: {
+          $push: { games: { ...game, details: JSON.parse(game.details) } },
+        },
         upsert: true,
       },
     }));
@@ -47,11 +50,15 @@ function getAllCasinoCategories(req, res) {
 
     SelectedCasino.find({}, { _id: 1, status: 1 }, (err, selectedCasino) => {
       if (err || !selectedCasino) {
-        return res.status(404).send({ message: 'Failed to retrieve casino categories' });
+        return res
+          .status(404)
+          .send({ message: 'Failed to retrieve casino categories' });
       }
 
       const results = casinoCategories.map((category) => {
-        const matchingCategory = selectedCasino.find((selected) => selected._id.equals(category._id));
+        const matchingCategory = selectedCasino.find((selected) =>
+          selected._id.equals(category._id)
+        );
         const status = matchingCategory ? parseInt(matchingCategory.status) : 0;
         return {
           _id: category._id,
@@ -70,6 +77,15 @@ function getAllCasinoCategories(req, res) {
 }
 
 async function addSelectedCasinoCategories(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  if (req.decoded.role !== '5') {
+    return res
+      .status(404)
+      .send({ message: 'only company can add selected casino categories' });
+  }
   const { casinoCategories } = req.body;
 
   try {
@@ -84,7 +100,7 @@ async function addSelectedCasinoCategories(req, res) {
           _id: _id,
           category: _id,
           status: status,
-          games: []
+          games: [],
         });
       }
 
@@ -97,20 +113,22 @@ async function addSelectedCasinoCategories(req, res) {
         await selectedCasino.save();
       } else if (status === 1) {
         for (const gameID of games) {
-          let matchingGame = allCasino.games.find(game => game.id === gameID);
+          let matchingGame = allCasino.games.find((game) => game.id === gameID);
 
           if (matchingGame) {
-            console.log("Matching game found:", matchingGame);
+            console.log('Matching game found:', matchingGame);
             // Check if the game is already present in selectedCasino
-            const isGameAlreadyAdded = selectedCasino.games.some(game => game.id === gameID);
+            const isGameAlreadyAdded = selectedCasino.games.some(
+              (game) => game.id === gameID
+            );
 
             if (!isGameAlreadyAdded) {
               selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
             } else {
-              console.log("Game already present:", matchingGame);
+              return res.status(404).send({ message: 'Game already present:' });
             }
           } else {
-            console.log("No matching game found for ID:", gameID);
+            console.log('No matching game found for ID:', gameID);
           }
         }
         await selectedCasino.save();
@@ -125,32 +143,17 @@ async function addSelectedCasinoCategories(req, res) {
       }
     }
 
-    res.send({ message: 'Selected casino categories saved successfully', success: true });
+    res.send({
+      message: 'Selected casino categories saved successfully',
+      success: true,
+    });
   } catch (err) {
-    console.error("Error saving selected casino categories:", err);
-    res.status(500).send({ message: 'Failed to save selected casino categories' });
+    console.error('Error saving selected casino categories:', err);
+    res
+      .status(500)
+      .send({ message: 'Failed to save selected casino categories' });
   }
 }
-
-
-function getSelectedCasinoGames(req, res) {
-  let categoryId = req.query.categoryId;
-  SelectedCasino.find({ _id: categoryId }, (err, casinoCategories) => {
-    if (err || !casinoCategories || casinoCategories.length === 0) {
-      return res.status(404).send({ message: 'Casino Categories Not Found' });
-    }
-
-    const games = casinoCategories[0].games;
-
-    return res.send({
-      message: 'Selected Casino Games Found',
-      success: true,
-      results: games,
-    });
-  });
-}
-
-
 
 function getCategoryCasinoGames(req, res) {
   let categoryId = req.query._id;
@@ -159,42 +162,53 @@ function getCategoryCasinoGames(req, res) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
     SelectedCasino.findOne({ _id: categoryId }, (err, selectedCategory) => {
-
       if (err || !selectedCategory || selectedCategory.length === 0) {
         return res.status(404).send({ message: 'Casino Categories Not Found' });
       }
       const results = casinoCategories.games.map((game) => {
+        const matchingGame = selectedCategory.games.some(
+          (selected) => selected.id === game.id
+        );
 
-          const matchingGame = selectedCategory.games.some(selected => selected.id === game.id);
+        console.log('matchibg', matchingGame);
 
-        console.log("matchibg", matchingGame);
-        
         const status = matchingGame ? 1 : 0;
         return {
           _id: game._id,
           game: game,
           status: status,
-        }
-      })
-    return res.send({
-      message: 'Selected Casino Games Found',
-      success: true,
-      results: results,
+        };
+      });
+      return res.send({
+        message: 'Selected Casino Games Found',
+        success: true,
+        results: results,
+      });
     });
-  })
-  })
+  });
 }
 
+async function getAllSelectedCasinos(req, res) {
+  const data = await SelectedCasino.find({});
+  return res.send({
+    message: 'Selected Casino Games List',
+    success: true,
+    results: data,
+  });
+}
 
-router.post('/addCasinoGameDetails', addCasinoGameDetails);
+loginRouter.post('/addCasinoGameDetails', addCasinoGameDetails);
 
-router.get('/getAllCasinoCategories', getAllCasinoCategories);
+loginRouter.get('/getAllCasinoCategories', getAllCasinoCategories);
 
-router.get('/getCategoryCasinoGames', getCategoryCasinoGames);
+loginRouter.get('/getCategoryCasinoGames', getCategoryCasinoGames);
 
+loginRouter.get('/getAllSelectedCasinos', getAllSelectedCasinos);
 
-router.get('/getSelectedCasinoGames', getSelectedCasinoGames);
+loginRouter.post(
+  '/addSelectedCasinoCategories',
+  selectedCasinoValidator.validate('addSelectedCasinoCategories'),
+  addSelectedCasinoCategories
+);
 
-router.post('/addSelectedCasinoCategories', addSelectedCasinoCategories);
-
-module.exports = { router };
+module.exports = { loginRouter };

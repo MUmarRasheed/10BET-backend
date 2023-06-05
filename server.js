@@ -88,7 +88,6 @@ app.use(function (req, res, next) {
 //Without Authorization
 app.use('/api', require('./app/routes/user').router);
 app.use('/api', require('./app/routes/settings').router);
-app.use('/api', require('./app/routes/casinoGames').router);
 
 // Login middleware
 app.use(function (req, res, next) {
@@ -112,6 +111,7 @@ app.use('/api', require('./app/routes/settings').loginRouter);
 app.use('/api', require('./app/routes/betFairGames').loginRouter);
 app.use('/api', require('./app/routes/sportsHighlights').loginRouter);
 app.use('/api', require('./app/routes/bets').loginRouter);
+app.use('/api', require('./app/routes/casinoGames').loginRouter);
 
 // // Allowed Apis for this role
 // app.use(function (req, res, next) {
