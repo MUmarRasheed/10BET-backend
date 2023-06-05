@@ -163,28 +163,37 @@ function getCategoryCasinoGames(req, res) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
     SelectedCasino.findOne({ _id: _id }, (err, selectedCategory) => {
-      if (err || !selectedCategory || selectedCategory.length === 0) {
-        return res.status(404).send({ message: 'Casino Categories Not Found' });
+      if (err || !selectedCategory || selectedCategory.length == 0) {
+        const results = casinoCategories.games.map((game) => {
+          return {
+            _id: game._id,
+            game: game,
+            status: 0,
+          };
+        });
+        return res.send({
+          message: 'Selected Casino Games Found',
+          success: true,
+          results: results,
+        });
+      } else {
+        const results = casinoCategories.games.map((game) => {
+          const matchingGame = selectedCategory.games.some(
+            (selected) => selected.id === game.id
+          );
+          const status = matchingGame ? 1 : 0;
+          return {
+            _id: game._id,
+            game: game,
+            status: status,
+          };
+        });
+        return res.send({
+          message: 'Selected Casino Games Found',
+          success: true,
+          results: results,
+        });
       }
-      const results = casinoCategories.games.map((game) => {
-        const matchingGame = selectedCategory.games.some(
-          (selected) => selected.id === game.id
-        );
-
-        console.log('matchibg', matchingGame);
-
-        const status = matchingGame ? 1 : 0;
-        return {
-          _id: game._id,
-          game: game,
-          status: status,
-        };
-      });
-      return res.send({
-        message: 'Selected Casino Games Found',
-        success: true,
-        results: results,
-      });
     });
   });
 }
