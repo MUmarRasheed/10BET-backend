@@ -81,7 +81,7 @@ async function addSelectedCasinoCategories(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  if (req.decoded.role !== '5') {
+  if (req.decoded.role == 5) {
     return res
       .status(404)
       .send({ message: 'only company can add selected casino categories' });
@@ -98,7 +98,7 @@ async function addSelectedCasinoCategories(req, res) {
       if (!selectedCasino) {
         selectedCasino = new SelectedCasino({
           _id: _id,
-          category: _id,
+          category: allCasino.category,
           status: status,
           games: [],
         });
@@ -108,6 +108,7 @@ async function addSelectedCasinoCategories(req, res) {
         console.log('in here');
         // Add all games for _id in selectedCasino
         selectedCasino._id = _id; // Assign _id
+        selectedCasino.category = allCasino.category; // Assign _id
         selectedCasino.status = status; // Assign status
         selectedCasino.games = allCasino.games;
         await selectedCasino.save();
@@ -156,12 +157,12 @@ async function addSelectedCasinoCategories(req, res) {
 }
 
 function getCategoryCasinoGames(req, res) {
-  let categoryId = req.query._id;
-  CasinoGames.findOne({ _id: categoryId }, (err, casinoCategories) => {
+  let _id = req.query._id;
+  CasinoGames.findOne({ _id: _id }, (err, casinoCategories) => {
     if (err || !casinoCategories || casinoCategories.length === 0) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
-    SelectedCasino.findOne({ _id: categoryId }, (err, selectedCategory) => {
+    SelectedCasino.findOne({ _id: _id }, (err, selectedCategory) => {
       if (err || !selectedCategory || selectedCategory.length === 0) {
         return res.status(404).send({ message: 'Casino Categories Not Found' });
       }
