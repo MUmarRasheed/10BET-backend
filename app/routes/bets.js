@@ -13,16 +13,33 @@ const loginRouter = express.Router();
 const betValidator = require('../validators/bets');
 // const maxAllowedBetSizes = require('../models/betLimits')
 
+async function getParents(userId) {
+  const parentUserIds = [];
+  let currentUserId = userId;
+
+  while (currentUserId) {
+    const parentUser = await User.findOne({ userId: currentUserId }).exec();
+    if (!parentUser || !parentUser.createdBy || parentUser.createdBy === currentUserId) {
+      break;
+    }
+
+    parentUserIds.push(parentUser.createdBy);
+    currentUserId = parentUser.createdBy;
+  }
+
+  return parentUserIds;
+}
+
 async function placeBet(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  const { sportsId, selectedTeam, betAmount, betRate, matchId, subMarketId } =
-    req.body;
+  const { marketId, selectedTeam, betAmount, betRate, matchId, subMarketId } = req.body;
+
   const userId = req.decoded.userId;
   if (req.decoded.login.role !== '5') {
-    return res.status(404).send({ message: 'only bettor can do betting' });
+    return res.status(404).send({ message: 'you are not Allowed to bet' });
   }
 
   try {
@@ -37,21 +54,18 @@ async function placeBet(req, res) {
       return res.status(404).send({ message: 'Bet is not allowed for your account' });
     }
 
-const parentUser = await User.find({
-    userId: {
-      $in: [
-        req.decoded.superAdminId,
-        req.decoded.adminId,
-        req.decoded.parentId,
-        req.decoded.masterId,
-        req.decoded.createdBy
-      ]
-    },
-    isDeleted: false
-  });
+    const parentUserIds = await getParents(user.userId);
+
+    const parentUser = await User.find({
+      userId: {
+        $in: [...parentUserIds]
+      },
+      isDeleted: false
+    }).exec();
+    console.log('parentUser', parentUser);
     // seeing from markettypes
     if (
-      parentUser[0].blockedMarketPlaces.includes(sportsId) ||
+      parentUser[0].blockedMarketPlaces.includes(marketId) ||
       parentUser[0].blockedSubMarkets.includes(subMarketId)
     ) {
       return res.status(404).send({ message: 'Betting disabled by your dealer' });
@@ -65,35 +79,35 @@ const parentUser = await User.find({
     if (user.blockedSubMarkets.includes(subMarketId)) {
       return res.status(404).send({ message: 'Betting is not allowed in this market' });
     }
-    // defualt maxbetsize should be of that set by company but if user set his own betsize then his
-    // and we cannot place bet of the amount that is greater than this maxbetsize
+    // default maxbetsize should be of that set by company but if the user set his own betsize then his
+    // and we cannot place a bet of the amount that is greater than this maxbetsize
 
     // const MaxBetSize = await maxAllowedBetSizes.findOne().exec();
     // console.log('MaxBetSize',MaxBetSize)
     const match = await CricketMatch.findOne({
-      sportsId: sportsId,
+      sportsId: marketId,
       id: matchId,
     }).exec();
     console.log('match.teams', match);
     if (!match) {
-      console.log(`Match not found for sports ID ${sportsId}`);
-      return res.status(404).send({ message: `Match not found for sports ID ${sportsId}` });
+      console.log(`Match not found for sports ID ${marketId}`);
+      return res.status(404).send({ message: `Match not found for sports ID ${marketId}` });
     }
 
     // Check if the match has ended
     if (match.matdchEnded) {
-      console.log(`Match has already ended for sports ID ${sportsId}`);
+      console.log(`Match has already ended for sports ID ${marketId}`);
       return res
         .status(404)
-        .send({ message: `Match has already ended for sports ID ${sportsId}` });
+        .send({ message: `Match has already ended for sports ID ${marketId}` });
     }
 
     const teams = [match.teams[0], match.teams[1]];
     // Calculate the return amount
     const returnAmount = betAmount * betRate - betAmount;
-    const winningAmount = betAmount * betRate - betAmount
+    const winningAmount = betAmount * betRate - betAmount;
     const loosingAmount = req.body.betAmount;
-    let marketId = sportsId;
+    let marketIds = marketId;
     // Create the bet object
     const bet = new Bets({
       marketId,
@@ -113,7 +127,7 @@ const parentUser = await User.find({
 
     // Save the bet object to the database
     console.log(
-      `Bet placed for user ID ${userId}, sports ID ${sportsId}, and team ${selectedTeam}`
+      `Bet placed for user ID ${userId}, sports ID ${marketId}, and team ${selectedTeam}`
     );
     bet.save(async (err, result) => {
       if (err) {
@@ -132,7 +146,6 @@ const parentUser = await User.find({
           { new: true }
         ).exec();
 
-        const parentUserIds = parentUser.map(parentUser => parentUser.userId);
         const updatedParentUsers = await User.updateMany(
           { userId: { $in: parentUserIds } },
           {
@@ -159,41 +172,6 @@ const parentUser = await User.find({
     return res.status(404).send({ message: 'Server error' });
   }
 }
-
-const BetRateList = {
-  //to do on sportsId and on matchId ratelist
-  getBetRateList: (sportsId, teams, selectedTeam) => {
-    let betRateList = [];
-    console.log('teams', teams);
-    console.log('selectedteams', selectedTeam);
-
-    switch (sportsId) {
-      case 1: // if sportsId is 1 (e.g. cricket)
-        if (selectedTeam === teams[0]) {
-          betRateList = [1.5, 2.0, 2.5, 3.0];
-        } else if (selectedTeam === teams[1]) {
-          betRateList = [2.0, 2.5, 3.0, 3.5];
-        } else {
-          throw new Error('Invalid team');
-        }
-        break;
-      case 2: // if sportsId is 2 (e.g. basketball)
-        if (selectedTeam === teams[0]) {
-          betRateList = [1.2, 1.5, 2.0, 2.5];
-        } else if (selectedTeam === teams[1]) {
-          betRateList = [1.5, 2.0, 2.5, 3.0];
-        } else {
-          throw new Error('Invalid team');
-        }
-        break;
-      // add more cases for other sports
-      default: // if sportsId is not recognized
-        throw new Error('Invalid sportsId');
-    }
-
-    return betRateList;
-  },
-};
 
 function getUserBets(req, res) {
   const errors = validationResult(req);
