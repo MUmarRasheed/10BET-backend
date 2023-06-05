@@ -20,9 +20,9 @@ module.exports.validate = (method) => {
                 ) {
                   throw new Error('status must be a number.');
                 }
-                if (!Array.isArray(category.games)) {
-                  throw new Error('games must be an array.');
-                }
+                // if (!Array.isArray(category.games)) {
+                //   throw new Error('games must be an array.');
+                // }
               });
             }
             return true;
