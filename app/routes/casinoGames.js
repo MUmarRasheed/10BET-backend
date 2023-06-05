@@ -125,9 +125,10 @@ async function addSelectedCasinoCategories(req, res) {
 
             if (!isGameAlreadyAdded) {
               selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
-            } else {
-              return res.status(404).send({ message: 'Game already present:' });
             }
+            // else {
+            //   return res.status(404).send({ message: 'Game already present:' });
+            // }
           } else {
             console.log('No matching game found for ID:', gameID);
           }
