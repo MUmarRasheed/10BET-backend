@@ -113,27 +113,32 @@ async function addSelectedCasinoCategories(req, res) {
         selectedCasino.games = allCasino.games;
         await selectedCasino.save();
       } else if (status === 1) {
-        for (const gameID of games) {
-          let matchingGame = allCasino.games.find((game) => game.id === gameID);
-
-          if (matchingGame) {
-            console.log('Matching game found:', matchingGame);
-            // Check if the game is already present in selectedCasino
-            const isGameAlreadyAdded = selectedCasino.games.some(
-              (game) => game.id === gameID
-            );
-
-            if (!isGameAlreadyAdded) {
-              selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
+        if (games.length == 0) {
+          console.log('Deleting selected casino ->>> :', _id);
+          await SelectedCasino.deleteOne({ _id: _id });
+        }else {
+          for (const gameID of games) {
+            let matchingGame = allCasino.games.find((game) => game.id === gameID);
+  
+            if (matchingGame) {
+              console.log('Matching game found:', matchingGame);
+              // Check if the game is already present in selectedCasino
+              const isGameAlreadyAdded = selectedCasino.games.some(
+                (game) => game.id === gameID
+              );
+  
+              if (!isGameAlreadyAdded) {
+                selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
+              }
+              // else {
+              //   return res.status(404).send({ message: 'Game already present:' });
+              // }
+            } else {
+              console.log('No matching game found for ID:', gameID);
             }
-            // else {
-            //   return res.status(404).send({ message: 'Game already present:' });
-            // }
-          } else {
-            console.log('No matching game found for ID:', gameID);
           }
+          await selectedCasino.save();
         }
-        await selectedCasino.save();
       }
     }
 
