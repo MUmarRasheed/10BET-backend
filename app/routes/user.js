@@ -36,20 +36,16 @@ async function registerUser(req, res) {
       if (err) return res.status(404).send({ message: 'user not found', err });
 
       const user = new User(req.body);
-      // Check if the user's role is 5, and if so, set downLineShare to null
-      // Ignore downLineShare field if role is 5
-      if (req.body.role === '5') {
+      // Check if the user's role is 5, and if so, set downLineShare to null Ignore downLineShare field if role is 5
+      if (req.body.role == '5') {
         req.body.downLineShare = undefined;
       }
-      // Find all users with the same username as the one provided in the request body
-      const usersWithSameName = await User.find({
-        userName: req.body.userName,
-      });
       // Check if the downline share is greater than the parent's downline share
       const parentUser = await User.findOne({ userId: req.decoded.userId });
       if (
-        parentUser.role !== '0' &&
-        parentUser.downLineShare < req.body.downLineShare
+        (parentUser.role !== '0' &&
+          parentUser.downLineShare < req.body.downLineShare) ||
+        req.body.downLineShare >= 100
       ) {
         return res.status(404).send({
           message: `Max allowed downline share is 0 - ${parentUser.downLineShare}`,
@@ -101,13 +97,35 @@ async function registerUser(req, res) {
             userbetSizesData,
             async (err, insertedDocs) => {
               if (err) return res.send({ message: err });
+
+              let user_username = 'user_' + user.userId;
+              console.log('user_username', user_username);
+              // try {
+              //   const response = await axios.post(config.apiUrl, {
+              //     api_password: config.api_password,
+              //     api_login: config.api_login,
+              //     method: 'playerExists',
+              //     user_username,
+              //     currency: config.currency,
+              //   });
+              //   let data = response.data.response;
+              //   console.log('API Response:', response.data);
+              // } catch (error) {
+              //   console.error(error);
+              //   res.status(404).send({
+              //     success: false,
+              //     message: 'Failed to get already exist player',
+              //     results: error,
+              //   });
+              // }
+
               if (req.body.role === '5') {
                 try {
                   const response = await axios.post(config.apiUrl, {
                     api_password: config.api_password,
                     api_login: config.api_login,
                     method: 'createPlayer',
-                    user_username: req.body.userName,
+                    user_username,
                     user_password: req.body.userName,
                     user_nickname: req.body.userName,
                     currency: config.currency,
@@ -252,6 +270,7 @@ function getNonExpiringToken(
   var token = jwt.sign(payload, config.secret, {});
   return token;
 }
+
 app.set('secret', config.secret);
 
 function getAllUsers(req, res) {
