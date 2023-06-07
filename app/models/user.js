@@ -41,17 +41,17 @@ const userSchema = new Schema({
   updatedBy: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },
-  commission: {
-    type: String,
-    required: false,
-    validate: {
-      validator: function (value) {
-        const pattern = /^[0-9]+(\.[0-9]{1,2})?%$/;
-        return pattern.test(value);
-      },
-      message: 'Commission value must be in the format "X.XX%"',
-    },
-  },
+  // commission: {
+  //   type: String,
+  //   required: false,
+  //   validate: {
+  //     validator: function (value) {
+  //       const pattern = /^[0-9]+(\.[0-9]{1,2})?%$/;
+  //       return pattern.test(value);
+  //     },
+  //     message: 'Commission value must be in the format "X.XX%"',
+  //   },
+  // },
   id: { type: String, required: false, unique: true, index: true },
   isDeleted: { type: Boolean, required: false, default: false },
   clientPL: { type: Number, required: false, default: 0 },

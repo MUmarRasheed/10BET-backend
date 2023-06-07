@@ -11,18 +11,18 @@ const Markets = require('../models/marketTypes');
 const SubMarketType = require('../models/subMarketTypes');
 const loginRouter = express.Router();
 const betValidator = require('../validators/bets');
-// const maxAllowedBetSizes = require('../models/betLimits')
+const maxAllowedBetSizes = require('../models/betLimits');
+const userBetSizes = require('../models/userBetSizes');
 
 async function getParents(userId) {
   const parentUserIds = [];
   let currentUserId = userId;
-
+  console.log('parentUser',parentUserIds);
   while (currentUserId) {
     const parentUser = await User.findOne({ userId: currentUserId }).exec();
     if (!parentUser || !parentUser.createdBy || parentUser.createdBy === currentUserId) {
       break;
     }
-
     parentUserIds.push(parentUser.createdBy);
     currentUserId = parentUser.createdBy;
   }
@@ -54,60 +54,95 @@ async function placeBet(req, res) {
       return res.status(404).send({ message: 'Bet is not allowed for your account' });
     }
 
+    // default maxbetsize should be of that set by company but if the user set his own betsize then his
+    // and we cannot place a bet of the amount that is greater than this maxbetsize
+
+    // need review check 
+    // const UserMaxBetSize = await userBetSizes.findOne({ marketId: marketId }).exec();
+    // console.log('UserMaxBetSize',UserMaxBetSize)
+    // const MaxBetSize = await maxAllowedBetSizes.findOne({ marketId: marketId }).exec();
+    // console.log('MaxBetSize',MaxBetSize)
+
+    // let errorMessage;
+    // if (UserMaxBetSize && UserMaxBetSize.amount < MaxBetSize.maxAmount) {
+    //   errorMessage = `Max Size is: ${UserMaxBetSize.amount}`;
+    // } else {
+    //   errorMessage = `Max Size is: ${MaxBetSize.maxAmount}`;
+    // }
+
+
+    // if (betAmount > (UserMaxBetSize?.amount || MaxBetSize?.maxAmount)) {
+    //   return res.status(404).send({ message: errorMessage });
+    // }
+    // need review check  end
+
     const parentUserIds = await getParents(user.userId);
+    console.log('parentUserIds', parentUserIds);
 
     const parentUser = await User.find({
       userId: {
         $in: [...parentUserIds]
       },
       isDeleted: false
-    }).exec();
-    console.log('parentUser', parentUser);
-    // seeing from markettypes
-    if (
-      parentUser[0].blockedMarketPlaces.includes(marketId) ||
-      parentUser[0].blockedSubMarkets.includes(subMarketId)
-    ) {
+    }).sort({role: -1});
+    // console.log('parentUser', parentUser);
+
+    const blockedMarketPlaces = [];
+    const blockedSubMarkets = [];
+    const blockedSubMarketsByParent= [];
+
+    parentUser.forEach(obj => {
+      blockedMarketPlaces.push(...obj.blockedMarketPlaces);
+      blockedSubMarkets.push(...obj.blockedSubMarkets);
+      blockedSubMarketsByParent.push(...obj.blockedSubMarketsByParent);      
+    });
+    const uniqueBlockedMarketPlaces = [...new Set(blockedMarketPlaces)];
+    const uniqueBlockedSubMarkets = [...new Set(blockedSubMarkets)];
+    const uniqueBlockedSubMarketsByParent = [...new Set(blockedSubMarketsByParent)];
+
+    console.log('uniqueBlockedMarketPlaces', uniqueBlockedMarketPlaces);
+    console.log('uniqueBlockedSubMarkets', uniqueBlockedSubMarkets);
+
+    if (uniqueBlockedMarketPlaces.includes(marketId) || uniqueBlockedSubMarkets.includes(subMarketId) 
+          || uniqueBlockedSubMarketsByParent.includes(subMarketId) ){
       return res.status(404).send({ message: 'Betting disabled by your dealer' });
     }
     // Check if the user is allowed to place a bet in the specified market and submarket
-    if (user.betLockStatus === true || user.matchOddsStatus === true) {
-      return res
-        .status(400)
-        .send({ message: 'Bet not allowed for your account' });
+    if (user.betLockStatus === true || user.blockedSubMarketsByParent.includes(subMarketId)) {
+      return res.status(400).send({ message: 'Bet not allowed for your account' });
     }
-    if (user.blockedSubMarkets.includes(subMarketId)) {
-      return res.status(404).send({ message: 'Betting is not allowed in this market' });
-    }
-    // default maxbetsize should be of that set by company but if the user set his own betsize then his
-    // and we cannot place a bet of the amount that is greater than this maxbetsize
-
-    // const MaxBetSize = await maxAllowedBetSizes.findOne().exec();
-    // console.log('MaxBetSize',MaxBetSize)
+    
     const match = await CricketMatch.findOne({
       sportsId: marketId,
       id: matchId,
-    }).exec();
-    console.log('match.teams', match);
+    });
+    // console.log('match.teams', match);
+
     if (!match) {
       console.log(`Match not found for sports ID ${marketId}`);
       return res.status(404).send({ message: `Match not found for sports ID ${marketId}` });
     }
 
     // Check if the match has ended
-    if (match.matdchEnded) {
-      console.log(`Match has already ended for sports ID ${marketId}`);
-      return res
-        .status(404)
-        .send({ message: `Match has already ended for sports ID ${marketId}` });
-    }
 
-    const teams = [match.teams[0], match.teams[1]];
+    // need review 
+    if (true == false &&  match.matchEnded) {
+      console.log(`Match has already ended for sports ID ${marketId}`);
+      return res.status(404).send({ message: `Match has already ended for sports ID ${marketId}` });
+    }
+    // need review  end
+
+    // const teams = [match.teams[0], match.teams[1]];
     // Calculate the return amount
+
+
+    // review 
+    // for lay & Back Will change these Ammounts
     const returnAmount = betAmount * betRate - betAmount;
     const winningAmount = betAmount * betRate - betAmount;
     const loosingAmount = req.body.betAmount;
-    let marketIds = marketId;
+
+
     // Create the bet object
     const bet = new Bets({
       marketId,
@@ -140,29 +175,30 @@ async function placeBet(req, res) {
           {
             $inc: {
               availableBalance: -req.body.betAmount,
-              exposure: -Math.abs(req.body.betAmount),
+              exposure: -req.body.betAmount
             },
           },
           { new: true }
-        ).exec();
+        );
+        const remainingAmount = (req.body.betAmount * req.body.betRate) - req.body.betAmount;
+        let prev = 0;
+        parentUser.forEach(user => {
+          let current = user.downLineShare
+          user["commission"] = current - prev
+          prev = current
+        });
 
-        const updatedParentUsers = await User.updateMany(
-          { userId: { $in: parentUserIds } },
-          {
-            $inc: {
-              availableBalance: -req.body.betAmount,
-              exposure: -Math.abs(req.body.betAmount),
-            },
-          },
-          { new: true }
-        ).exec();
-    
+        parentUser.forEach(user => {
+          user.exposure         -= (user.commission / 100 ) * remainingAmount
+          user.availableBalance -= (user.commission / 100 ) * remainingAmount
+          user.save()
+        });
         return res.send({
           success: true,
           message: 'Bet placed successfully',
           results: result,
         });
-      } catch (error) {
+      }catch (error) {
         console.error('error', error);
         return res.status(404).send({ message: 'Error updating user balance' });
       }
@@ -289,4 +325,4 @@ loginRouter.post('/placeBet', betValidator.validate('placeBet'), placeBet);
 loginRouter.post('/getUserBets', getUserBets);
 loginRouter.get('/betFunds', betFunds);
 
-module.exports = { loginRouter };
+module.exports = { loginRouter, getParents };

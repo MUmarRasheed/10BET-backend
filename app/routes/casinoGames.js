@@ -5,11 +5,12 @@ const selectedCasinoValidator = require('../validators/casinoGames');
 const { validationResult } = require('express-validator');
 const loginRouter = express.Router();
 const axios = require('axios');
+let config = require('config')
 
 async function addCasinoGameDetails(req, res) {
   try {
     const response = await axios.post(
-      'https://stage.game-program.com/api/seamless/provider',
+      config.apiUrl,
       {
         api_password: '6w9GNrsxZsHBeC795N',
         api_login: '1obet_mc_s',
@@ -219,6 +220,37 @@ async function getAllSelectedCasinos(req, res) {
   });
 }
 
+async function getGame(req, res) {
+  try {
+    const { api_login,api_password, method, lang, user_username, user_password,
+      homeurl, cashierurl, gameid, play_for_fun, currency
+    } = req.body;
+
+    const payload = {
+      api_password : "6w9GNrsxZsHBeC795N",
+      api_login: "1obet_mc_s",
+      method: "getGame",
+      lang:"en",
+      user_username,
+      user_password,
+      homeurl,
+      cashierurl,
+      gameid,
+      play_for_fun,
+      currency
+    };
+
+    const response = await axios.post(
+      config.apiUrl,
+      payload
+    );
+    res.status(200).send({ success: true, message: 'game data found successfully',results: response.data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ success: false, message: 'Failed to get game' });
+  }
+}
+
 loginRouter.post('/addCasinoGameDetails', addCasinoGameDetails);
 
 loginRouter.get('/getAllCasinoCategories', getAllCasinoCategories);
@@ -232,5 +264,7 @@ loginRouter.post(
   selectedCasinoValidator.validate('addSelectedCasinoCategories'),
   addSelectedCasinoCategories
 );
+
+loginRouter.post('/getGame', getGame);
 
 module.exports = { loginRouter };

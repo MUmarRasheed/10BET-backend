@@ -108,6 +108,7 @@ function registerUser(req, res) {
             betLimitId: betLimit._id,
             amount: betLimit.maxAmount,
             name: betLimit.name,
+            // marketId: betLimit.marketId
           }));
 
           console.log('userBetsizes', userbetSizesData);

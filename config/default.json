@@ -7,5 +7,6 @@
     "saltRounds": 10,
     "EMAIL": "xoxsuperapp@gmail.com",
     "PASSWORD": "jggqqhqarpuhbrft",
-    "pageSize": 10
+    "pageSize": 10,
+    "apiUrl": "https://stage.game-program.com/api/seamless/provider"
 }
