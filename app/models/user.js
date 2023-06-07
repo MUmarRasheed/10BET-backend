@@ -52,7 +52,6 @@ const userSchema = new Schema({
   //     message: 'Commission value must be in the format "X.XX%"',
   //   },
   // },
-  id: { type: String, required: false, unique: true, index: true },
   isDeleted: { type: Boolean, required: false, default: false },
   clientPL: { type: Number, required: false, default: 0 },
   credit: { type: Number, required: false, default: 0 },

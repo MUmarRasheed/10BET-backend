@@ -58,7 +58,6 @@ async function registerUser(req, res) {
       );
 
       user.userId = data.userId + 1;
-      user.id = user._id;
       if (req.body.isActive == true) {
         user.status = 1;
       } else {
@@ -100,6 +99,7 @@ async function registerUser(req, res) {
 
               let user_username = 'user_' + user.userId;
               console.log('user_username', user_username);
+
               // try {
               //   const response = await axios.post(config.apiUrl, {
               //     api_password: config.api_password,
@@ -119,15 +119,15 @@ async function registerUser(req, res) {
               //   });
               // }
 
-              if (req.body.role === '5') {
+              if (req.body.role == '5') {
                 try {
                   const response = await axios.post(config.apiUrl, {
                     api_password: config.api_password,
                     api_login: config.api_login,
                     method: 'createPlayer',
                     user_username,
-                    user_password: req.body.userName,
-                    user_nickname: req.body.userName,
+                    user_password: user_username,
+                    user_nickname: user_username,
                     currency: config.currency,
                   });
                   let data = response.data.response;
