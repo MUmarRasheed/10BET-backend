@@ -21,37 +21,16 @@ const userSchema = new Schema({
   isActive: { type: Boolean, default: true },
   status: { type: Number, default: 1 },
   notes: { type: String },
-  userId: {
-    type: Number,
-    required: true,
-    index: true,
-    unique: true,
-    default: 0,
-  },
+  userId: { type: Number, required: true, index: true, unique: true, default: 0 },
   passwordChanged: { type: Boolean, default: false },
   balance: { type: Number, default: 0, required: true },
   createdBy: { type: String, default: '0' },
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: true },
-  // adminId: { type: String, default: '' }, // only for supermaster
-  // parentId: { type: String, default: '' }, // only for supermaster when admin add super master
-  // masterId: { type: String, default: '' }, //
-  // superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },
-  // commission: {
-  //   type: String,
-  //   required: false,
-  //   validate: {
-  //     validator: function (value) {
-  //       const pattern = /^[0-9]+(\.[0-9]{1,2})?%$/;
-  //       return pattern.test(value);
-  //     },
-  //     message: 'Commission value must be in the format "X.XX%"',
-  //   },
-  // },
   isDeleted: { type: Boolean, required: false, default: false },
   clientPL: { type: Number, required: false, default: 0 },
   credit: { type: Number, required: false, default: 0 },
@@ -68,7 +47,6 @@ const userSchema = new Schema({
   cash: { type: Number, default: 0 },
   remoteId: { type: Number },
 });
-// userSchema.plugin(Global.paginate)
 
 userSchema.methods.hashPass = function (next) {
   // add some stuff to the users name
@@ -113,10 +91,6 @@ userSchema.plugin(Global.aggregatePaginate);
 
 userSchema.index({ userId: 1, isActive: 1 });
 userSchema.index({ userId: 1 });
-// userSchema.index({ superAdminId: 1 });
-// userSchema.index({ parentId: 1 });
-// userSchema.index({ adminId: 1 });
-// userSchema.index({ masterId: 1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ bettingAllowed: 1 });
 

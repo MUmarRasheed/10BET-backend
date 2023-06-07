@@ -148,9 +148,9 @@ module.exports.validate = (method) => {
         check('userName').custom((userName) => {
           return Users.findOne({ userName }).then((user) => {
             if (user == null) {
-              return Promise.reject('user does not exists');
+              return Promise.reject({message:'user does not exists',status:0});
             } else {
-              return Promise.reject('user already exists');
+              return Promise.reject({message:'user already exists',status:1});
             }
           });
         }),

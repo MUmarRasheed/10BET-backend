@@ -174,17 +174,9 @@ function cashCreditLedger(req, res) {
 
 function getFinalReport(req, res) {
   let query = {};
-  if (req.decoded.login.role === '1') {
-    query.superAdminId = String(req.decoded.userId);
-  } else if (req.decoded.login.role === '2') {
-    query.parentId = String(req.decoded.userId);
-  } else if (req.decoded.login.role === '3') {
-    query.adminId = String(req.decoded.userId);
-  } else if (req.decoded.login.role === '4') {
-    query.masterId = String(req.decoded.userId);
-  }
-  if (req.decoded.login.role === '5') {
-    query.userId = null;
+
+  if (req.decoded.login.role !== '5') {
+    query.userId = parseInt(req.decoded.createdBy);
   }
 
   User.aggregate(
