@@ -570,7 +570,7 @@ function deactiveUser(req, res) {
 function checkValidation(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
-    return res.status(400).send({ errors: errors.errors });
+    return res.status(200).send({ errors: errors.errors });
   }
 }
 router.post('/login', userValidation.validate('login'), login);
