@@ -113,14 +113,15 @@ async function registerUser(req, res) {
                     currency: config.currency,
                   });
                   let data = response.data.response;
-                  console.log('API Response:', response.data.response);
-                  user.remoteId = data.id;
+                  console.log('API Response:', response.data);
+                  user.remoteId = data.response.id;
                   user.save();
                 } catch (error) {
                   console.error(error);
-                  res
-                    .status(404)
-                    .send({ success: false, message: 'Failed to get game' });
+                  res.status(404).send({
+                    success: false,
+                    message: 'Failed to create player',
+                  });
                 }
               }
               return res.send({
