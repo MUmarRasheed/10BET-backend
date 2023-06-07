@@ -56,7 +56,7 @@ async function addCashDeposit(req, res) {
     });
 
     let Dealers = ['1', '2', '3', '4'];
-    if (currentUserParent.role === '0' && userToUpdate.role !== '5') {
+    if (currentUserParent.role == '0' && userToUpdate.role !== '5') {
       userToUpdate.clientPL += req.body.amount;
       userToUpdate.cash += req.body.amount
       let cash = new Cash({
@@ -74,7 +74,7 @@ async function addCashDeposit(req, res) {
 
     } 
 
-    else if (currentUserParent.role === '0' && userToUpdate.role == '5') {
+    else if (currentUserParent.role == '0' && userToUpdate.role == '5') {
       userToUpdate.balance += req.body.amount;
       userToUpdate.availableBalance += req.body.amount;
       userToUpdate.clientPL += req.body.amount;
@@ -142,7 +142,7 @@ async function addCashDeposit(req, res) {
       await parentCash.save();
     } 
     
-    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role === '5') {
+    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role == '5') {
       userToUpdate.balance += req.body.amount;
       userToUpdate.availableBalance += req.body.amount;
       userToUpdate.clientPL += req.body.amount;
@@ -234,7 +234,7 @@ async function withDrawCashDeposit(req, res) {
           .status(400)
           .send({ message: `Max cash withdraw is ${userToUpdate.clientPL + userToUpdate.creditRemaining}` });
         }
-        else if(userToUpdate.role === '5' &&  req.body.amount > userToUpdate.availableBalance ){
+        else if(userToUpdate.role == '5' &&  req.body.amount > userToUpdate.availableBalance ){
           return res
             .status(400)
             .send({ message: `Max cash withdraw is ${userToUpdate.availableBalance }` });
@@ -260,7 +260,7 @@ async function withDrawCashDeposit(req, res) {
     });
 
     let Dealers = ['1', '2', '3', '4'];
-    if (currentUserParent.role === '0' && userToUpdate.role !== '5') {
+    if (currentUserParent.role == '0' && userToUpdate.role !== '5') {
 
       userToUpdate.clientPL -= req.body.amount;
       userToUpdate.cash -= req.body.amount;
@@ -283,7 +283,7 @@ async function withDrawCashDeposit(req, res) {
       await cash.save();
     } 
 
-    else if (currentUserParent.role === '0' && userToUpdate.role == '5') {
+    else if (currentUserParent.role == '0' && userToUpdate.role == '5') {
       userToUpdate.balance -= req.body.amount;
       userToUpdate.availableBalance -= req.body.amount;
       userToUpdate.clientPL -= req.body.amount;
@@ -349,7 +349,7 @@ async function withDrawCashDeposit(req, res) {
       await parentCash.save();
     } 
     
-    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role === '5') {
+    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role == '5') {
       userToUpdate.balance -= req.body.amount;
       userToUpdate.availableBalance -= req.body.amount;
       userToUpdate.clientPL -= req.body.amount;
@@ -480,7 +480,7 @@ if (req.body.searchValue) {
     ];
   }
     Cash.paginate(cashQuery, { page: page, sort: { [sortValue]: sort }, limit: limit }, (err, results) => {
-      if (err || !results || results.length === 0) {
+      if (err || !results || results.length == 0) {
         return res.status(404).send({ message: 'Deposit record not found' });
       }
       return res.send({ message: 'Deposit Record Found', results });
@@ -508,7 +508,7 @@ function getAllDeposits(req, res) {
         .exec((err, results) => {
           if (err || !results)
             return res.status(404).send({ message: 'Record not found' });
-          if (user.role === '5') {
+          if (user.role == '5') {
             return res.send({
               message: 'Deposit Record Found',
               results: {

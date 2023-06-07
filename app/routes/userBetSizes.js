@@ -45,7 +45,7 @@ function betsNews(req, res) {
     return res.status(400).send({ errors: errors.errors });
   }
 
-  if (req.decoded.role === '5') {
+  if (req.decoded.role == '5') {
     const marketId = req.query.marketId;
     const query = { userId: Number(req.decoded.userId) };
     if (marketId) {

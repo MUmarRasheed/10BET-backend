@@ -22,7 +22,7 @@ async function registerUser(req, res) {
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
   }
-  if (req.decoded.role === '5') {
+  if (req.decoded.role == '5') {
     return res.status(404).send({ message: 'you are not allowed to do this ' });
   }
   if (req.body.role !== '5') {
@@ -168,7 +168,7 @@ function login(req, res) {
     (err, user) => {
       if (err || !user)
         return res.status(404).send({ message: 'user not found' });
-      if (user.isActive === false || user.status === 0)
+      if (user.isActive == false || user.status == 0)
         return res.status(404).send({ message: 'Account Inactive' });
       // check if user password is matched or not.
       bcrypt.compare(req.body.password, user.password, function (err, result) {
@@ -305,7 +305,7 @@ function getAllUsers(req, res) {
     query.createdBy = userId;
   } else if (req.decoded.login.role !== '5') {
     query.createdBy = req.decoded.userId;
-  } else if (req.decoded.login.role === '5') {
+  } else if (req.decoded.login.role == '5') {
     query.userId = null;
   }
   if (req.query.userName) {
@@ -509,7 +509,7 @@ function activeUser(req, res) {
   User.findOne({ _id: req.body.id }, (err, result) => {
     if (err || !result)
       return res.status(404).send({ message: 'user not found' });
-    if (result.isActive === true) {
+    if (result.isActive == true) {
       return res.status(404).send({ message: 'user is already active' });
     }
     result.isActive = true;
@@ -558,7 +558,7 @@ function deactiveUser(req, res) {
 //   User.findOne({ _id: req.body.id }, (err, result) => {
 //     if (err || !result)
 //       return res.status(404).send({ message: "user not found" });
-//     if(result.isActive === false ) { return res.status(404).send({message:"user is already deactivated"})}
+//     if(result.isActive == false ) { return res.status(404).send({message:"user is already deactivated"})}
 //       result.isActive = false
 //     return res.send({
 //       success: true,
@@ -615,4 +615,5 @@ router.post(
   userValidation.validate('checkValidation'),
   checkValidation
 );
+
 module.exports = { router, loginRouter };

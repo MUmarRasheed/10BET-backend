@@ -20,7 +20,7 @@ async function getParents(userId) {
   console.log('parentUser',parentUserIds);
   while (currentUserId) {
     const parentUser = await User.findOne({ userId: currentUserId }).exec();
-    if (!parentUser || !parentUser.createdBy || parentUser.createdBy === currentUserId) {
+    if (!parentUser || !parentUser.createdBy || parentUser.createdBy == currentUserId) {
       break;
     }
     parentUserIds.push(parentUser.createdBy);
@@ -50,7 +50,7 @@ async function placeBet(req, res) {
     if (user.availableBalance < betAmount) {
       return res.status(404).send({ message: 'insufficient balance' });
     }
-    if (user.bettingAllowed === false) {
+    if (user.bettingAllowed == false) {
       return res.status(404).send({ message: 'Bet is not allowed for your account' });
     }
 
@@ -108,7 +108,7 @@ async function placeBet(req, res) {
       return res.status(404).send({ message: 'Betting disabled by your dealer' });
     }
     // Check if the user is allowed to place a bet in the specified market and submarket
-    if (user.betLockStatus === true || user.blockedSubMarketsByParent.includes(subMarketId)) {
+    if (user.betLockStatus == true || user.blockedSubMarketsByParent.includes(subMarketId)) {
       return res.status(400).send({ message: 'Bet not allowed for your account' });
     }
     
@@ -299,7 +299,7 @@ function betFunds(req, res) {
     }
 
     let results;
-    if (req.decoded.role === '5') {
+    if (req.decoded.role == '5') {
       results = {
         balance: user.balance,
         liable: user.exposure,

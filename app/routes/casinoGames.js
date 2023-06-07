@@ -43,7 +43,7 @@ async function addCasinoGameDetails(req, res) {
 
 function getAllCasinoCategories(req, res) {
   CasinoGames.find({}, { _id: 1, category: 1 }, (err, casinoCategories) => {
-    if (err || !casinoCategories || casinoCategories.length === 0) {
+    if (err || !casinoCategories || casinoCategories.length == 0) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
 
@@ -103,7 +103,7 @@ async function addSelectedCasinoCategories(req, res) {
         });
       }
 
-      if (status === 2) {
+      if (status == 2) {
         console.log('in here');
         // Add all games for _id in selectedCasino
         selectedCasino._id = _id; // Assign _id
@@ -111,21 +111,21 @@ async function addSelectedCasinoCategories(req, res) {
         selectedCasino.status = status; // Assign status
         selectedCasino.games = allCasino.games;
         await selectedCasino.save();
-      } else if (status === 1) {
+      } else if (status == 1) {
         if (games.length == 0) {
           console.log('Deleting selected casino ->>> :', _id);
           await SelectedCasino.deleteOne({ _id: _id });
         } else {
           for (const gameID of games) {
             let matchingGame = allCasino.games.find(
-              (game) => game.id === gameID
+              (game) => game.id == gameID
             );
 
             if (matchingGame) {
               console.log('Matching game found:', matchingGame);
               // Check if the game is already present in selectedCasino
               const isGameAlreadyAdded = selectedCasino.games.some(
-                (game) => game.id === gameID
+                (game) => game.id == gameID
               );
 
               if (!isGameAlreadyAdded) {
@@ -145,7 +145,7 @@ async function addSelectedCasinoCategories(req, res) {
 
     for (const category of casinoCategories) {
       const { _id, status } = category;
-      if (status === 0) {
+      if (status == 0) {
         console.log('Deleting selected casino:', _id);
         await SelectedCasino.deleteOne({ _id: _id });
       }
@@ -166,7 +166,7 @@ async function addSelectedCasinoCategories(req, res) {
 function getCategoryCasinoGames(req, res) {
   let _id = req.query._id;
   CasinoGames.findOne({ _id: _id }, (err, casinoCategories) => {
-    if (err || !casinoCategories || casinoCategories.length === 0) {
+    if (err || !casinoCategories || casinoCategories.length == 0) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
     SelectedCasino.findOne({ _id: _id }, (err, selectedCategory) => {
@@ -186,7 +186,7 @@ function getCategoryCasinoGames(req, res) {
       } else {
         const results = casinoCategories.games.map((game) => {
           const matchingGame = selectedCategory.games.some(
-            (selected) => selected.id === game.id
+            (selected) => selected.id == game.id
           );
           const status = matchingGame ? 1 : 0;
           return {

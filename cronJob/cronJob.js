@@ -23,7 +23,7 @@ const checkBetStatus = (req) => {
         for (const bet of bets) {
           console.log('bet', bets);
           console.log('bet.team', bet.runner);
-          if (bet.runner === match.winningTeam) {
+          if (bet.runner == match.winningTeam) {
             // await Bets.findByIdAndUpdate(bet._id, { status: 1 });
             console.log(`Bet ${bet._id} won!`);
             handleWinningBet(bet);
@@ -204,9 +204,9 @@ const updateDefaultTheme = async () => {
     console.log('current theme', currentTheme);
     let updatedTheme;
 
-    if (currentTheme === 'light-theme') {
+    if (currentTheme == 'light-theme') {
       updatedTheme = 'dark-theme';
-    } else if (currentTheme === 'dark-theme') {
+    } else if (currentTheme == 'dark-theme') {
       updatedTheme = 'grey-theme';
     } else {
       updatedTheme = 'light-theme';
@@ -228,9 +228,9 @@ const updateDefaultLoginPage = async () => {
     console.log('current LoginPage', currentLoginPage);
     let updatedLoginPage;
 
-    if (currentLoginPage === 'login-page-one') {
+    if (currentLoginPage == 'login-page-one') {
       updatedLoginPage = 'login-page-two';
-    } else if (currentLoginPage === 'login-page-two') {
+    } else if (currentLoginPage == 'login-page-two') {
       updatedLoginPage = 'login-page-three';
     } else {
       updatedLoginPage = 'login-page-one';

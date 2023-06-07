@@ -57,7 +57,7 @@ async function addCredit(req, res) {
     });
 
     let Dealers = ['1', '2', '3', '4'];
-    if (currentUserParent.role === '0' && userToUpdate.role !== '5') {
+    if (currentUserParent.role == '0' && userToUpdate.role !== '5') {
       userToUpdate.credit += req.body.amount;
       userToUpdate.creditRemaining += req.body.amount;
       let cashCredit = new CashCredit({
@@ -73,7 +73,7 @@ async function addCredit(req, res) {
       await cashCredit.save();
     } 
 
-    else if (currentUserParent.role === '0' && userToUpdate.role == '5') {
+    else if (currentUserParent.role == '0' && userToUpdate.role == '5') {
       userToUpdate.balance += req.body.amount;
       userToUpdate.availableBalance += req.body.amount;
       userToUpdate.credit += req.body.amount;
@@ -130,7 +130,7 @@ async function addCredit(req, res) {
       await parentCash.save();
     } 
 
-    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role === '5') {
+    else if (Dealers.includes(currentUserParent.role) && userToUpdate.role == '5') {
       currentUserParent.creditRemaining -= req.body.amount;
 
       userToUpdate.balance += req.body.amount;
@@ -218,7 +218,7 @@ async function withdrawCredit(req, res) {
         .status(400)
         .send({ message: `Max credit to withdraw is ${userToUpdate.clientPL}` });
     }
-    else if( userToUpdate.role === '5'  && req.body.amount >  userToUpdate.availableBalance && req.body.amount >  userToUpdate.credit){
+    else if( userToUpdate.role == '5'  && req.body.amount >  userToUpdate.availableBalance && req.body.amount >  userToUpdate.credit){
       if( userToUpdate.availableBalance >  userToUpdate.credit){
         return res
         .status(400)
@@ -249,7 +249,7 @@ async function withdrawCredit(req, res) {
     });
 
     let Dealers = ['1', '2', '3', '4'];
-    if (currentUserParent.role === '0' && userToUpdate.role !== '5'){
+    if (currentUserParent.role == '0' && userToUpdate.role !== '5'){
       userToUpdate.credit -= req.body.amount;
 
       let cashCredit = new CashCredit({
@@ -266,7 +266,7 @@ async function withdrawCredit(req, res) {
       await cashCredit.save();
     } 
 
-    else if (currentUserParent.role === '0' && userToUpdate.role == '5'){
+    else if (currentUserParent.role == '0' && userToUpdate.role == '5'){
       userToUpdate.balance -= req.body.amount;
       userToUpdate.availableBalance -= req.body.amount;
       userToUpdate.credit -= req.body.amount;
@@ -325,7 +325,7 @@ async function withdrawCredit(req, res) {
 
     } 
     
-    else if(Dealers.includes(currentUserParent.role) && userToUpdate.role === '5'){
+    else if(Dealers.includes(currentUserParent.role) && userToUpdate.role == '5'){
       userToUpdate.balance -= req.body.amount;
       userToUpdate.availableBalance -= req.body.amount;
       userToUpdate.credit -= req.body.amount;
