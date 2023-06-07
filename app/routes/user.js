@@ -121,6 +121,7 @@ async function registerUser(req, res) {
                   res.status(404).send({
                     success: false,
                     message: 'Failed to create player',
+                    results: error,
                   });
                 }
               }
