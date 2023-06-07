@@ -5,21 +5,19 @@ const selectedCasinoValidator = require('../validators/casinoGames');
 const { validationResult } = require('express-validator');
 const loginRouter = express.Router();
 const axios = require('axios');
-let config = require('config')
+let config = require('config');
+const User = require('../models/user');
 
 async function addCasinoGameDetails(req, res) {
   try {
-    const response = await axios.post(
-      config.apiUrl,
-      {
-        api_password: '6w9GNrsxZsHBeC795N',
-        api_login: '1obet_mc_s',
-        method: 'getGameList',
-        show_additional: true,
-        show_systems: 1,
-        currency: 'EUR',
-      }
-    );
+    const response = await axios.post(config.apiUrl, {
+      api_password: '6w9GNrsxZsHBeC795N',
+      api_login: '1obet_mc_s',
+      method: 'getGameList',
+      show_additional: true,
+      show_systems: 1,
+      currency: 'EUR',
+    });
 
     console.log('Response:', response.data);
     const gameList = response.data.response;
@@ -117,17 +115,19 @@ async function addSelectedCasinoCategories(req, res) {
         if (games.length == 0) {
           console.log('Deleting selected casino ->>> :', _id);
           await SelectedCasino.deleteOne({ _id: _id });
-        }else {
+        } else {
           for (const gameID of games) {
-            let matchingGame = allCasino.games.find((game) => game.id === gameID);
-  
+            let matchingGame = allCasino.games.find(
+              (game) => game.id === gameID
+            );
+
             if (matchingGame) {
               console.log('Matching game found:', matchingGame);
               // Check if the game is already present in selectedCasino
               const isGameAlreadyAdded = selectedCasino.games.some(
                 (game) => game.id === gameID
               );
-  
+
               if (!isGameAlreadyAdded) {
                 selectedCasino.games.push(matchingGame); // Add the matching game to selectedCasino
               }
@@ -222,29 +222,38 @@ async function getAllSelectedCasinos(req, res) {
 
 async function getGame(req, res) {
   try {
-    const { api_login,api_password, method, lang, user_username, user_password,
-      homeurl, cashierurl, gameid, play_for_fun, currency
-    } = req.body;
+    const errors = validationResult(req);
+    if (errors.errors.length !== 0) {
+      return res.status(400).send({ errors: errors.errors });
+    }
 
+    const { user_username, user_password, homeurl, cashierurl, gameid } =
+      req.body;
+    User.findOne({ userId: req.decoded.userId }, (err, user) => {
+      console.log('user', user);
+      user.name = user_username;
+      user.password = user_password;
+    });
     const payload = {
-      api_password : "6w9GNrsxZsHBeC795N",
-      api_login: "1obet_mc_s",
-      method: "getGame",
-      lang:"en",
+      api_password: config.api_password,
+      api_login: config.api_login,
+      method: 'getGame',
+      lang: config.language,
       user_username,
       user_password,
       homeurl,
       cashierurl,
       gameid,
-      play_for_fun,
-      currency
+      play_for_fun: config.play_for_fun,
+      currency: config.currency,
     };
 
-    const response = await axios.post(
-      config.apiUrl,
-      payload
-    );
-    res.status(200).send({ success: true, message: 'game data found successfully',results: response.data });
+    const response = await axios.post(config.apiUrl, payload);
+    res.status(200).send({
+      success: true,
+      message: 'game data found successfully',
+      results: response.data,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send({ success: false, message: 'Failed to get game' });

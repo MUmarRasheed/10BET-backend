@@ -9,6 +9,7 @@ const LoginActivity = require('../models/loginActivity');
 const Settings = require('../models/settings');
 const BetLimits = require('../models/betLimits');
 const UserBetSizes = require('../models/userBetSizes');
+const axios = require('axios');
 
 var getIP = require('ipware')().get_ip;
 
@@ -16,7 +17,7 @@ const router = express.Router();
 const loginRouter = express.Router();
 const app = express();
 
-function registerUser(req, res) {
+async function registerUser(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
     return res.status(400).send({ errors: errors.errors });
@@ -46,7 +47,10 @@ function registerUser(req, res) {
       });
       // Check if the downline share is greater than the parent's downline share
       const parentUser = await User.findOne({ userId: req.decoded.userId });
-      if (parentUser.role !== '0' && parentUser.downLineShare < req.body.downLineShare) {
+      if (
+        parentUser.role !== '0' &&
+        parentUser.downLineShare < req.body.downLineShare
+      ) {
         return res.status(404).send({
           message: `Max allowed downline share is 0 - ${parentUser.downLineShare}`,
         });
@@ -59,24 +63,6 @@ function registerUser(req, res) {
 
       user.userId = data.userId + 1;
       user.id = user._id;
-
-      if (req.decoded.role == '1') user.superAdminId = req.decoded.userId;
-      if (req.decoded.role == '2') {
-        user.parentId = req.decoded.userId;
-        user.superAdminId = req.decoded.superAdminId;
-      }
-
-      if (req.decoded.role == '3') {
-        user.superAdminId = req.decoded.superAdminId;
-        user.parentId = req.decoded.parentId;
-        user.adminId = req.decoded.userId;
-      }
-      if (req.decoded.role == '4') {
-        user.adminId = req.decoded.adminId;
-        user.superAdminId = req.decoded.superAdminId;
-        user.parentId = req.decoded.parentId;
-        user.masterId = req.decoded.userId;
-      }
       if (req.body.isActive == true) {
         user.status = 1;
       } else {
@@ -111,16 +97,39 @@ function registerUser(req, res) {
             // marketId: betLimit.marketId
           }));
 
-          console.log('userBetsizes', userbetSizesData);
-          UserBetSizes.insertMany(userbetSizesData, (err, insertedDocs) => {
-            if (err) return res.send({ message: err });
-
-            return res.send({
-              message: 'Register Success',
-              success: true,
-              results: user,
-            });
-          });
+          UserBetSizes.insertMany(
+            userbetSizesData,
+            async (err, insertedDocs) => {
+              if (err) return res.send({ message: err });
+              if (req.body.role === '5') {
+                try {
+                  const response = await axios.post(config.apiUrl, {
+                    api_password: config.api_password,
+                    api_login: config.api_login,
+                    method: 'createPlayer',
+                    user_username: req.body.userName,
+                    user_password: req.body.userName,
+                    user_nickname: req.body.userName,
+                    currency: config.currency,
+                  });
+                  let data = response.data.response;
+                  console.log('API Response:', response.data.response);
+                  user.remoteId = data.id;
+                  user.save();
+                } catch (error) {
+                  console.error(error);
+                  res
+                    .status(404)
+                    .send({ success: false, message: 'Failed to get game' });
+                }
+              }
+              return res.send({
+                message: 'Register Success',
+                success: true,
+                results: user,
+              });
+            }
+          );
         });
       });
     });
@@ -272,11 +281,10 @@ function getAllUsers(req, res) {
 
   if (req.query.userId) {
     const userId = parseInt(req.query.userId);
-    query.createdBy = userId
+    query.createdBy = userId;
   } else if (req.decoded.login.role !== '5') {
-    query.createdBy = req.decoded.userId
-  }
-  else if (req.decoded.login.role === '5') {
+    query.createdBy = req.decoded.userId;
+  } else if (req.decoded.login.role === '5') {
     query.userId = null;
   }
   if (req.query.userName) {

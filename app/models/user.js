@@ -34,10 +34,10 @@ const userSchema = new Schema({
   downLineShare: { type: Number, default: 0 },
   bettingAllowed: { type: Boolean, default: false },
   canSettlePL: { type: Boolean, default: true },
-  adminId: { type: String, default: '' }, // only for supermaster
-  parentId: { type: String, default: '' }, // only for supermaster when admin add super master
-  masterId: { type: String, default: '' }, //
-  superAdminId: { type: String, default: '' },
+  // adminId: { type: String, default: '' }, // only for supermaster
+  // parentId: { type: String, default: '' }, // only for supermaster when admin add super master
+  // masterId: { type: String, default: '' }, //
+  // superAdminId: { type: String, default: '' },
   updatedBy: { type: Number },
   updatedAt: { type: Number },
   createdAt: { type: Number },
@@ -67,6 +67,7 @@ const userSchema = new Schema({
   baseCurrency: { type: String },
   creditRemaining: { type: Number, default: 0 },
   cash: { type: Number, default: 0 },
+  remoteId: { type: Number },
 });
 // userSchema.plugin(Global.paginate)
 
