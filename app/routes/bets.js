@@ -30,6 +30,21 @@ async function getParents(userId) {
   return parentUserIds;
 }
 
+const updateParentUserBalance = async (parentUsers, remainingAmount) => {
+  let prev = 0;
+  parentUsers.forEach(user => {
+    let current = user.downLineShare;
+    user["commission"] = current - prev;
+    prev = current;
+  });
+
+  for (const user of parentUsers) {
+    user.exposure -= (user.commission / 100) * remainingAmount;
+    user.availableBalance -= (user.commission / 100) * remainingAmount;
+    await user.save();
+  }
+};
+
 async function placeBet(req, res) {
   const errors = validationResult(req);
   if (errors.errors.length !== 0) {
@@ -39,7 +54,7 @@ async function placeBet(req, res) {
 
   const userId = req.decoded.userId;
   if (req.decoded.login.role !== '5') {
-    return res.status(404).send({ message: 'you are not Allowed to bet' });
+    return res.status(404).send({ message: 'You are not allowed to bet' });
   }
 
   try {
@@ -48,12 +63,11 @@ async function placeBet(req, res) {
       return res.status(404).send({ message: 'User not found' });
     }
     if (user.availableBalance < betAmount) {
-      return res.status(404).send({ message: 'insufficient balance' });
+      return res.status(404).send({ message: 'Insufficient balance' });
     }
     if (user.bettingAllowed == false) {
-      return res.status(404).send({ message: 'Bet is not allowed for your account' });
+      return res.status(404).send({ message: 'Betting is not allowed for your account' });
     }
-
     // default maxbetsize should be of that set by company but if the user set his own betsize then his
     // and we cannot place a bet of the amount that is greater than this maxbetsize
 
@@ -80,16 +94,14 @@ async function placeBet(req, res) {
     console.log('parentUserIds', parentUserIds);
 
     const parentUser = await User.find({
-      userId: {
-        $in: [...parentUserIds]
-      },
+      userId: { $in: [...parentUserIds] },
       isDeleted: false
     }).sort({role: -1});
     // console.log('parentUser', parentUser);
 
     const blockedMarketPlaces = [];
     const blockedSubMarkets = [];
-    const blockedSubMarketsByParent= [];
+    const blockedSubMarketsByParent = [];
 
     parentUser.forEach(obj => {
       blockedMarketPlaces.push(...obj.blockedMarketPlaces);
@@ -111,37 +123,45 @@ async function placeBet(req, res) {
     if (user.betLockStatus == true || user.blockedSubMarketsByParent.includes(subMarketId)) {
       return res.status(400).send({ message: 'Bet not allowed for your account' });
     }
-    
+
     const match = await CricketMatch.findOne({
       sportsId: marketId,
       id: matchId,
     });
-    // console.log('match.teams', match);
+    
 
     if (!match) {
       console.log(`Match not found for sports ID ${marketId}`);
       return res.status(404).send({ message: `Match not found for sports ID ${marketId}` });
     }
-
-    // Check if the match has ended
+   // Check if the match has ended
 
     // need review 
     if (true == false &&  match.matchEnded) {
       console.log(`Match has already ended for sports ID ${marketId}`);
       return res.status(404).send({ message: `Match has already ended for sports ID ${marketId}` });
     }
-    // need review  end
+    let  returnAmount = 0;
+    let  winningAmount = 0;
+    let  loosingAmount = 0;
+    let  remainingAmount = 0;
+    if (req.body.type == 0){
+      // for Back Will change these Ammounts
+      returnAmount = betAmount * betRate - betAmount;
+      winningAmount = betAmount * betRate - betAmount;
+      console.log('returnAmount',returnAmount);
 
-    // const teams = [match.teams[0], match.teams[1]];
-    // Calculate the return amount
+      loosingAmount = req.body.betAmount;
+      remainingAmount = (req.body.betAmount * req.body.betRate) - req.body.betAmount;
+      console.log('remainingAmount',remainingAmount);
 
-
-    // review 
-    // for lay & Back Will change these Ammounts
-    const returnAmount = betAmount * betRate - betAmount;
-    const winningAmount = betAmount * betRate - betAmount;
-    const loosingAmount = req.body.betAmount;
-
+    } else {
+      // for lay Will change these Ammounts
+      returnAmount  = betAmount;
+      winningAmount = betAmount;
+      loosingAmount = (req.body.betAmount * betRate) - req.body.betAmount;
+      remainingAmount = betAmount;
+    }
 
     // Create the bet object
     const bet = new Bets({
@@ -158,12 +178,11 @@ async function placeBet(req, res) {
       subMarketId: subMarketId,
       runner: selectedTeam,
       event: match.name,
+      type:  req.body.type
     });
 
     // Save the bet object to the database
-    console.log(
-      `Bet placed for user ID ${userId}, sports ID ${marketId}, and team ${selectedTeam}`
-    );
+    console.log( `Bet placed for user ID ${userId}, sports ID ${marketId}, and team ${selectedTeam}`);
     bet.save(async (err, result) => {
       if (err) {
         console.log('err', err);
@@ -174,38 +193,28 @@ async function placeBet(req, res) {
           { userId: userId },
           {
             $inc: {
-              availableBalance: -req.body.betAmount,
-              exposure: -req.body.betAmount
+              availableBalance: -loosingAmount,
+              exposure: -loosingAmount
             },
           },
           { new: true }
         );
-        const remainingAmount = (req.body.betAmount * req.body.betRate) - req.body.betAmount;
-        let prev = 0;
-        parentUser.forEach(user => {
-          let current = user.downLineShare
-          user["commission"] = current - prev
-          prev = current
-        });
-
-        parentUser.forEach(user => {
-          user.exposure         -= (user.commission / 100 ) * remainingAmount
-          user.availableBalance -= (user.commission / 100 ) * remainingAmount
-          user.save()
-        });
+        await updateParentUserBalance(parentUser, remainingAmount);
+    
         return res.send({
           success: true,
           message: 'Bet placed successfully',
           results: result,
         });
-      }catch (error) {
+      }
+      catch (error) {
         console.error('error', error);
         return res.status(404).send({ message: 'Error updating user balance' });
       }
     });
   } catch (error) {
     console.error('error', error);
-    return res.status(404).send({ message: 'Server error' });
+    return res.status(404).send({ message: 'Error placing bet' });
   }
 }
 

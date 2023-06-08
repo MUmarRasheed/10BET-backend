@@ -18,18 +18,38 @@ const checkBetStatus = (req) => {
         const matchId = match.id;
         const sportsId = match.sportsId;
         const bets = await getAllBets(sportsId, matchId); // Pass the arguments separately
-        console.log('bets', bets);
 
         for (const bet of bets) {
           console.log('bet', bets);
           console.log('bet.team', bet.runner);
-          if (bet.runner == match.winningTeam) {
-            // await Bets.findByIdAndUpdate(bet._id, { status: 1 });
+
+          if (bet.type == 0 && bet.runner == match.winningTeam) {
+            console.log('in winning cas of back');
+
             console.log(`Bet ${bet._id} won!`);
             handleWinningBet(bet);
-          } else {
+
+          }else if(bet.type == 0 && bet.runner != match.winningTeam){
+            console.log('in loosing cas of back');
+
             console.log(`Bet ${bet._id} lost.`);
             handleLosingBet(req, bet);
+
+          }else if (bet.type == 1 && bet.runner != match.winningTeam) {
+            console.log(`Bet ${bet._id} won!`);
+            console.log('in wiining cas of lay');
+
+            handleWinningBet(bet);
+          }else if(bet.type == 1  && bet.runner == match.winningTeam){
+            console.log(`Bet ${bet._id} lost.`);
+            console.log('in loosing cas of lay');
+
+            handleLosingBet(req, bet);
+          }else {
+            console.log(`Bet ${bet._id} Draw.`);
+            console.log('in draw ');
+
+            handleDrawBet(req, bet);
           }
         }
       }
@@ -71,35 +91,57 @@ async function getEndedMatches() {
   }
 }
 
-async function handleLosingBet(req, bet) {
+async function handleLosingBet(req, bet){
+
   console.log(`Bet ${bet._id} lost.`);
+
   const userId = bet.userId;
   const loosingAmount = bet.loosingAmount;
   const betAmount = bet.betAmount;
+  console.log('loosingAmount',loosingAmount);
   const userToUpdate = await User.findOne({
     userId: userId,
     isDeleted: false,
   });
 
-  if (!userToUpdate) {
+  if (!userToUpdate){
     return res.status(404).send({ message: 'user not found' });
   }
-
   userToUpdate.balance -= loosingAmount;
   userToUpdate.clientPL -= loosingAmount;
   userToUpdate.exposure += loosingAmount;
   await userToUpdate.save();
 
-  // Create and save BetsTransaction document
-  let betsTransaction = new BetsTransaction({
-    clientPL: userToUpdate.clientPL,
-    availableBalance: userToUpdate.availableBalance,
+  let lastMaxWithdraw = await Cash.findOne({
     userId: userToUpdate.userId,
+  }).sort({
+    _id: -1,
   });
-  await betsTransaction.save();
+  let cash = new Cash({
+    userId: userToUpdate.userId,
+    description: bet.name,
+    createdBy: 0,
+    amount: loosingAmount,
+    balance: lastMaxWithdraw
+      ? lastMaxWithdraw.balance -loosingAmount
+      : -loosingAmount,
+
+    availableBalance: lastMaxWithdraw
+      ? lastMaxWithdraw.availableBalance - loosingAmount
+      : -loosingAmount,
+
+    maxWithdraw: lastMaxWithdraw
+      ? lastMaxWithdraw.maxWithdraw + loosingAmount
+      : loosingAmount,
+    cashOrCredit: 'Bet',
+    cash: lastMaxWithdraw
+    ? lastMaxWithdraw.cash - loosingAmount
+    : - loosingAmount,
+  });
+  await cash.save();
 
   const parentUserIds = await getParents(userId);
-  
+
   const parentUser = await User.find({
     userId: {
       $in: [...parentUserIds]
@@ -111,22 +153,53 @@ async function handleLosingBet(req, bet) {
     return res.status(404).send({ message: 'user not found' });
   }
 
-  const remainingAmount = bet.winningAmount;
+  const remainingAmount      = bet.winningAmount;
   const TotalLoosingAmount   = bet.loosingAmount;
 
-    let prev = 0;
-    parentUser.forEach(user => {
-      let current = user.downLineShare
-      user["commission"] = current - prev
-      prev = current
+  let prev = 0;
+  parentUser.forEach(user => {
+    let current = user.downLineShare
+    user["commission"] = current - prev
+    prev = current
+  });
+
+  parentUser.forEach(async user => {
+    user.exposure += (user.commission / 100 ) * remainingAmount
+    user.availableBalance += ((user.commission / 100 ) * remainingAmount) + ((user.commission / 100 ) * TotalLoosingAmount)
+    user.balance  += (user.commission / 100 ) * TotalLoosingAmount
+    user.clientPL -= user.downLineShare != 100 ? ((100 - user.downLineShare) / 100 ) * TotalLoosingAmount : 0
+    user.save();
+
+    let lastMaxWithdraw = await Cash.findOne({
+      userId: user.userId,
+    }).sort({
+      _id: -1,
     });
-    parentUser.forEach(user => {
-      user.exposure += (user.commission / 100 ) * remainingAmount
-      user.availableBalance += ((user.commission / 100 ) * remainingAmount) + ((user.commission / 100 ) * TotalLoosingAmount)
-      user.balance  += (user.commission / 100 ) * TotalLoosingAmount
-      user.clientPL -= user.downLineShare != 100 ? ((100 - user.downLineShare) / 100 ) * TotalLoosingAmount : 0
-      user.save()
+
+    let cash = await new Cash({
+      userId: user.userId,
+      description: bet.name,
+      createdBy: 0,
+      amount: (user.commission / 100 ) * TotalLoosingAmount,
+      balance: lastMaxWithdraw
+        ? lastMaxWithdraw.balance  + (user.commission / 100 ) * TotalLoosingAmount
+        : (user.commission / 100 ) * TotalLoosingAmount,
+  
+      availableBalance: lastMaxWithdraw
+        ? lastMaxWithdraw.availableBalance + (user.commission / 100 ) * TotalLoosingAmount
+        : (user.commission / 100 ) * TotalLoosingAmount,
+  
+      maxWithdraw: lastMaxWithdraw
+        ? lastMaxWithdraw.maxWithdraw + (user.commission / 100 ) * TotalLoosingAmount
+        : (user.commission / 100 ) * TotalLoosingAmount,
+      cashOrCredit: 'Bet',
+      cash: lastMaxWithdraw
+      ? lastMaxWithdraw.cash + (user.commission / 100 ) * TotalLoosingAmount
+      :  (user.commission / 100 ) * TotalLoosingAmount,
     });
+    cash.save();
+  });
+
   await Bets.findByIdAndUpdate(bet._id, { status: 0 });
 }
 
@@ -142,7 +215,7 @@ async function handleWinningBet(req, bet) {
   });
 
   if (!userToUpdate) {
-    return res.status(404).send({ message: 'user not found' });
+    return res.status(404).send({ message: 'user not found'});
   }
   const remainingAmount       = (bet.winningAmount / 100) * 98;
   const totalRemainingAmount  = bet.winningAmount;
@@ -154,18 +227,7 @@ async function handleWinningBet(req, bet) {
   userToUpdate.exposure         += TotalLoosingAmount;
   await userToUpdate.save();
 
-  console.log('  userToUpdate.clientPL',   userToUpdate.clientPL);
-
-  // Create and save BetsTransaction document
-  let betsTransaction = new BetsTransaction({
-    clientPL: userToUpdate.clientPL,
-    availableBalance: userToUpdate.availableBalance,
-    userId: userToUpdate.userId,
-  });
-  await betsTransaction.save();
-
   const parentUserIds = await getParents(userId);
-  
   const parentUser = await User.find({
     userId: {
       $in: [...parentUserIds]
@@ -176,25 +238,83 @@ async function handleWinningBet(req, bet) {
   if (!parentUser) {
     return res.status(404).send({ message: 'user not found' });
   }
-    let prev = 0;
-    
-    parentUser.forEach(user => {
-      let current = user.downLineShare
-      user["commission"] = current - prev
-      prev = current
-    });
+  let prev = 0;
+  parentUser.forEach(user => {
+    let current = user.downLineShare
+    user["commission"] = current - prev
+    prev = current
+  });
 
-    parentUser.forEach(user => {
-      user.exposure += (user.commission / 100 ) * totalRemainingAmount;
-      user.balance  -= (user.commission / 100 ) * remainingAmount;
-      user.clientPL += user.downLineShare != 100 ? ((100 - user.downLineShare) / 100 ) * remainingAmount : 0
-      user.save()
-    });
+  parentUser.forEach(user => {
+    user.exposure += (user.commission / 100 ) * totalRemainingAmount;
+    user.balance  -= (user.commission / 100 ) * remainingAmount;
+    user.clientPL += user.downLineShare != 100 ? ((100 - user.downLineShare) / 100 ) * remainingAmount : 0
+    user.save()
+  });
+    // Create and save BetsTransaction document
+  let betsTransaction = new BetsTransaction({
+    clientPL: userToUpdate.clientPL,
+    availableBalance: userToUpdate.availableBalance,
+    userId: userToUpdate.userId,
+  });
+  await betsTransaction.save();
   await Bets.findByIdAndUpdate(bet._id, { status: 0 });
 }
 
-function handlePendingBet(bet) {
-  console.log(`Bet ${bet._id} is pending.`);
+async function handleDrawBet(req, bet){
+  console.log(`Bet ${bet._id} lost.`);
+
+  const userId = bet.userId;
+  const loosingAmount = bet.loosingAmount;
+  const betAmount = bet.betAmount;
+  const userToUpdate = await User.findOne({
+    userId: userId,
+    isDeleted: false,
+  });
+
+  if (!userToUpdate) {
+    return res.status(404).send({ message: 'user not found'});
+  }
+  const remainingAmount       = (bet.winningAmount / 100) * 98;
+  const totalRemainingAmount  = bet.winningAmount;
+  const TotalLoosingAmount    = bet.loosingAmount;
+
+  userToUpdate.availableBalance += TotalLoosingAmount;
+  userToUpdate.exposure         += TotalLoosingAmount;
+  await userToUpdate.save();
+
+  const parentUserIds = await getParents(userId);
+  const parentUser = await User.find({
+    userId: {
+      $in: [...parentUserIds]
+    },
+    isDeleted: false
+  }).sort({role: -1});
+
+  if (!parentUser) {
+    return res.status(404).send({ message: 'user not found' });
+  }
+  let prev = 0;
+  parentUser.forEach(user => {
+    let current = user.downLineShare
+    user["commission"] = current - prev
+    prev = current
+  });
+
+  parentUser.forEach(user => {
+    user.exposure += (user.commission / 100 ) * totalRemainingAmount;
+    user.availableBalance += (user.commission / 100 ) * remainingAmount;
+    user.save()
+  });
+
+  // Create and save BetsTransaction document
+  let betsTransaction = new BetsTransaction({
+    clientPL: userToUpdate.clientPL,
+    availableBalance: userToUpdate.availableBalance,
+    userId: userToUpdate.userId,
+  });
+  await betsTransaction.save();
+  await Bets.findByIdAndUpdate(bet._id, { status: 0 });
 }
 
 const updateDefaultTheme = async () => {
