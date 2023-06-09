@@ -10,7 +10,7 @@ let sideBarSchema = new Schema({
   lightIcon: { type: String },
   darkIcon: { type: String },
   link: { type: String },
-  type: { type: String, default: 0 },
+  type: { type: Number, default: 0 },
   marketId: { type: String },
   updatedAt: { type: Number },
   createdAt: { type: Number },
