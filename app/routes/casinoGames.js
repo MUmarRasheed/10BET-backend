@@ -272,12 +272,10 @@ function getGamesByName(req, res) {
     if (err || !casinoCategories || casinoCategories.length == 0) {
       return res.status(404).send({ message: 'Casino Categories Not Found' });
     }
-    const results = casinoCategories.games.map((game) => {
       return res.send({
         message: 'Category Casino Games Found',
         success: true,
-        results: results,
-      });
+        results: casinoCategories.games,
     });
   });
 }
