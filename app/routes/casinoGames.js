@@ -228,21 +228,21 @@ async function getGame(req, res) {
     }
 
     const { homeurl, cashierurl, gameid } = req.body;
-    User.findOne({ userId: req.decoded.userId }, (err, user) => {
-      const payload = {
-        api_password: config.api_password,
-        api_login: config.api_login,
-        method: 'getGame',
-        lang: config.language,
-        user_username: 'user_' + user.userId,
-        user_password: 'user_' + user.userId,
-        homeurl,
-        cashierurl,
-        gameid,
-        play_for_fun: config.play_for_fun,
-        currency: config.currency,
-      };
-    });
+    const user = await User.findOne({ userId: req.decoded.userId });
+
+    const payload = {
+      api_password: config.api_password,
+      api_login: config.api_login,
+      method: 'getGame',
+      lang: config.language,
+      user_username: 'user_' + user.userId,
+      user_password: 'user_' + user.userId,
+      homeurl,
+      cashierurl,
+      gameid,
+      play_for_fun: config.play_for_fun,
+      currency: config.currency,
+    };
 
     const response = await axios.post(config.apiUrl, payload);
     res.status(200).send({
@@ -255,6 +255,7 @@ async function getGame(req, res) {
     res.status(500).send({ success: false, message: 'Failed to get game' });
   }
 }
+
 
 async function getDashboardGames(req, res) {
   const data = await SelectedCasino.find({});
@@ -297,5 +298,6 @@ loginRouter.post(
 
 loginRouter.post('/getGame', getGame);
 loginRouter.get('/getDashboardGames', getDashboardGames);
+loginRouter.get('/getGamesByName', getGamesByName);
 
 module.exports = { loginRouter };
