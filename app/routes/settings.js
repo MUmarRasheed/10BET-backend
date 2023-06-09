@@ -304,7 +304,8 @@ function getDefaultSettings(req, res) {
 }
 
 function getSideBarMenu(req, res) {
-  SideBarMenu.find({}, (err, results) => {
+  const type = req.decoded.role == 5 ? 0 : 1;
+  SideBarMenu.find({ type: type }, (err, results) => {
     if (err) {
       return res.status(404).json({ message: 'settings not found' });
     }
@@ -371,7 +372,7 @@ loginRouter.get('/GetExchangeRates', GetExchangeRates);
 loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
 router.get('/getDefaultSettings', getDefaultSettings);
 
-router.get('/getSideBarMenu', getSideBarMenu);
+loginRouter.get('/getSideBarMenu', getSideBarMenu);
 router.get('/addSideBarMenu', addSideBarMenu);
 
 module.exports = { loginRouter, router };
