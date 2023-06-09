@@ -268,6 +268,7 @@ async function getDashboardGames(req, res) {
     results: data,
   });
 }
+
 loginRouter.post('/addCasinoGameDetails', addCasinoGameDetails);
 
 loginRouter.get('/getAllCasinoCategories', getAllCasinoCategories);

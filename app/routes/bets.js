@@ -13,6 +13,7 @@ const loginRouter = express.Router();
 const betValidator = require('../validators/bets');
 const maxAllowedBetSizes = require('../models/betLimits');
 const userBetSizes = require('../models/userBetSizes');
+const betRates = require('../models/betRate');
 
 async function getParents(userId) {
   const parentUserIds = [];
@@ -330,8 +331,28 @@ function betFunds(req, res) {
   });
 }
 
+function createBetRates(req, res) {
+  const recordsToCreate = 1000;
+  const dummyData = [];
+  let betRate = 1;
+
+  for (let i = 0; i < recordsToCreate; i++) {
+    dummyData.push({ betRate });
+    betRate += 0.1;
+  }
+
+  betRates.insertMany(dummyData)
+    .then(() => {
+      res.status(200).json({ message: 'Dummy data created successfully.' });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: 'Error creating dummy data.' });
+    });
+}
+
 loginRouter.post('/placeBet', betValidator.validate('placeBet'), placeBet);
 loginRouter.post('/getUserBets', getUserBets);
 loginRouter.get('/betFunds', betFunds);
+loginRouter.get('/createBetRates', createBetRates);
 
 module.exports = { loginRouter, getParents };

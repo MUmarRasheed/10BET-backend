@@ -1,7 +1,6 @@
 const express = require('express');
 const { validationResult } = require('express-validator');
 let config = require('config');
-const BetLock = require('../models/betLocks');
 const betLockValidator = require('../validators/betLocks');
 const User = require('../models/user');
 const MarketType = require('../models/marketTypes');
