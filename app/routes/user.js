@@ -178,10 +178,7 @@ function login(req, res) {
         var token = getNonExpiringToken(
           user.userId,
           user.createdBy,
-          user.role,
-          user.parentId,
-          user.superAdminId,
-          user.adminId
+          user.role
         );
         user.token = token;
         var ipInfo = getIP(req);
@@ -255,18 +252,12 @@ function getNonExpiringToken(
   userId,
   createdBy,
   role,
-  parentId,
-  superAdminId,
-  adminId
 ) {
   const payload = {
     userId: userId,
     createdBy: createdBy,
     role: role,
-    parentId: parentId,
-    superAdminId: superAdminId,
-    adminId: adminId,
-  };
+    };
   var token = jwt.sign(payload, config.secret, {});
   return token;
 }

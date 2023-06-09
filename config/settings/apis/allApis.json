@@ -63,5 +63,8 @@
   "getGame",
   "getDashboardGames",
   "createBetRates",
-  "getGamesByName"
+  "getGamesByName",
+  "getBetRates",
+  "getSideBarMenu",
+  "addSideBarMenu"
 ]

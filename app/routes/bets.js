@@ -332,12 +332,14 @@ function betFunds(req, res) {
 }
 
 function createBetRates(req, res) {
-  const recordsToCreate = 1000;
+  const recordsToCreate = 2000;
   const dummyData = [];
   let betRate = 1;
 
   for (let i = 0; i < recordsToCreate; i++) {
-    dummyData.push({ betRate });
+    const roundedBetRate = Number(betRate.toFixed(1));
+    let createdAt = new Date().getTime() / 1000
+    dummyData.push({ betRate: roundedBetRate, createdAt });
     betRate += 0.1;
   }
 
@@ -350,9 +352,28 @@ function createBetRates(req, res) {
     });
 }
 
+function getBetRates(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  betRates.find(
+    {},
+    (err, result) => {
+      if (err || !result)
+        return res.status(404).send({ message: 'bets rate not found' });
+      return res.send({
+        success: true,
+        message: 'bets rate record found',
+        results: result,
+      });
+    }
+  );
+}
 loginRouter.post('/placeBet', betValidator.validate('placeBet'), placeBet);
 loginRouter.post('/getUserBets', getUserBets);
 loginRouter.get('/betFunds', betFunds);
-loginRouter.get('/createBetRates', createBetRates);
+loginRouter.post('/createBetRates', createBetRates);
+loginRouter.get('/getBetRates', getBetRates);
 
 module.exports = { loginRouter, getParents };

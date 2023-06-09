@@ -9,6 +9,7 @@ const PrivacyPolicy = require('../models/privacyPolicy');
 
 const Exchanges = require('../models/exchanges');
 const MaxBetSize = require('../models/betLimits');
+const SideBarMenu = require('../models/sidebarMenu');
 
 const loginRouter = express.Router();
 const router = express.Router();
@@ -271,9 +272,7 @@ function getDefaultBetSizes(req, res) {
   }
 
   if (req.decoded.role !== '0') {
-    return res
-      .status(404)
-      .json({ message: 'Unauthrized' });
+    return res.status(404).json({ message: 'Unauthrized' });
   }
   MaxBetSize.find({}, (err, results) => {
     if (err) {
@@ -301,6 +300,36 @@ function getDefaultSettings(req, res) {
       message: 'Setting Data Found successfully',
       results: results,
     });
+  });
+}
+
+function getSideBarMenu(req, res) {
+  SideBarMenu.find({}, (err, results) => {
+    if (err) {
+      return res.status(404).json({ message: 'settings not found' });
+    }
+    return res.json({
+      success: true,
+      message: 'Side Bar Menu Records',
+      results: results,
+    });
+  });
+}
+
+//for only backend
+function addSideBarMenu(req, res) {
+  const errors = validationResult(req);
+  if (errors.errors.length !== 0) {
+    return res.status(400).send({ errors: errors.errors });
+  }
+  if (req.decoded.role !== '0') {
+    return res.status(404).send({ message: 'you are not authorized' });
+  }
+  const menu = new SideBarMenu(req.body);
+  menu.save((err, results) => {
+    if (err)
+      return res.status(404).send({ message: 'side bar menu not saved' });
+    return res.send({ message: 'menu record saved', results });
   });
 }
 
@@ -341,5 +370,12 @@ loginRouter.post(
 loginRouter.get('/GetExchangeRates', GetExchangeRates);
 loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
 router.get('/getDefaultSettings', getDefaultSettings);
+
+router.get('/getSideBarMenu', getSideBarMenu);
+router.get(
+  '/addSideBarMenu',
+  settingsValidation.validate('addSideBarMenu'),
+  addSideBarMenu
+);
 
 module.exports = { loginRouter, router };
