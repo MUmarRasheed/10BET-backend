@@ -227,26 +227,22 @@ async function getGame(req, res) {
       return res.status(400).send({ errors: errors.errors });
     }
 
-    const { user_username, user_password, homeurl, cashierurl, gameid } =
-      req.body;
+    const { homeurl, cashierurl, gameid } = req.body;
     User.findOne({ userId: req.decoded.userId }, (err, user) => {
-      console.log('user', user);
-      user.name = user_username;
-      user.password = user_password;
+      const payload = {
+        api_password: config.api_password,
+        api_login: config.api_login,
+        method: 'getGame',
+        lang: config.language,
+        user_username: 'user_' + user.userId,
+        user_password: 'user_' + user.userId,
+        homeurl,
+        cashierurl,
+        gameid,
+        play_for_fun: config.play_for_fun,
+        currency: config.currency,
+      };
     });
-    const payload = {
-      api_password: config.api_password,
-      api_login: config.api_login,
-      method: 'getGame',
-      lang: config.language,
-      user_username,
-      user_password,
-      homeurl,
-      cashierurl,
-      gameid,
-      play_for_fun: config.play_for_fun,
-      currency: config.currency,
-    };
 
     const response = await axios.post(config.apiUrl, payload);
     res.status(200).send({
@@ -266,6 +262,22 @@ async function getDashboardGames(req, res) {
     message: 'Selected Casino Games List',
     success: true,
     results: data,
+  });
+}
+
+function getGamesByName(req, res) {
+  let category = req.query.category;
+  CasinoGames.findOne({ category: category }, (err, casinoCategories) => {
+    if (err || !casinoCategories || casinoCategories.length == 0) {
+      return res.status(404).send({ message: 'Casino Categories Not Found' });
+    }
+    const results = casinoCategories.games.map((game) => {
+      return res.send({
+        message: 'Category Casino Games Found',
+        success: true,
+        results: results,
+      });
+    });
   });
 }
 

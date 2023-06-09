@@ -62,5 +62,6 @@
   "getAllSelectedCasinos",
   "getGame",
   "getDashboardGames",
-  "createBetRates"
+  "createBetRates",
+  "getGamesByName"
 ]
