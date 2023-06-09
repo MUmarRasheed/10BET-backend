@@ -372,10 +372,6 @@ loginRouter.get('/getDefaultBetSizes', getDefaultBetSizes);
 router.get('/getDefaultSettings', getDefaultSettings);
 
 router.get('/getSideBarMenu', getSideBarMenu);
-router.get(
-  '/addSideBarMenu',
-  settingsValidation.validate('addSideBarMenu'),
-  addSideBarMenu
-);
+router.get('/addSideBarMenu', addSideBarMenu);
 
 module.exports = { loginRouter, router };
