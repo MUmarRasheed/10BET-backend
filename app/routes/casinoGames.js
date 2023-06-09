@@ -260,6 +260,14 @@ async function getGame(req, res) {
   }
 }
 
+async function getDashboardGames(req, res) {
+  const data = await SelectedCasino.find({});
+  return res.send({
+    message: 'Selected Casino Games List',
+    success: true,
+    results: data,
+  });
+}
 loginRouter.post('/addCasinoGameDetails', addCasinoGameDetails);
 
 loginRouter.get('/getAllCasinoCategories', getAllCasinoCategories);
@@ -275,5 +283,6 @@ loginRouter.post(
 );
 
 loginRouter.post('/getGame', getGame);
+loginRouter.get('/getDashboardGames', getDashboardGames);
 
 module.exports = { loginRouter };
